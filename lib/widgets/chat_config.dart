@@ -1,0 +1,98 @@
+import 'package:flutter/material.dart';
+
+import 'chat_config/chat_config_card.dart';
+import '../models/llm_model.dart';
+import '../utils/svg_icons.dart';
+import 'chat_config/parameter_slider.dart';
+import 'chat_config/parameter_bool.dart';
+import '../models/chat_data_list.dart';
+
+class ChatConfig extends StatefulWidget {
+  final LLMModel llmModel;
+  final ChatDataList chatDataList;
+  const ChatConfig({
+    super.key,
+    required this.llmModel,
+    required this.chatDataList,
+  });
+
+  @override
+  State<ChatConfig> createState() => _ChatConfigState();
+}
+
+class _ChatConfigState extends State<ChatConfig> {
+  late List<Widget> parameters;
+
+  void parametersInit() {
+    parameters = [];
+
+    var savedParameters = widget.llmModel.parameters;
+    widget.llmModel.defaultParameters?.forEach(
+      (key, value) {
+        parametersOnChanged(paramChangedValue) {
+          widget.llmModel.parameters?[key] = paramChangedValue;
+          widget.chatDataList.currentData.parameters[key] = paramChangedValue;
+        }
+
+        Type runTimeType = value.runtimeType;
+        if ((runTimeType == List<double>) || (runTimeType == List<int>)) {
+          if (savedParameters != null) {
+            value[1] = savedParameters[key];
+          }
+          parameters.add(ParameterSlider(
+            textKey: key,
+            values: value,
+            onChanged: parametersOnChanged,
+          ));
+        } else if (runTimeType == List<bool>) {
+          if (savedParameters != null) {
+            value = savedParameters[key];
+          }
+          parameters.add(ParameterBool(
+            textKey: key,
+            value: value,
+            onChanged: parametersOnChanged,
+          ));
+        }
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    parametersInit();
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // print('aaaa: ${widget.llmModel.parameters}');
+    parametersInit();
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+        scrollDirection: Axis.vertical,
+        child: Column(
+          children: [
+            ChatConfigCard(
+              title: 'CHAT PARAMETERS',
+              strIcon: SvgIcons.fluentSettingsReguler,
+              children: parameters,
+            ),
+            const ChatConfigCard(
+              title: 'CUSTOM PROMPT',
+              strIcon: SvgIcons.fluentPromptReguler,
+              children: [Text('Not Implemented')],
+            ),
+            const ChatConfigCard(
+              title: 'KNOWLEDGE',
+              strIcon: SvgIcons.knowledge,
+              children: [Text('Not Implemented')],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
