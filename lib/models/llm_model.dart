@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'llm_models/model_at_home.dart';
 import 'llm_models/base_model.dart';
 
 class LLMModel {
+  late final SharedPreferences prefs;
   BaseModel? _llmModel;
   Map<String, dynamic>? get defaultParameters => _llmModel?.defaultParameters;
 
@@ -23,7 +25,6 @@ class LLMModel {
     switch (value?.toLowerCase()) {
       case 'model at home':
         _llmModel = ModelAtHome();
-        // defaultParameters = _llmModel!.defaultParameters;
         _parameters = {};
         defaultParameters!.forEach(
           (key, value) {
@@ -35,6 +36,7 @@ class LLMModel {
             }
           },
         );
+        prefs.setString('provider', value!);
         break;
       default:
         _llmModel = null;
@@ -44,9 +46,19 @@ class LLMModel {
 
   late final TextEditingController urlTextEditingController;
 
+  void finishUrlEditing() {
+    prefs.setString('providerUrl', urlTextEditingController.text);
+  }
+
   LLMModel() {
     urlTextEditingController = TextEditingController();
-    provider = 'Model at home';
+    SharedPreferences.getInstance().then(
+      (value) {
+        prefs = value;
+        provider = prefs.getString('provider') ?? 'Model at home';
+        urlTextEditingController.text = prefs.getString('providerUrl') ?? '';
+      },
+    );
   }
 
   Future<String?> generateText(String prompt) => _llmModel!

@@ -14,10 +14,12 @@ import '../models/chat_data_list.dart';
 class ChatView extends StatefulWidget {
   final LLMModel llmModel;
   final Function()? functionChatConfig;
+  final bool isChatConfigOpen;
   const ChatView({
     super.key,
     required this.llmModel,
     this.functionChatConfig,
+    required this.isChatConfigOpen,
   });
 
   @override
@@ -95,6 +97,8 @@ class _ChatViewState extends State<ChatView> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   IconButton(
+                    hoverColor: MyColors.bgTintPink.withOpacity(0.5),
+                    highlightColor: MyColors.bgTintPink,
                     padding: const EdgeInsets.all(7.0),
                     onPressed: () {},
                     icon: Column(
@@ -107,15 +111,27 @@ class _ChatViewState extends State<ChatView> {
                     ),
                   ),
                   const Padding(padding: EdgeInsets.all(10.0)),
-                  IconButton(
-                      onPressed: widget.functionChatConfig,
-                      icon: SvgPicture.string(
-                        SvgIcons.fluentSettingsChat,
-                        width: 30,
-                        height: 30,
-                      )),
+                  Ink(
+                    decoration: ShapeDecoration(
+                      shape: CircleBorder(),
+                      color: widget.isChatConfigOpen
+                          ? MyColors.bgTintPink.withOpacity(0.5)
+                          : Colors.transparent,
+                    ),
+                    child: IconButton(
+                        hoverColor: MyColors.bgTintPink.withOpacity(0.5),
+                        highlightColor: MyColors.bgTintPink,
+                        onPressed: widget.functionChatConfig,
+                        icon: SvgPicture.string(
+                          SvgIcons.fluentSettingsChat,
+                          width: 30,
+                          height: 30,
+                        )),
+                  ),
                   const Padding(padding: EdgeInsets.all(10.0)),
                   IconButton(
+                      hoverColor: MyColors.bgTintPink.withOpacity(0.5),
+                      highlightColor: MyColors.bgTintPink,
                       onPressed: () {},
                       icon: SvgPicture.string(
                         SvgIcons.dotsVertical,

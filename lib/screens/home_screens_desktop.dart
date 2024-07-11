@@ -143,6 +143,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
       child: ChatView(
         llmModel: widget.llmModel,
         functionChatConfig: showChatConfigMenu,
+        isChatConfigOpen: rightCtnOpen,
       ),
     );
   }
@@ -238,6 +239,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                   hintText: '',
                   labelText: 'URL',
                   backgroundColor: MyColors.bgTintBlue,
+                  onChanged: (value) => widget.llmModel.finishUrlEditing(),
                 )
               ],
             ),

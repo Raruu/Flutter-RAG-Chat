@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rag_chat/utils/my_colors.dart';
 
 import 'chat_config/chat_config_card.dart';
 import '../models/llm_model.dart';
@@ -6,6 +7,7 @@ import '../utils/svg_icons.dart';
 import 'chat_config/parameter_slider.dart';
 import 'chat_config/parameter_bool.dart';
 import '../models/chat_data_list.dart';
+import 'nice_button.dart';
 
 class ChatConfig extends StatefulWidget {
   final LLMModel llmModel;
@@ -56,6 +58,36 @@ class _ChatConfigState extends State<ChatConfig> {
         }
       },
     );
+
+    parameters.add(NiceButton(
+      onTap: () {
+        widget.llmModel.defaultParameters?.forEach((key, value) {
+          parametersOnChanged(paramChangedValue) {
+            widget.llmModel.parameters?[key] = paramChangedValue;
+            widget.chatDataList.currentData.parameters[key] = paramChangedValue;
+          }
+
+          Type runTimeType = value.runtimeType;
+          if ((runTimeType == List<double>) || (runTimeType == List<int>)) {
+            parametersOnChanged(value[1]);
+          } else if (runTimeType == List<bool>) {
+            parametersOnChanged(value);
+          }
+        });
+
+        setState(() => parametersInit());
+      },
+      text: 'Reset',
+      borderRadiusCircular: 12,
+      hoverColor: Colors.red,
+      splashColor: MyColors.bgTintBlue,
+      backgroundColor: Colors.transparent,
+      hoverDuration: const Duration(milliseconds: 200),
+      border: Border.all(
+        color: Colors.red,
+      ),
+      textHoverColor: Colors.white,
+    ));
   }
 
   @override

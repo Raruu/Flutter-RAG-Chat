@@ -7,11 +7,16 @@ class NiceButton extends StatefulWidget {
   final double borderRadiusCircular;
   final Color backgroundColor;
   final Function() onTap;
+  final Function(bool value)? onHover;
   final String? strIcon;
   final double iconSize;
   final String text;
+  final Color textColor;
+  final Color textHoverColor;
   final Color splashColor;
   final Color? hoverColor;
+  final Duration hoverDuration;
+  final Border? border;
 
   const NiceButton({
     super.key,
@@ -23,6 +28,11 @@ class NiceButton extends StatefulWidget {
     required this.text,
     this.splashColor = MyColors.bgTintBlue,
     this.hoverColor = MyColors.bgTintPink,
+    this.hoverDuration = const Duration(microseconds: 0),
+    this.border,
+    this.onHover,
+    this.textColor = MyColors.textTintBlue,
+    this.textHoverColor = Colors.black,
   });
 
   @override
@@ -30,12 +40,15 @@ class NiceButton extends StatefulWidget {
 }
 
 class _NiceButtonState extends State<NiceButton> {
+  bool isHover = false;
+
   @override
   Widget build(BuildContext context) {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: widget.backgroundColor,
+        // border: widget.border,
         borderRadius: BorderRadius.circular(widget.borderRadiusCircular),
       ),
       child: Material(
@@ -44,41 +57,56 @@ class _NiceButtonState extends State<NiceButton> {
           onTap: widget.onTap,
           splashColor: widget.splashColor,
           hoverColor: widget.hoverColor,
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                    child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: widget.strIcon != null
-                      ? SvgPicture.string(
-                          widget.strIcon!,
-                          height: widget.iconSize,
-                          width: widget.iconSize,
-                        )
-                      : const SizedBox(),
-                )),
-                Expanded(
-                  child: Container(
-                    constraints: const BoxConstraints(maxHeight: 32),
-                    child: FittedBox(
-                      fit: BoxFit.fitHeight,
-                      child: Center(
-                        child: Text(
-                          widget.text,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w900, fontSize: 20),
+          hoverDuration: widget.hoverDuration,
+          onHover: (value) {
+            widget.onHover?.call(value);
+            setState(() => isHover = value);
+          },
+          child: Ink(
+            decoration: BoxDecoration(
+              border: widget.border,
+              borderRadius: BorderRadius.circular(widget.borderRadiusCircular),
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                      child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: widget.strIcon != null
+                        ? SvgPicture.string(
+                            widget.strIcon!,
+                            height: widget.iconSize,
+                            width: widget.iconSize,
+                          )
+                        : const SizedBox(),
+                  )),
+                  Expanded(
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 32),
+                      child: FittedBox(
+                        fit: BoxFit.fitHeight,
+                        child: Center(
+                          child: Text(
+                            widget.text,
+                            style: TextStyle(
+                                color: isHover
+                                    ? widget.textHoverColor
+                                    : widget.textColor,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 20),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                const Spacer(),
-              ],
+                  const Spacer(),
+                ],
+              ),
             ),
           ),
         ),
