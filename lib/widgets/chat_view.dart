@@ -30,17 +30,38 @@ class _ChatViewState extends State<ChatView> {
   late final TextEditingController _messageTextEditingController;
   late ChatDataList chatDataList;
   late List<Message> messageList;
+  late final ScrollController _listViewMessageController;
 
   @override
   void initState() {
     _messageTextEditingController = TextEditingController();
+    _listViewMessageController = ScrollController();
     super.initState();
   }
 
   @override
   void dispose() {
     _messageTextEditingController.dispose();
+    _listViewMessageController.dispose();
     super.dispose();
+  }
+
+  void scrollDown() {
+    _listViewMessageController.animateTo(
+      _listViewMessageController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.decelerate,
+    );
+  }
+
+  void addMessage(Message messageWidget) {
+    setState(() {
+      messageList.add(messageWidget);
+    });
+    Future.delayed(
+      const Duration(milliseconds: 50),
+      () => scrollDown(),
+    );
   }
 
   void sendMessage() {
@@ -53,10 +74,7 @@ class _ChatViewState extends State<ChatView> {
     String prompt = _messageTextEditingController.text;
     _messageTextEditingController.clear();
 
-    setState(
-      () => messageList
-          .add(Message(message: prompt, token: token, role: MessageRole.user)),
-    );
+    addMessage(Message(message: prompt, token: token, role: MessageRole.user));
 
     widget.llmModel.generateText(prompt).then(
       (value) {
@@ -77,8 +95,9 @@ class _ChatViewState extends State<ChatView> {
 
   void receiveMessage(String text) {
     int token = text.length ~/ 4;
-    setState(() => messageList
-        .add(Message(message: text, token: token, role: MessageRole.model)));
+    // setState(() => addMessage(
+    //     Message(message: text, token: token, role: MessageRole.model)));
+    addMessage(Message(message: text, token: token, role: MessageRole.model));
   }
 
   @override
@@ -89,110 +108,122 @@ class _ChatViewState extends State<ChatView> {
         messageList = chatDataList.currentData.messageList;
         return Column(
           children: [
-            ChatListCardWidget(
-              chatTitle: chatDataList.currentData.title,
-              chatSubtitle: '${chatDataList.currentData.totalToken} Tokens~',
-              rightWidget: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  IconButton(
-                    hoverColor: MyColors.bgTintPink.withOpacity(0.5),
-                    highlightColor: MyColors.bgTintPink,
-                    padding: const EdgeInsets.all(7.0),
-                    onPressed: () {},
-                    icon: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text('data1'),
-                        Text('data2'),
-                      ],
-                    ),
-                  ),
-                  const Padding(padding: EdgeInsets.all(10.0)),
-                  Ink(
-                    decoration: ShapeDecoration(
-                      shape: CircleBorder(),
-                      color: widget.isChatConfigOpen
-                          ? MyColors.bgTintPink.withOpacity(0.5)
-                          : Colors.transparent,
-                    ),
-                    child: IconButton(
-                        hoverColor: MyColors.bgTintPink.withOpacity(0.5),
-                        highlightColor: MyColors.bgTintPink,
-                        onPressed: widget.functionChatConfig,
-                        icon: SvgPicture.string(
-                          SvgIcons.fluentSettingsChat,
-                          width: 30,
-                          height: 30,
-                        )),
-                  ),
-                  const Padding(padding: EdgeInsets.all(10.0)),
-                  IconButton(
-                      hoverColor: MyColors.bgTintPink.withOpacity(0.5),
-                      highlightColor: MyColors.bgTintPink,
-                      onPressed: () {},
-                      icon: SvgPicture.string(
-                        SvgIcons.dotsVertical,
-                        width: 30,
-                        height: 30,
-                      )),
-                ],
-              ),
-            ),
-            Expanded(
-              child: messageList.isEmpty
-                  ? chatWhenEmpty(context)
-                  : ListView.builder(
-                      itemCount: messageList.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 5.0, horizontal: 10.0),
-                          child: Container(
-                            padding: messageList[index].role == MessageRole.user
-                                ? const EdgeInsets.only(left: 32.0)
-                                : const EdgeInsets.only(right: 32.0),
-                            alignment:
-                                messageList[index].role == MessageRole.user
-                                    ? Alignment.centerRight
-                                    : Alignment.centerLeft,
-                            child: ChatBubble(
-                              text: messageList[index].message,
-                              token: messageList[index].token,
-                              role: messageList[index].role,
-                              backgroundColor:
-                                  messageList[index].role == MessageRole.user
-                                      ? MyColors.bgTintPink
-                                      : MyColors.bgTintBlue,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-            Container(
-              constraints: BoxConstraints(
-                  maxHeight: MediaQuery.sizeOf(context).height * 1 / 3),
-              padding: const EdgeInsets.all(8.0),
-              child: PinkTextField(
-                textEditingController: _messageTextEditingController,
-                hintText: 'Type Here...',
-                multiLine: true,
-                strIconLeft: SvgIcons.attachment,
-                strIconRight: SvgIcons.sendDuoTone,
-                iconSizeLeft: 28,
-                iconSizeRight: 28,
-                borderRadiusCircular: 32.0,
-                leftButtonFunc: () {},
-                rightButtonFunc: sendMessage,
-                onEditingComplete: sendMessage,
-              ),
-            )
+            topSection(),
+            midSection(context),
+            bottomSection(context),
           ],
         );
       },
+    );
+  }
+
+  Container bottomSection(BuildContext context) {
+    return Container(
+      constraints:
+          BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 1 / 3),
+      padding: const EdgeInsets.all(8.0),
+      child: PinkTextField(
+        textEditingController: _messageTextEditingController,
+        hintText: 'Type Here...',
+        multiLine: true,
+        strIconLeft: SvgIcons.attachment,
+        strIconRight: SvgIcons.sendDuoTone,
+        iconSizeLeft: 28,
+        iconSizeRight: 28,
+        borderRadiusCircular: 32.0,
+        leftButtonFunc: () {},
+        rightButtonFunc: sendMessage,
+        onEditingComplete: sendMessage,
+      ),
+    );
+  }
+
+  Expanded midSection(BuildContext context) {
+    return Expanded(
+      child: messageList.isEmpty
+          ? chatWhenEmpty(context)
+          : ListView.builder(
+              controller: _listViewMessageController,
+              itemCount: messageList.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 10.0),
+                  child: Container(
+                    padding: messageList[index].role == MessageRole.user
+                        ? const EdgeInsets.only(left: 32.0)
+                        : const EdgeInsets.only(right: 32.0),
+                    alignment: messageList[index].role == MessageRole.user
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: ChatBubble(
+                      text: messageList[index].message,
+                      token: messageList[index].token,
+                      role: messageList[index].role,
+                      backgroundColor:
+                          messageList[index].role == MessageRole.user
+                              ? MyColors.bgTintPink
+                              : MyColors.bgTintBlue,
+                    ),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+
+  ChatListCardWidget topSection() {
+    return ChatListCardWidget(
+      chatTitle: chatDataList.currentData.title,
+      chatSubtitle: '${chatDataList.currentData.totalToken} Tokens~',
+      rightWidget: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          IconButton(
+            hoverColor: MyColors.bgTintPink.withOpacity(0.5),
+            highlightColor: MyColors.bgTintPink,
+            padding: const EdgeInsets.all(7.0),
+            onPressed: () {},
+            icon: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('data1'),
+                Text('data2'),
+              ],
+            ),
+          ),
+          const Padding(padding: EdgeInsets.all(10.0)),
+          Ink(
+            decoration: ShapeDecoration(
+              shape: const CircleBorder(),
+              color: widget.isChatConfigOpen
+                  ? MyColors.bgTintPink.withOpacity(0.5)
+                  : Colors.transparent,
+            ),
+            child: IconButton(
+                hoverColor: MyColors.bgTintPink.withOpacity(0.5),
+                highlightColor: MyColors.bgTintPink,
+                onPressed: widget.functionChatConfig,
+                icon: SvgPicture.string(
+                  SvgIcons.fluentSettingsChat,
+                  width: 30,
+                  height: 30,
+                )),
+          ),
+          const Padding(padding: EdgeInsets.all(10.0)),
+          IconButton(
+              hoverColor: MyColors.bgTintPink.withOpacity(0.5),
+              highlightColor: MyColors.bgTintPink,
+              onPressed: () {},
+              icon: SvgPicture.string(
+                SvgIcons.dotsVertical,
+                width: 30,
+                height: 30,
+              )),
+        ],
+      ),
     );
   }
 

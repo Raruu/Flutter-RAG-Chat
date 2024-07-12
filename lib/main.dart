@@ -26,8 +26,12 @@ class MyApp extends StatelessWidget {
           path: "/",
           name: "home",
           builder: (context, state) {
+            var querys = state.uri.queryParametersAll;
             return HomePageDesktop(
               llmModel: llmModel,
+              initialCtnRightOpen: querys['isCtnRightOpen']?.first == 'true',
+              initialMenuSelected:
+                  int.tryParse(querys['menuSelected']?.first ?? '-1')!,
             );
           },
         )

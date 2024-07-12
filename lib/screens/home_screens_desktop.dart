@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/my_colors.dart';
@@ -14,7 +15,14 @@ import '../widgets/chat_config.dart';
 
 class HomePageDesktop extends StatefulWidget {
   final LLMModel llmModel;
-  const HomePageDesktop({super.key, required this.llmModel});
+  final int initialMenuSelected;
+  final bool initialCtnRightOpen;
+  const HomePageDesktop({
+    super.key,
+    required this.llmModel,
+    required this.initialMenuSelected,
+    required this.initialCtnRightOpen,
+  });
 
   @override
   State<HomePageDesktop> createState() => _HomePageDesktopState();
@@ -25,10 +33,17 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
   bool menuHovered = false;
   void menuHover(bool value) => setState(() => menuHovered = value);
 
-  int menuSelected = -1;
-  void changeMenuSelected(int value) =>
-      setState(() => menuSelected = (menuSelected == value) ? -1 : value);
-  bool rightCtnOpen = false;
+  late int _menuSelected;
+  int get menuSelected => _menuSelected;
+  set menuSelected(int value) {
+    context.goNamed('home', queryParameters: {
+      ...GoRouterState.of(context).uri.queryParametersAll,
+      'menuSelected': value.toString()
+    });
+    setState(() => _menuSelected = (_menuSelected == value) ? -1 : value);
+  }
+
+  late bool isCtnRightOpen;
 
   late final TextEditingController _searchEditingController;
 
@@ -37,15 +52,20 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
   late ChatDataList chatDataList;
 
   void showChatConfigMenu() {
-    rightCtnOpen = !rightCtnOpen;
+    isCtnRightOpen = !isCtnRightOpen;
+    context.goNamed('home', queryParameters: {
+      ...GoRouterState.of(context).uri.queryParametersAll,
+      'isCtnRightOpen': isCtnRightOpen.toString()
+    });
     setState(() {});
-    // print('object');
   }
 
   @override
   void initState() {
     chatDataList = ChatDataList();
     _searchEditingController = TextEditingController();
+    _menuSelected = widget.initialMenuSelected;
+    isCtnRightOpen = widget.initialCtnRightOpen;
     super.initState();
   }
 
@@ -62,8 +82,8 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
     double chatWidth = width - menuWidth;
 
     int ctnLeftFlex = menuSelected > -1 ? 1 : 0,
-        ctnMidFlex = rightCtnOpen ? 4 : 3,
-        ctnRightFlex = rightCtnOpen ? 2 : 0;
+        ctnMidFlex = isCtnRightOpen ? 4 : 3,
+        ctnRightFlex = isCtnRightOpen ? 2 : 0;
     double ctnLeftWidth = (ctnLeftFlex * (width - menuWidth)) /
         (ctnLeftFlex + ctnMidFlex + ctnRightFlex);
     if (ctnLeftWidth != 0) _tmpCtnLeftWidth = ctnLeftWidth;
@@ -115,7 +135,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
       duration: const Duration(milliseconds: 200),
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 150),
-        opacity: rightCtnOpen ? 1 : 0,
+        opacity: isCtnRightOpen ? 1 : 0,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const NeverScrollableScrollPhysics(),
@@ -143,7 +163,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
       child: ChatView(
         llmModel: widget.llmModel,
         functionChatConfig: showChatConfigMenu,
-        isChatConfigOpen: rightCtnOpen,
+        isChatConfigOpen: isCtnRightOpen,
       ),
     );
   }
@@ -283,7 +303,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                   text: "Chat",
                   textVisibilty: menuExtended || menuHovered,
                   onTap: () {
-                    changeMenuSelected(0);
+                    menuSelected = 0;
                   },
                   isSelected: menuSelected == 0 ? true : false,
                 ),
@@ -294,7 +314,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                   text: "Settings",
                   textVisibilty: menuExtended || menuHovered,
                   onTap: () {
-                    changeMenuSelected(1);
+                    menuSelected = 1;
                   },
                   isSelected: menuSelected == 1 ? true : false,
                 ),
