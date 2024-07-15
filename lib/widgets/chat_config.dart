@@ -71,7 +71,7 @@ class _ChatConfigState extends State<ChatConfig> {
           if ((runTimeType == List<double>) || (runTimeType == List<int>)) {
             parametersOnChanged(value[1]);
           } else if (runTimeType == List<bool>) {
-            parametersOnChanged(value);
+            parametersOnChanged(value.first);
           }
         });
 
