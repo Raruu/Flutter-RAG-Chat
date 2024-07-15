@@ -48,7 +48,7 @@ class _ChatConfigState extends State<ChatConfig> {
           ));
         } else if (runTimeType == List<bool>) {
           if (savedParameters != null) {
-            value = savedParameters[key];
+            value.first = savedParameters[key];
           }
           parameters.add(ParameterBool(
             textKey: key,

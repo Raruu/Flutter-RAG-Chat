@@ -25,26 +25,37 @@ class ModelAtHome extends BaseModel {
 
   @override
   Future<String?> generateText(
-      String url, String prompt, Map<String, dynamic> parameters) async {
-    url += '/generate_text';
-    Uri? uri;
+    String url,
+    String prompt,
+    Map<String, dynamic> parameters,
+  ) async {
     try {
-      uri = Uri.parse(url);
-    } catch (e) {
-      if (kDebugMode) {
-        print('Invalid URI: $e');
+      url += '/generate_text';
+      Uri? uri = Uri.tryParse(url);
+      if (uri == null) {
+        throw ('Invalid uri: $url');
       }
-      return null;
+      if (kDebugMode) {
+        print('JsonEncode: ${jsonEncode({"prompt": prompt, ...parameters})}');
+      }
+
+      http.Response response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json; charset=UTF-8'},
+        body: jsonEncode({
+          "prompt": prompt,
+          ...parameters,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return formatOutputText(response.body);
+      } else {
+        throw (response.statusCode);
+      }
+    } catch (e) {
+      rethrow;
     }
-    http.Response response = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
-      body: jsonEncode({"prompt": prompt, ...parameters}),
-    );
-    if (response.statusCode == 200) {
-      return formatOutputText(response.body);
-    }
-    return null;
   }
 
   String formatOutputText(String text) {

@@ -5,7 +5,7 @@ import '../../utils/my_colors.dart';
 class ParameterBool extends StatefulWidget {
   final String textKey;
   final List<bool> value;
-  final Function(List<bool> value) onChanged;
+  final Function(bool value) onChanged;
   const ParameterBool({
     super.key,
     required this.textKey,
@@ -20,7 +20,7 @@ class ParameterBool extends StatefulWidget {
 class _ParameterBoolState extends State<ParameterBool> {
   bool get parameterValue => widget.value[0];
   set parameterValue(bool value) {
-    widget.onChanged([value]);
+    widget.onChanged(value);
     widget.value[0] = value;
     setState(() {});
   }

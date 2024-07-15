@@ -10,6 +10,8 @@ import '../models/llm_model.dart';
 import './chat_bubble.dart';
 import '../utils/my_colors.dart';
 import '../models/chat_data_list.dart';
+import '../utils/util.dart';
+import '../utils/kafuu_chino.dart';
 
 class ChatView extends StatefulWidget {
   final LLMModel llmModel;
@@ -54,7 +56,7 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
-  void addMessage(Message messageWidget) {
+  void addMessage(Message messageWidget, List<Message> messageList) {
     setState(() {
       messageList.add(messageWidget);
     });
@@ -74,14 +76,16 @@ class _ChatViewState extends State<ChatView> {
     String prompt = _messageTextEditingController.text;
     _messageTextEditingController.clear();
 
-    addMessage(Message(message: prompt, token: token, role: MessageRole.user));
+    List<Message> currentMessageList = messageList;
+    addMessage(Message(message: prompt, token: token, role: MessageRole.user),
+        currentMessageList);
 
-    widget.llmModel.generateText(prompt).then(
+    widget.llmModel.generateText(context, prompt).then(
       (value) {
         if (value == null) {
           return;
         }
-        receiveMessage(value);
+        receiveMessage(value, currentMessageList);
       },
     );
     if (isEmpty) {
@@ -93,11 +97,10 @@ class _ChatViewState extends State<ChatView> {
     }
   }
 
-  void receiveMessage(String text) {
+  void receiveMessage(String text, List<Message> messageList) {
     int token = text.length ~/ 4;
-    // setState(() => addMessage(
-    //     Message(message: text, token: token, role: MessageRole.model)));
-    addMessage(Message(message: text, token: token, role: MessageRole.model));
+    addMessage(Message(message: text, token: token, role: MessageRole.model),
+        messageList);
   }
 
   @override
@@ -216,7 +219,11 @@ class _ChatViewState extends State<ChatView> {
           IconButton(
               hoverColor: MyColors.bgTintPink.withOpacity(0.5),
               highlightColor: MyColors.bgTintPink,
-              onPressed: () {},
+              onPressed: () {
+                Utils.showSnackBar(
+                  context,
+                );
+              },
               icon: SvgPicture.string(
                 SvgIcons.dotsVertical,
                 width: 30,

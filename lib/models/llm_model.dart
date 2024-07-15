@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'llm_models/model_at_home.dart';
 import 'llm_models/base_model.dart';
+import '../utils/util.dart';
 
 class LLMModel {
   late final SharedPreferences prefs;
@@ -32,7 +33,7 @@ class LLMModel {
             if ((runTimeType == List<double>) || (runTimeType == List<int>)) {
               parameters![key] = value[1];
             } else if (runTimeType == List<bool>) {
-              parameters![key] = value;
+              parameters![key] = value.first;
             }
           },
         );
@@ -61,6 +62,16 @@ class LLMModel {
     );
   }
 
-  Future<String?> generateText(String prompt) => _llmModel!
-      .generateText(urlTextEditingController.text, prompt, parameters!);
+  Future<String?> generateText(BuildContext context, String prompt) async {
+    return _llmModel!
+        .generateText(urlTextEditingController.text, prompt, parameters!)
+        .catchError((e) {
+      Utils.showSnackBar(
+        context,
+        title: 'Master! Something Went Wrong:',
+        subTitle: e.toString(),
+      );
+      return null;
+    });
+  }
 }
