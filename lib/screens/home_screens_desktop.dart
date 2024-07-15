@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -287,7 +288,9 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
               stringSvg: SvgIcons.lightMode,
               text: "Light Mode",
               textVisibilty: menuExtended || menuHovered,
-              onTap: () {},
+              onTap: () {
+                Utils.showSnackBar(context);
+              },
             ),
           ),
           const Spacer(),

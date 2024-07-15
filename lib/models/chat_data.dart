@@ -6,12 +6,12 @@ class ChatData {
   int totalToken;
   late Map<String, dynamic> parameters;
   final List<Message> messageList;
-  final String dateCreated;
+  late final String dateCreated;
 
   ChatData({
     this.title = 'Unknown chat ###',
     this.totalToken = 0,
-    this.dateCreated = 'Date',
+    // this.dateCreated = 'Date',
     required this.messageList,
   }) {
     String dateTimeNow = DateTime.now().toUtc().toString();
@@ -23,7 +23,6 @@ class ChatData {
 
     parameters = {};
 
-    // .toString()
-    // dateCreated = dateTimeNow;
+    dateCreated = dateTimeNow.substring(0, dateTimeNow.indexOf(' '));
   }
 }

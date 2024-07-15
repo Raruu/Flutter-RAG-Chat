@@ -5,6 +5,7 @@ import 'chat_data.dart';
 
 class ChatDataList extends ChangeNotifier {
   late final List<ChatData> dataList;
+  late Function() notifyChatDataListner;
 
   late ChatData _currentData;
   ChatData get currentData => _currentData;
@@ -14,13 +15,11 @@ class ChatDataList extends ChangeNotifier {
   }
 
   int currentSelected = -1;
-  // int get getTotalToken => currentData.totalToken;
-  // List<Message> get getMessageList => currentData.messageList;
-  // Map<String, dynamic>? get parameters => currentData.parameters;
 
   ChatDataList() {
     dataList = [];
     newChat();
+    notifyChatDataListner = notifyListeners;
   }
 
   void newChat() {

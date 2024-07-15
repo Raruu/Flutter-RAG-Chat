@@ -11,7 +11,7 @@ import './chat_bubble.dart';
 import '../utils/my_colors.dart';
 import '../models/chat_data_list.dart';
 import '../utils/util.dart';
-import '../utils/kafuu_chino.dart';
+import 'chat_bubble_typing.dart';
 
 class ChatView extends StatefulWidget {
   final LLMModel llmModel;
@@ -57,9 +57,12 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void addMessage(Message messageWidget, List<Message> messageList) {
-    setState(() {
-      messageList.add(messageWidget);
-    });
+    if (messageList.isNotEmpty &&
+        messageList.last.role == MessageRole.modelTyping) {
+      messageList.removeLast();
+    }
+    messageList.add(messageWidget);
+    chatDataList.notifyChatDataListner();
     Future.delayed(
       const Duration(milliseconds: 50),
       () => scrollDown(),
@@ -88,6 +91,8 @@ class _ChatViewState extends State<ChatView> {
         receiveMessage(value, currentMessageList);
       },
     );
+    currentMessageList
+        .add(Message(message: '', token: 0, role: MessageRole.modelTyping));
     if (isEmpty) {
       chatDataList.currentData.title = prompt;
       widget.llmModel.parameters!.forEach(
@@ -149,6 +154,13 @@ class _ChatViewState extends State<ChatView> {
               controller: _listViewMessageController,
               itemCount: messageList.length,
               itemBuilder: (context, index) {
+                if (messageList[index].role == MessageRole.modelTyping) {
+                  return const Padding(
+                    padding:
+                        EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                    child: ChatBubbleTyping(),
+                  );
+                }
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                       vertical: 5.0, horizontal: 10.0),

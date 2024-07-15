@@ -2,18 +2,35 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:math' as math;
 
 import 'kafuu_chino.dart';
 import 'my_colors.dart';
 
 class Utils {
+  static String randomKafuuChino() {
+    int rng = math.Random().nextInt(4);
+    switch (rng) {
+      case 0:
+        return KafuuChino.disappointed;
+      case 1:
+        return KafuuChino.information;
+      case 2:
+        return KafuuChino.taskComplete;
+      case 4:
+        return KafuuChino.think;
+      default:
+        return KafuuChino.information;
+    }
+  }
+
   static void showSnackBar(
     BuildContext context, {
-    String title = 'Title',
-    String subTitle = 'subtitle',
+    String title = 'Not Implemented',
+    String subTitle = 'See You Later. . .',
     double textSize = 20,
     Color textColor = Colors.black,
-    String strIcon = KafuuChino.information,
+    String? strIcon,
     Color? iconColor,
     double iconSize = 150,
     Duration duration = const Duration(seconds: 2),
@@ -21,6 +38,7 @@ class Utils {
     Color? closeIconColor,
     EdgeInsets padding = const EdgeInsets.all(0),
   }) {
+    strIcon ??= randomKafuuChino();
     bool onHover = false;
 
     ScaffoldMessenger.of(context).showSnackBar(

@@ -1,4 +1,4 @@
-enum MessageRole { user, model }
+enum MessageRole { user, model, modelTyping }
 
 class Message {
   final MessageRole role;

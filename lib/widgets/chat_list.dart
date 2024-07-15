@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
-import 'package:flutter_rag_chat/models/llm_model.dart';
 
+import '../models/chat_data.dart';
+import '../models/llm_model.dart';
 import 'chat_list/chat_list_card_widget.dart';
 import 'nice_button.dart';
 import 'pink_textfield.dart';
@@ -25,6 +26,32 @@ class ChatList extends StatefulWidget {
   State<ChatList> createState() => _ChatListState();
 }
 
+String getDay(String value) {
+  DateTime dateTimeNow = DateTime.now().toUtc();
+  // print(value.substring(0));
+  final List<String> splittedValue = value.split('-');
+
+  int yearOfValue = int.parse(splittedValue[0]);
+  int todayYear = dateTimeNow.year;
+
+  int monthOfValue = int.parse(splittedValue[1]);
+  int todayMonth = dateTimeNow.month;
+
+  int dateOfValue = int.parse(splittedValue[2]);
+  int todayDate = dateTimeNow.day;
+
+  if (dateOfValue == todayDate) {
+    return 'Today';
+  }
+  int deltaDate = todayDate - dateOfValue;
+  if (deltaDate == 1 &&
+      monthOfValue == todayMonth &&
+      yearOfValue == todayYear) {
+    return 'Yesterday';
+  }
+  return value;
+}
+
 class _ChatListState extends State<ChatList> {
   @override
   Widget build(BuildContext context) {
@@ -46,19 +73,28 @@ class _ChatListState extends State<ChatList> {
                 ListView.builder(
                   shrinkWrap: true,
                   itemCount: widget.chatDataList.dataList.length,
-                  itemBuilder: (context, index) => ChatListCardWidget(
-                    isSelected: index == widget.chatDataList.currentSelected,
-                    hoverColor: MyColors.bgTintBlue.withOpacity(0.5),
-                    onTap: () {
-                      widget.chatDataList.loadData(index);
-                      widget.chatDataList
-                          .applyParameter(widget.llmModel.parameters!);
-                      // print(widget.llmModel.parameters);
-                    },
-                    chatTitle: widget.chatDataList.dataList[index].title,
-                    rightWidget:
-                        Text(widget.chatDataList.dataList[index].dateCreated),
-                  ),
+                  itemBuilder: (context, index) {
+                    List<ChatData> dataList = widget.chatDataList.dataList;
+
+                    return ChatListCardWidget(
+                      isSelected: index == widget.chatDataList.currentSelected,
+                      hoverColor: MyColors.bgTintBlue.withOpacity(0.5),
+                      chatTitle: dataList[index].title,
+                      chatSubtitle:
+                          dataList[index].messageList.last.message == ''
+                              ? dataList[index]
+                                  .messageList[
+                                      dataList[index].messageList.length - 2]
+                                  .message
+                              : dataList[index].messageList.last.message,
+                      rightWidget: Text(getDay(dataList[index].dateCreated)),
+                      onTap: () {
+                        widget.chatDataList.loadData(index);
+                        widget.chatDataList
+                            .applyParameter(widget.llmModel.parameters!);
+                      },
+                    );
+                  },
                 ),
                 const Padding(padding: EdgeInsets.all(16.0)),
                 const Column(
