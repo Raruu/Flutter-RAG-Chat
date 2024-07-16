@@ -73,22 +73,22 @@ class LLMModel {
       prompt += chatData.prePrompt ?? '';
     }
     if (chatData.useChatConversationContext[0]) {
-      for (var element in chatData.messageList) {
-        prompt += '${element.message} ';
-        //
-        // switch (element.role) {
+      for (var i = 0; i < chatData.messageList.length - 1; i++) {
+        Message message = chatData.messageList[i];
+        prompt += '${message.message} ';
+        // switch (message.role) {
         //   case MessageRole.user:
-        //     prompt += 'User: ${element.message}';
+        //     prompt += 'User: ${message.message} ';
         //     break;
         //   case MessageRole.model:
-        //     prompt += 'Model: ${element.message}';
+        //     prompt += 'Model: ${message.message} ';
         //     break;
         //   default:
         // }
       }
     }
-    // prompt += newUserInput;
-    // print(prompt);
+    prompt += newUserInput;
+    print(prompt);
     return prompt;
   }
 
