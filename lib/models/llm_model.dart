@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rag_chat/models/chat_data.dart';
+import 'package:flutter_rag_chat/models/message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'llm_models/model_at_home.dart';
 import 'llm_models/base_model.dart';
 import '../utils/util.dart';
+import './llm_models/default_preprompt.dart' as df_preprompt;
 
 class LLMModel {
   late final SharedPreferences prefs;
   BaseModel? _llmModel;
   Map<String, dynamic>? get defaultParameters => _llmModel?.defaultParameters;
+  String get defaultPrePrompt => df_preprompt.defaultPrePrompt;
 
   Map<String, dynamic>? _parameters;
   Map<String, dynamic>? get parameters => _parameters;
@@ -60,6 +64,32 @@ class LLMModel {
         urlTextEditingController.text = prefs.getString('providerUrl') ?? '';
       },
     );
+  }
+
+  String buildPrompt(ChatData chatData, String newUserInput) {
+    String prompt = '';
+    print(chatData.prePrompt);
+    if (chatData.usePreprompt[0]) {
+      prompt += chatData.prePrompt ?? '';
+    }
+    if (chatData.useChatConversationContext[0]) {
+      for (var element in chatData.messageList) {
+        prompt += '${element.message} ';
+        //
+        // switch (element.role) {
+        //   case MessageRole.user:
+        //     prompt += 'User: ${element.message}';
+        //     break;
+        //   case MessageRole.model:
+        //     prompt += 'Model: ${element.message}';
+        //     break;
+        //   default:
+        // }
+      }
+    }
+    // prompt += newUserInput;
+    // print(prompt);
+    return prompt;
   }
 
   Future<String?> generateText(BuildContext context, String prompt) async {

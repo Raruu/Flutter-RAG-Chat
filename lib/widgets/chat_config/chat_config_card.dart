@@ -5,12 +5,14 @@ class ChatConfigCard extends StatelessWidget {
   final List<Widget> children;
   final String title;
   final String strIcon;
+  final Function(bool value)? onExpansionChanged;
 
   const ChatConfigCard({
     super.key,
     required this.title,
     required this.strIcon,
     required this.children,
+    this.onExpansionChanged,
   });
 
   @override
@@ -21,6 +23,7 @@ class ChatConfigCard extends StatelessWidget {
       color: Colors.white,
       elevation: 0,
       child: ExpansionTile(
+        onExpansionChanged: onExpansionChanged,
         tilePadding: const EdgeInsets.symmetric(horizontal: 8.0),
         childrenPadding: const EdgeInsets.all(0.0),
         title: Row(

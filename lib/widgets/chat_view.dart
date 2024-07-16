@@ -76,12 +76,16 @@ class _ChatViewState extends State<ChatView> {
     bool isEmpty = messageList.isEmpty;
     int token = _messageTextEditingController.text.length ~/ 4;
     chatDataList.currentData.totalToken += token;
-    String prompt = _messageTextEditingController.text;
+    String newUserInput = _messageTextEditingController.text;
     _messageTextEditingController.clear();
 
     List<Message> currentMessageList = messageList;
-    addMessage(Message(message: prompt, token: token, role: MessageRole.user),
+    addMessage(
+        Message(message: newUserInput, token: token, role: MessageRole.user),
         currentMessageList);
+
+    String prompt =
+        widget.llmModel.buildPrompt(chatDataList.currentData, newUserInput);
 
     widget.llmModel.generateText(context, prompt).then(
       (value) {
@@ -142,6 +146,7 @@ class _ChatViewState extends State<ChatView> {
         leftButtonFunc: () {},
         rightButtonFunc: sendMessage,
         onEditingComplete: sendMessage,
+        newLineOnEnter: false,
       ),
     );
   }

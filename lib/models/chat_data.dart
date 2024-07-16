@@ -5,13 +5,15 @@ class ChatData {
   String title;
   int totalToken;
   late Map<String, dynamic> parameters;
+  List<bool> usePreprompt = [false];
+  String? prePrompt;
+  List<bool> useChatConversationContext = [true];
   final List<Message> messageList;
   late final String dateCreated;
 
   ChatData({
     this.title = 'Unknown chat ###',
     this.totalToken = 0,
-    // this.dateCreated = 'Date',
     required this.messageList,
   }) {
     String dateTimeNow = DateTime.now().toUtc().toString();

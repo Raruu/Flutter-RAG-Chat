@@ -19,6 +19,7 @@ class PinkTextField extends StatefulWidget {
   final double borderRadiusCircular;
   final bool multiLine;
   final Color backgroundColor;
+  final bool newLineOnEnter;
 
   const PinkTextField({
     super.key,
@@ -36,6 +37,7 @@ class PinkTextField extends StatefulWidget {
     this.multiLine = false,
     this.labelText,
     this.backgroundColor = MyColors.bgTintPink,
+    this.newLineOnEnter = true,
   });
 
   @override
@@ -49,15 +51,17 @@ class _PinkTextFieldState extends State<PinkTextField> {
   @override
   void initState() {
     _focus = FocusNode(
-      onKeyEvent: (node, event) {
-        if (event is KeyDownEvent &&
-            event.physicalKey == PhysicalKeyboardKey.enter &&
-            !HardwareKeyboard.instance.isShiftPressed) {
-          widget.onEditingComplete?.call();
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      },
+      onKeyEvent: widget.newLineOnEnter
+          ? null
+          : (node, event) {
+              if (event is KeyDownEvent &&
+                  event.physicalKey == PhysicalKeyboardKey.enter &&
+                  !HardwareKeyboard.instance.isShiftPressed) {
+                widget.onEditingComplete?.call();
+                return KeyEventResult.handled;
+              }
+              return KeyEventResult.ignored;
+            },
     );
     _focus.addListener(
       () => setState(() {

@@ -17,6 +17,7 @@ class NiceButton extends StatefulWidget {
   final Color? hoverColor;
   final Duration hoverDuration;
   final Border? border;
+  final EdgeInsets padding;
 
   const NiceButton({
     super.key,
@@ -33,6 +34,7 @@ class NiceButton extends StatefulWidget {
     this.onHover,
     this.textColor = MyColors.textTintBlue,
     this.textHoverColor = Colors.black,
+    this.padding = const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
   });
 
   @override
@@ -68,8 +70,7 @@ class _NiceButtonState extends State<NiceButton> {
               borderRadius: BorderRadius.circular(widget.borderRadiusCircular),
             ),
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+              padding: widget.padding,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -86,6 +87,7 @@ class _NiceButtonState extends State<NiceButton> {
                         : const SizedBox(),
                   )),
                   Expanded(
+                    flex: 2,
                     child: Container(
                       constraints: const BoxConstraints(maxHeight: 32),
                       child: FittedBox(
