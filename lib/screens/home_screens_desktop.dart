@@ -96,8 +96,8 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
     //     (ctnMidFlex * (width - menuWidth)) / (ctnLeftFlex + ctnMidFlex);
     double ctnRightWidth = (ctnRightFlex * (width - menuWidth)) /
         (ctnLeftFlex + ctnMidFlex + ctnRightFlex);
-    if (ctnRightWidth < 340 && ctnRightFlex > 0) {
-      ctnRightWidth = 340;
+    if (ctnRightWidth < 410 && ctnRightFlex > 0) {
+      ctnRightWidth = 410;
     }
     if (ctnRightWidth != 0) _tmpCtnRightWidth = ctnRightWidth;
     return Scaffold(

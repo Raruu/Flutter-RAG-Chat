@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
@@ -38,6 +39,7 @@ class _ChatViewState extends State<ChatView> {
   void initState() {
     _messageTextEditingController = TextEditingController();
     _listViewMessageController = ScrollController();
+    _expandedEditingController = TextEditingController();
     super.initState();
   }
 
@@ -45,6 +47,7 @@ class _ChatViewState extends State<ChatView> {
   void dispose() {
     _messageTextEditingController.dispose();
     _listViewMessageController.dispose();
+    _expandedEditingController.dispose();
     super.dispose();
   }
 
@@ -192,8 +195,22 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
+  bool isExpandTopSection = false;
+  late TextEditingController _expandedEditingController;
   ChatListCardWidget topSection() {
     return ChatListCardWidget(
+      onTap: () {
+        if (messageList.isEmpty) {
+          isExpandTopSection = false;
+          return;
+        }
+        setState(() {
+          _expandedEditingController.text = chatDataList.currentData.title;
+          isExpandTopSection = !isExpandTopSection;
+        });
+      },
+      splashColor: Colors.transparent,
+      isShowExpandedChild: isExpandTopSection && messageList.isNotEmpty,
       chatTitle: chatDataList.currentData.title,
       chatSubtitle: '${chatDataList.currentData.totalToken} Tokens~',
       rightWidget: Row(
@@ -247,6 +264,61 @@ class _ChatViewState extends State<ChatView> {
                 height: 30,
               )),
         ],
+      ),
+      heightOfExpandedChild: 120,
+      expandingCurve: Curves.easeInOutQuart,
+      expandDuration: const Duration(milliseconds: 500),
+      expandedChild: Padding(
+        padding: const EdgeInsets.only(top: 63),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 72.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Rename',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                PinkTextField(
+                  textEditingController: _expandedEditingController,
+                  backgroundColor: MyColors.bgTintBlue,
+                ),
+                const Padding(padding: EdgeInsets.all(4.0)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => setState(() {
+                          isExpandTopSection = false;
+                        }),
+                        child: const Text('Cancle'),
+                      ),
+                    ),
+                    const Padding(padding: EdgeInsets.all(2.0)),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: const ButtonStyle(
+                          backgroundColor:
+                              WidgetStatePropertyAll(MyColors.bgTintPink),
+                          overlayColor:
+                              WidgetStatePropertyAll(MyColors.bgTintBlue),
+                        ),
+                        onPressed: () {
+                          chatDataList.currentData.title =
+                              _expandedEditingController.text;
+                          isExpandTopSection = false;
+                          chatDataList.notifyChatDataListner();
+                        },
+                        child: const Text('Save'),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

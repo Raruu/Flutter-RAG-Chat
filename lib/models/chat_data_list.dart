@@ -40,6 +40,7 @@ class ChatDataList extends ChangeNotifier {
 
   void remove(ChatData value) {
     bool result = dataList.remove(value);
+    newChat();
     if (kDebugMode) {
       print('Remove: $value is $result');
     }

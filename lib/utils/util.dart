@@ -7,7 +7,7 @@ import 'dart:math' as math;
 import 'kafuu_chino.dart';
 import 'my_colors.dart';
 
-class Utils {
+class Utils<T> {
   static String randomKafuuChino() {
     int rng = math.Random().nextInt(4);
     switch (rng) {
@@ -125,6 +125,27 @@ class Utils {
             timer.cancel();
           }
         },
+      ),
+    );
+  }
+
+  static Future<T?> showDialogYesNo<T>(
+      {required BuildContext context, Widget? title, Widget? content}) {
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: title,
+        content: content,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }
