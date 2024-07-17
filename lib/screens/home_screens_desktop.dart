@@ -78,7 +78,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    double width = MediaQuery.sizeOf(context).width;
     double menuWidth = menuExtended || menuHovered ? 200 : 75;
     double chatWidth = width - menuWidth;
 
@@ -87,11 +87,18 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
         ctnRightFlex = isCtnRightOpen ? 2 : 0;
     double ctnLeftWidth = (ctnLeftFlex * (width - menuWidth)) /
         (ctnLeftFlex + ctnMidFlex + ctnRightFlex);
+
+    if (ctnLeftWidth < 300 && ctnLeftFlex > 0) {
+      ctnLeftWidth = 300;
+    }
     if (ctnLeftWidth != 0) _tmpCtnLeftWidth = ctnLeftWidth;
     // double ctnMidWidth =
     //     (ctnMidFlex * (width - menuWidth)) / (ctnLeftFlex + ctnMidFlex);
     double ctnRightWidth = (ctnRightFlex * (width - menuWidth)) /
         (ctnLeftFlex + ctnMidFlex + ctnRightFlex);
+    if (ctnRightWidth < 340 && ctnRightFlex > 0) {
+      ctnRightWidth = 340;
+    }
     if (ctnRightWidth != 0) _tmpCtnRightWidth = ctnRightWidth;
     return Scaffold(
       backgroundColor: MyColors.backgroundDark,

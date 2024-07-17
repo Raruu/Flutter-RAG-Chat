@@ -54,48 +54,55 @@ class Utils {
         content: MouseRegion(
           onEnter: (event) => onHover = true,
           onExit: (event) => onHover = false,
-          child: Container(
-            padding: padding,
-            width: double.infinity,
-            height: iconSize,
-            decoration: BoxDecoration(
-              boxShadow: const [
-                BoxShadow(
-                  color: MyColors.bgSelectedBlue,
-                  spreadRadius: 5,
-                  blurRadius: 7,
-                )
-              ],
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SvgPicture.string(
-                  strIcon,
-                  colorFilter:
-                      const ColorFilter.mode(Colors.black, BlendMode.srcIn),
-                  width: iconSize,
-                  height: iconSize,
-                ),
-                const Padding(padding: EdgeInsets.all(8.0)),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                          color: textColor,
-                          fontSize: textSize + 8,
-                          fontWeight: FontWeight.w900),
+          child: Align(
+            alignment: Alignment.center,
+            child: Container(
+              padding: padding,
+              constraints: BoxConstraints(
+                minHeight: iconSize,
+              ),
+              decoration: BoxDecoration(
+                boxShadow: const [
+                  BoxShadow(
+                    color: MyColors.bgSelectedBlue,
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                  )
+                ],
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SvgPicture.string(
+                    strIcon,
+                    colorFilter:
+                        const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                    width: iconSize,
+                    height: iconSize,
+                  ),
+                  const Padding(padding: EdgeInsets.all(8.0)),
+                  Flexible(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                              color: textColor,
+                              fontSize: textSize + 8,
+                              fontWeight: FontWeight.w900),
+                        ),
+                        Text(subTitle,
+                            style: TextStyle(
+                                color: textColor, fontSize: textSize)),
+                      ],
                     ),
-                    Text(subTitle,
-                        style: TextStyle(color: textColor, fontSize: textSize)),
-                  ],
-                )
-              ],
+                  )
+                ],
+              ),
             ),
           ),
         ),

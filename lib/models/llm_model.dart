@@ -66,6 +66,7 @@ class LLMModel {
     );
   }
 
+  // TODO
   String buildPrompt(ChatData chatData, String newUserInput) {
     String prompt = '';
     print(chatData.prePrompt);
