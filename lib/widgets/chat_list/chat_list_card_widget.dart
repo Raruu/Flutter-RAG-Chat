@@ -19,6 +19,7 @@ class ChatListCardWidget extends StatefulWidget {
   final Widget? expandedChild;
   final Curve expandingCurve;
   final Duration expandDuration;
+  final MouseCursor? mouseCursor;
   const ChatListCardWidget({
     super.key,
     this.chatTitle = 'Title Chat',
@@ -35,6 +36,7 @@ class ChatListCardWidget extends StatefulWidget {
     this.expandingCurve = Curves.bounceOut,
     this.splashColor = MyColors.bgTintPink,
     this.expandDuration = const Duration(milliseconds: 700),
+    this.mouseCursor,
   });
 
   @override
@@ -73,6 +75,7 @@ class _ChatListCardWidgetState extends State<ChatListCardWidget> {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
+              mouseCursor: widget.mouseCursor,
               onTap: widget.onTap,
               splashColor: widget.splashColor,
               highlightColor: Colors.transparent,

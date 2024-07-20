@@ -7,10 +7,14 @@ import 'models/llm_model.dart';
 import './models/chat_data_list.dart';
 
 void main() {
-  runApp(ChangeNotifierProvider(
-    create: (context) => ChatDataList(),
+  LLMModel llmModel = LLMModel();
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (context) => ChatDataList()),
+      ChangeNotifierProvider(create: (context) => llmModel)
+    ],
     child: MyApp(
-      llmModel: LLMModel(),
+      llmModel: llmModel,
     ),
   ));
 }

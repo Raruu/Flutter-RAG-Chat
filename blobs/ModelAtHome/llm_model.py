@@ -1,12 +1,17 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-from transformers.utils import is_flash_attn_2_available
-from data_model import Data
+from transformers.utils import (
+    is_flash_attn_2_available,
+)  # https://github.com/Dao-AILab/flash-attention
+from request_data_model import RequestData
 
 
 class Model:
     def __init__(self, model_id):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.load_model(model_id)
+
+    def load_model(self, model_id):
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_compute_dtype=torch.float16,
@@ -26,7 +31,7 @@ class Model:
             attn_implementation=self.attn_implementation,
         )
 
-    def generate_text(self, data: Data):
+    def generate_text(self, data: RequestData) -> str:
         input_ids = self.tokenizer(data.prompt, return_tensors="pt").input_ids.to(
             self.device
         )

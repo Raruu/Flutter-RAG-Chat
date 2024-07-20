@@ -7,12 +7,12 @@ import 'package:provider/provider.dart';
 import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
 import '../widgets/desktop_menu_button.dart';
-import '../widgets/pink_textfield.dart';
 import '../widgets/chat_list.dart';
 import '../widgets/chat_view.dart';
 import '../models/llm_model.dart';
 import '../models/chat_data_list.dart';
 import '../widgets/chat_config.dart';
+import '../widgets/nice_drop_down_button.dart';
 
 class HomePageDesktop extends StatefulWidget {
   final LLMModel llmModel;
@@ -67,6 +67,8 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
     _searchEditingController = TextEditingController();
     _menuSelected = widget.initialMenuSelected;
     isCtnRightOpen = widget.initialCtnRightOpen;
+    widget.llmModel.context ??= context;
+    widget.llmModel.loadSavedData();
     super.initState();
   }
 
@@ -233,42 +235,15 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                 const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
             child: Column(
               children: [
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: MyColors.bgTintBlue,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  // padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: DropdownButtonHideUnderline(
-                    child: ButtonTheme(
-                      alignedDropdown: true,
-                      child: DropdownButton(
-                        value: widget.llmModel.provider,
-                        dropdownColor: MyColors.bgTintBlue,
-                        borderRadius: BorderRadius.circular(10),
-                        hint: const Text('Provider'),
-                        items: widget.llmModel.providersList
-                            .map((e) =>
-                                DropdownMenuItem(value: e, child: Text(e)))
-                            .toList(),
-                        onChanged: (value) {
-                          widget.llmModel.provider = value!;
-                          setState(() {});
-                        },
-                      ),
-                    ),
-                  ),
+                NiceDropDownButton(
+                  value: widget.llmModel.provider,
+                  items: widget.llmModel.providersList
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (value) => widget.llmModel.provider = value,
                 ),
                 const Padding(padding: EdgeInsets.all(4)),
-                PinkTextField(
-                  textEditingController:
-                      widget.llmModel.urlTextEditingController,
-                  hintText: '',
-                  labelText: 'URL',
-                  backgroundColor: MyColors.bgTintBlue,
-                  onChanged: (value) => widget.llmModel.finishUrlEditing(),
-                )
+                widget.llmModel.settingsWidget
               ],
             ),
           )

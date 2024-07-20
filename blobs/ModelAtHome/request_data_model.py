@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-class Data(BaseModel):
+class RequestData(BaseModel):
     prompt: str = 'Nyanpasu!'
     max_new_tokens: int = 256
     temperature: float = 1.0

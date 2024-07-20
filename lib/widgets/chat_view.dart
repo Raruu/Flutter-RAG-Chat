@@ -199,16 +199,6 @@ class _ChatViewState extends State<ChatView> {
   late TextEditingController _expandedEditingController;
   ChatListCardWidget topSection() {
     return ChatListCardWidget(
-      onTap: () {
-        if (messageList.isEmpty) {
-          isExpandTopSection = false;
-          return;
-        }
-        setState(() {
-          _expandedEditingController.text = chatDataList.currentData.title;
-          isExpandTopSection = !isExpandTopSection;
-        });
-      },
       splashColor: Colors.transparent,
       isShowExpandedChild: isExpandTopSection && messageList.isNotEmpty,
       chatTitle: chatDataList.currentData.title,
@@ -217,20 +207,7 @@ class _ChatViewState extends State<ChatView> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          IconButton(
-            hoverColor: MyColors.bgTintPink.withOpacity(0.5),
-            highlightColor: MyColors.bgTintPink,
-            padding: const EdgeInsets.all(7.0),
-            onPressed: () {},
-            icon: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text('data1'),
-                Text('data2'),
-              ],
-            ),
-          ),
+          widget.llmModel.informationWidget,
           const Padding(padding: EdgeInsets.all(10.0)),
           Ink(
             decoration: ShapeDecoration(
@@ -268,6 +245,19 @@ class _ChatViewState extends State<ChatView> {
       heightOfExpandedChild: 120,
       expandingCurve: Curves.easeInOutQuart,
       expandDuration: const Duration(milliseconds: 500),
+      mouseCursor: messageList.isEmpty
+          ? SystemMouseCursors.basic
+          : SystemMouseCursors.click,
+      onTap: () {
+        if (messageList.isEmpty) {
+          isExpandTopSection = false;
+          return;
+        }
+        setState(() {
+          _expandedEditingController.text = chatDataList.currentData.title;
+          isExpandTopSection = !isExpandTopSection;
+        });
+      },
       expandedChild: Padding(
         padding: const EdgeInsets.only(top: 63),
         child: Padding(

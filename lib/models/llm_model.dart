@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_rag_chat/models/chat_data.dart';
 import 'package:flutter_rag_chat/models/message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,11 +9,16 @@ import 'llm_models/base_model.dart';
 import '../utils/util.dart';
 import './llm_models/default_preprompt.dart' as df_preprompt;
 
-class LLMModel {
+class LLMModel extends ChangeNotifier {
+  BuildContext? context;
   late final SharedPreferences prefs;
   BaseModel? _llmModel;
   Map<String, dynamic>? get defaultParameters => _llmModel?.defaultParameters;
   String get defaultPrePrompt => df_preprompt.defaultPrePrompt;
+  Widget get settingsWidget =>
+      _llmModel?.settingsWidget ?? const LinearProgressIndicator();
+  Widget get informationWidget =>
+      _llmModel?.informationWidget ?? const SizedBox();
 
   Map<String, dynamic>? _parameters;
   Map<String, dynamic>? get parameters => _parameters;
@@ -29,7 +35,7 @@ class LLMModel {
   set provider(String? value) {
     switch (value?.toLowerCase()) {
       case 'model at home':
-        _llmModel = ModelAtHome();
+        _llmModel = ModelAtHome(notifyListeners, context: context);
         _parameters = {};
         defaultParameters!.forEach(
           (key, value) {
@@ -49,21 +55,16 @@ class LLMModel {
     _provider = value;
   }
 
-  late final TextEditingController urlTextEditingController;
-
-  void finishUrlEditing() {
-    prefs.setString('providerUrl', urlTextEditingController.text);
-  }
-
-  LLMModel() {
-    urlTextEditingController = TextEditingController();
+  LLMModel({this.context}) {
     SharedPreferences.getInstance().then(
       (value) {
         prefs = value;
-        provider = prefs.getString('provider') ?? 'Model at home';
-        urlTextEditingController.text = prefs.getString('providerUrl') ?? '';
       },
     );
+  }
+
+  void loadSavedData() {
+    provider = prefs.getString('provider') ?? 'Model at home';
   }
 
   // TODO
@@ -93,9 +94,7 @@ class LLMModel {
   }
 
   Future<String?> generateText(BuildContext context, String prompt) async {
-    return _llmModel!
-        .generateText(urlTextEditingController.text, prompt, parameters!)
-        .catchError((e) {
+    return _llmModel!.generateText(prompt, parameters!).catchError((e) {
       Utils.showSnackBar(
         context,
         title: 'Master! Something Went Wrong:',

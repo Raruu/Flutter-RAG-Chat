@@ -1,11 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'base_model.dart';
+import './model_at_home/settings_widget.dart';
+import './model_at_home/data.dart';
+import './model_at_home/information_widget.dart';
 
-class ModelAtHome extends BaseModel {
+class ModelAtHome<T> extends BaseModel {
   @override
   Map<String, dynamic> get defaultParameters => {
         "max_new_tokens": [0, 256, 4096],
@@ -18,19 +22,32 @@ class ModelAtHome extends BaseModel {
         "do_sample": [false],
       };
 
-  // @override
-  // set parameters(value){}
+  late final Data _data;
+  late final Widget _settingsWidget;
+  @override
+  Widget get settingsWidget => _settingsWidget;
 
-  // ModelAtHome() {}
+  late final Widget _informationWidget;
+  @override
+  Widget get informationWidget => _informationWidget;
+
+  ModelAtHome(super.notifyListeners, {BuildContext? context}) {
+    _data = Data(super.notifyListener, context: context);
+    _settingsWidget = SettingsWidget(
+      data: _data,
+    );
+    _informationWidget = InformationWidget(
+      data: _data,
+    );
+  }
 
   @override
   Future<String?> generateText(
-    String url,
     String prompt,
     Map<String, dynamic> parameters,
   ) async {
     try {
-      url += '/generate_text';
+      String url = '${_data.baseURL}/generate_text';
       Uri? uri = Uri.tryParse(url);
       if (uri == null) {
         throw ('Invalid uri: $url');
