@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
@@ -13,6 +12,7 @@ import '../utils/my_colors.dart';
 import '../models/chat_data_list.dart';
 import '../utils/util.dart';
 import 'chat_bubble_typing.dart';
+import '../models/chat_data.dart';
 
 class ChatView extends StatefulWidget {
   final LLMModel llmModel;
@@ -72,6 +72,21 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
+  void revertMessage(List<Message> currentMessageList, ChatData currentData) {
+    var lastMessage = currentMessageList.removeLast();
+    if (lastMessage.role == MessageRole.modelTyping) {
+      lastMessage = currentMessageList.removeLast();
+    }
+    if (lastMessage.role == MessageRole.user &&
+        currentMessageList == messageList) {
+      _messageTextEditingController.text = lastMessage.message;
+    }
+    if (currentMessageList.isEmpty) {
+      chatDataList.remove(currentData);
+    }
+    chatDataList.notifyChatDataListner();
+  }
+
   void sendMessage() {
     if (_messageTextEditingController.text.trim().isEmpty) {
       return;
@@ -82,6 +97,7 @@ class _ChatViewState extends State<ChatView> {
     String query = _messageTextEditingController.text;
     _messageTextEditingController.clear();
 
+    ChatData currentData = chatDataList.currentData;
     List<Message> currentMessageList = messageList;
     addMessage(Message(message: query, token: token, role: MessageRole.user),
         currentMessageList);
@@ -92,6 +108,7 @@ class _ChatViewState extends State<ChatView> {
     widget.llmModel.generateText(context, prompt).then(
       (value) {
         if (value == null) {
+          revertMessage(messageList, currentData);
           return;
         }
         receiveMessage(value, currentMessageList);

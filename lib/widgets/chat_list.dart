@@ -64,8 +64,12 @@ class _ChatListState extends State<ChatList> {
           strIconLeft: SvgIcons.search,
           hintText: 'Search',
           textEditingController: widget.searchEditingController,
-          leftButtonFunc: () {},
-          onChanged: (value) {},
+          leftButtonFunc: () {
+            setState(() {});
+          },
+          onChanged: (value) {
+            setState(() {});
+          },
         ),
         const Padding(padding: EdgeInsets.all(8.0)),
         Expanded(
@@ -78,6 +82,15 @@ class _ChatListState extends State<ChatList> {
                   itemCount: widget.chatDataList.dataList.length,
                   itemBuilder: (context, index) {
                     List<ChatData> dataList = widget.chatDataList.dataList;
+                    String searchedTitle = widget.searchEditingController.text;
+                    if (searchedTitle != '' &&
+                        !dataList[index]
+                            .title
+                            .toLowerCase()
+                            .contains(searchedTitle.toLowerCase())) {
+                      print(searchedTitle);
+                      return const SizedBox();
+                    }
 
                     return ChatListCardWidget(
                       isSelected: index == widget.chatDataList.currentSelected,
