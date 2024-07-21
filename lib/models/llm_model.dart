@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_rag_chat/models/chat_data.dart';
 import 'package:flutter_rag_chat/models/message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -67,29 +66,36 @@ class LLMModel extends ChangeNotifier {
     provider = prefs.getString('provider') ?? 'Model at home';
   }
 
-  // TODO
-  String buildPrompt(ChatData chatData, String newUserInput) {
-    String prompt = '';
-    if (chatData.usePreprompt[0]) {
-      prompt += chatData.prePrompt ?? '';
-    }
+  // TODO maybe implement embeddings?
+  String buildPrompt(ChatData chatData, String query) {
+    String prompt = chatData.usePreprompt[0] ? chatData.prePrompt ?? '' : '';
+    String chatContext = '';
     if (chatData.useChatConversationContext[0]) {
       for (var i = 0; i < chatData.messageList.length - 1; i++) {
         Message message = chatData.messageList[i];
         prompt += '${message.message} ';
-        // switch (message.role) {
-        //   case MessageRole.user:
-        //     prompt += 'User: ${message.message} ';
-        //     break;
-        //   case MessageRole.model:
-        //     prompt += 'Model: ${message.message} ';
-        //     break;
-        //   default:
-        // }
+        switch (message.role) {
+          case MessageRole.user:
+            chatContext += 'User: ${message.message}\n';
+            break;
+          case MessageRole.model:
+            chatContext += 'Model: ${message.message}\n';
+            break;
+          default:
+        }
       }
     }
-    prompt += newUserInput;
-    print(prompt);
+
+    if (prompt.contains('{chatcontext}')) {
+      prompt = prompt.replaceAll('{chatcontext}', chatContext);
+    }
+
+    if (prompt.contains('{query}')) {
+      prompt = prompt.replaceAll('{query}', query);
+    } else {
+      prompt += query;
+    }
+    // print(query);
     return prompt;
   }
 

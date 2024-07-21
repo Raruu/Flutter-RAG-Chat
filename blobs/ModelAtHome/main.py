@@ -5,7 +5,7 @@ from information_model import InfomationData
 import os
 
 # Put Your Model Here
-MODEL_ID = "./models/gemma-7b/"
+MODEL_ID = "./models/gemma-7b-it/"
 
 app = FastAPI()
 llm_model = Model(MODEL_ID)

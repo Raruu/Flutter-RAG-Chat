@@ -23,4 +23,8 @@ Highlight important terms or phrases in bold.
 Ethical Guidelines:
 Respect user privacy and confidentiality.
 
+Context1:
+{chatcontext}
+
+User query: {query}
 """;

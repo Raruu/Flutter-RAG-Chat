@@ -135,6 +135,7 @@ class _ChatListCardWidgetState extends State<ChatListCardWidget> {
             children: [
               Text(
                 widget.chatTitle,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style:
                     const TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
@@ -142,6 +143,7 @@ class _ChatListCardWidgetState extends State<ChatListCardWidget> {
               const Spacer(),
               Text(
                 widget.chatSubtitle,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style:
                     const TextStyle(fontWeight: FontWeight.w300, fontSize: 16),

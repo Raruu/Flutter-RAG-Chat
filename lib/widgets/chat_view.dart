@@ -79,16 +79,15 @@ class _ChatViewState extends State<ChatView> {
     bool isEmpty = messageList.isEmpty;
     int token = _messageTextEditingController.text.length ~/ 4;
     chatDataList.currentData.totalToken += token;
-    String newUserInput = _messageTextEditingController.text;
+    String query = _messageTextEditingController.text;
     _messageTextEditingController.clear();
 
     List<Message> currentMessageList = messageList;
-    addMessage(
-        Message(message: newUserInput, token: token, role: MessageRole.user),
+    addMessage(Message(message: query, token: token, role: MessageRole.user),
         currentMessageList);
 
     String prompt =
-        widget.llmModel.buildPrompt(chatDataList.currentData, newUserInput);
+        widget.llmModel.buildPrompt(chatDataList.currentData, query);
 
     widget.llmModel.generateText(context, prompt).then(
       (value) {

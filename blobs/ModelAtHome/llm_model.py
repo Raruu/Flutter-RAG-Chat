@@ -46,4 +46,6 @@ class Model:
             typical_p=data.typical_p,
             repetition_penalty=data.repetition_penalty,
         )
-        return self.tokenizer.decode(output[0], skip_special_tokens=True)
+        return self.tokenizer.decode(output[0], skip_special_tokens=True).replace(
+            data.prompt, ""
+        ).strip()
