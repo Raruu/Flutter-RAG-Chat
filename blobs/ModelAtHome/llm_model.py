@@ -4,6 +4,7 @@ from transformers.utils import (
     is_flash_attn_2_available,
 )  # https://github.com/Dao-AILab/flash-attention
 from request_data_model import RequestData
+import gc
 
 
 class Model:
@@ -46,6 +47,9 @@ class Model:
             typical_p=data.typical_p,
             repetition_penalty=data.repetition_penalty,
         )
+        del input_ids
+        gc.collect()
+        torch.cuda.empty_cache() 
         return self.tokenizer.decode(output[0], skip_special_tokens=True).replace(
             data.prompt, ""
         ).strip()
