@@ -88,6 +88,8 @@ class LLMModel extends ChangeNotifier {
 
     if (prompt.contains('{chatcontext}')) {
       prompt = prompt.replaceAll('{chatcontext}', chatContext);
+    } else {
+      prompt += '$chatContext\n';
     }
 
     if (prompt.contains('{query}')) {
