@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 class RequestData(BaseModel):
-    prompt: str = 'Nyanpasu!'
+    query: str = 'Nyanpasu!'
     max_new_tokens: int = 256
     temperature: float = 1.0
     top_k: int = 50

@@ -102,8 +102,7 @@ class _ChatViewState extends State<ChatView> {
     addMessage(Message(message: query, token: token, role: MessageRole.user),
         currentMessageList);
 
-    String prompt =
-        widget.llmModel.buildPrompt(chatDataList.currentData, query);
+    String prompt = query;
 
     widget.llmModel.generateText(context, prompt).then(
       (value) {

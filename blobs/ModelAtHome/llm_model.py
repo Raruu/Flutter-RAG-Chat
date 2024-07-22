@@ -1,18 +1,26 @@
-import torch
+import torch, gc
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from transformers.utils import (
     is_flash_attn_2_available,
 )  # https://github.com/Dao-AILab/flash-attention
-from request_data_model import RequestData
-import gc
+from data_models.request_data_model import RequestData
+from sentence_transformers import SentenceTransformer
+from data_models.chat_room import ChatRoom
 
 
 class Model:
-    def __init__(self, model_id):
+    def __init__(self, model_id: str):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.load_model(model_id)
+        self.chat_room = ChatRoom(self.device, self.embedding_model)
 
-    def load_model(self, model_id):
+    def load_model(self, model_id: str):
+        # EMBEDDING
+        self.embedding_model = SentenceTransformer(
+            model_name_or_path="all-mpnet-base-v2", device=self.device
+        )
+
+        # LLM
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_compute_dtype=torch.float16,
@@ -33,7 +41,9 @@ class Model:
         )
 
     def generate_text(self, data: RequestData) -> str:
-        input_ids = self.tokenizer(data.prompt, return_tensors="pt").input_ids.to(
+        prompt = self.chat_room.build_prompt(data.query)
+        print(f"Builded prompt: {prompt}")
+        input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.to(
             self.device
         )
         output = self.llm_model.generate(
@@ -49,7 +59,11 @@ class Model:
         )
         del input_ids
         gc.collect()
-        torch.cuda.empty_cache() 
-        return self.tokenizer.decode(output[0], skip_special_tokens=True).replace(
-            data.prompt, ""
-        ).strip()
+        torch.cuda.empty_cache()
+        response = (
+            self.tokenizer.decode(output[0], skip_special_tokens=True)
+            .replace(prompt, "")
+            .strip()
+        )
+        self.chat_room.update_chat_history(data.query, response)
+        return response

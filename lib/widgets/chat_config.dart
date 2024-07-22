@@ -137,10 +137,13 @@ class _ChatConfigState extends State<ChatConfig> {
               children: [
                 ParameterBool(
                     textKey: 'Use Chat Conversation Context',
-                    onChanged: (value) => setState(() {
-                          widget.chatDataList.currentData
-                              .useChatConversationContext[0] = value;
-                        }),
+                    onChanged: (value) {
+                      setState(() {
+                        widget.chatDataList.currentData
+                            .useChatConversationContext[0] = value;
+                      });
+                      onChatSettingsChanged('Use Chat Conversation Context');
+                    },
                     value: widget
                         .chatDataList.currentData.useChatConversationContext),
                 const Text('Not Implemented'),
@@ -150,6 +153,21 @@ class _ChatConfigState extends State<ChatConfig> {
         ),
       ),
     );
+  }
+
+  void onChatSettingsChanged(String from) async {
+    bool rsSettings =
+        await widget.llmModel.onChatSettingsChanged?.call() ?? true;
+    String msgTitle = "[$from]: ${rsSettings ? 'Success' : 'Failed!!!'}";
+    String msgSubtitle = rsSettings ? 'Task Complete Onii-chan~' : ':I';
+    if (mounted) {
+      Utils.showSnackBar(
+        context,
+        title: msgTitle,
+        duration: const Duration(milliseconds: 100),
+        subTitle: msgSubtitle,
+      );
+    }
   }
 
   ChatConfigCard prePrompt(BuildContext context) {
@@ -164,9 +182,11 @@ class _ChatConfigState extends State<ChatConfig> {
       children: [
         ParameterBool(
             textKey: 'Use Pre-Prompt',
-            onChanged: (value) => setState(() {
-                  widget.chatDataList.currentData.usePreprompt[0] = value;
-                }),
+            onChanged: (value) {
+              setState(() =>
+                  widget.chatDataList.currentData.usePreprompt[0] = value);
+              onChatSettingsChanged('Pre-Prompt');
+            },
             value: widget.chatDataList.currentData.usePreprompt),
         AnimatedOpacity(
           duration: const Duration(milliseconds: 200),
@@ -194,13 +214,10 @@ class _ChatConfigState extends State<ChatConfig> {
                       width: 110,
                       height: 50,
                       child: NiceButton(
-                        onTap: () {
+                        onTap: () async {
                           widget.chatDataList.currentData.prePrompt =
                               _prePromptTextController.text;
-                          Utils.showSnackBar(context,
-                              title: 'Success',
-                              duration: const Duration(milliseconds: 100),
-                              subTitle: 'Task Complete Onii-chan~');
+                          onChatSettingsChanged('Pre-Prompt');
                         },
                         text: 'UPDATE',
                         padding: const EdgeInsets.all(0),

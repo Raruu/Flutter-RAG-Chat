@@ -5,6 +5,7 @@ abstract class BaseModel {
   late Widget settingsWidget;
   late Widget informationWidget;
   late Function() notifyListener;
+  Function()? onChatSettingsChanged;
   BaseModel(this.notifyListener);
 
   Future<String?> generateText(String prompt, Map<String, dynamic> parameters);

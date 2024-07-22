@@ -1,17 +1,22 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/models/chat_data.dart';
-import 'package:flutter_rag_chat/models/message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter_rag_chat/models/chat_data.dart';
+import 'package:flutter_rag_chat/models/chat_data_list.dart';
+import 'package:flutter_rag_chat/models/message.dart';
 import 'llm_models/model_at_home.dart';
 import 'llm_models/base_model.dart';
 import '../utils/util.dart';
 import './llm_models/default_preprompt.dart' as df_preprompt;
 
 class LLMModel extends ChangeNotifier {
+  final ChatDataList chatDataList;
   BuildContext? context;
   late final SharedPreferences prefs;
+
   BaseModel? _llmModel;
+  Function()? get onChatSettingsChanged => _llmModel?.onChatSettingsChanged;
   Map<String, dynamic>? get defaultParameters => _llmModel?.defaultParameters;
   String get defaultPrePrompt => df_preprompt.defaultPrePrompt;
   Widget get settingsWidget =>
@@ -34,7 +39,11 @@ class LLMModel extends ChangeNotifier {
   set provider(String? value) {
     switch (value?.toLowerCase()) {
       case 'model at home':
-        _llmModel = ModelAtHome(notifyListeners, context: context);
+        _llmModel = ModelAtHome(
+          notifyListeners,
+          context: context,
+          chatDataList: chatDataList,
+        );
         _parameters = {};
         defaultParameters!.forEach(
           (key, value) {
@@ -54,7 +63,7 @@ class LLMModel extends ChangeNotifier {
     _provider = value;
   }
 
-  LLMModel({this.context}) {
+  LLMModel(this.chatDataList, {this.context}) {
     SharedPreferences.getInstance().then(
       (value) {
         prefs = value;
@@ -103,9 +112,12 @@ class LLMModel extends ChangeNotifier {
 
   Future<String?> generateText(BuildContext context, String prompt) async {
     return _llmModel!.generateText(prompt, parameters!).catchError((e) {
+      if (kDebugMode) {
+        print(e);
+      }
       Utils.showSnackBar(
         context,
-        title: 'Master! Something Went Wrong:',
+        title: '[GenerateText] Master! Something Went Wrong:',
         subTitle: e.toString(),
       );
       return null;
