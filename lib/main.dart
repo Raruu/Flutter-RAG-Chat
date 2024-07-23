@@ -7,6 +7,7 @@ import 'models/llm_model.dart';
 import './models/chat_data_list.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   ChatDataList chatDataList = ChatDataList();
   LLMModel llmModel = LLMModel(chatDataList);
   runApp(MultiProvider(

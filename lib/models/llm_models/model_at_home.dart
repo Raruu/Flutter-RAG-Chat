@@ -51,7 +51,7 @@ class ModelAtHome<T> extends BaseModel {
 
   @override
   Function()? get onChatSettingsChanged => setServerChatRoom;
-  Future<bool> setServerChatRoom() async {
+  Future<bool> setServerChatRoom({bool? throwOnError}) async {
     try {
       Uri uri = Uri.parse('${_data.baseURL}/set_chatroom');
       var currentData = chatDataList.currentData;
@@ -82,8 +82,24 @@ class ModelAtHome<T> extends BaseModel {
       );
       return response.statusCode == 200;
     } catch (e) {
+      if (throwOnError ?? false) {
+        rethrow;
+      }
       return false;
     }
+  }
+
+  Future<bool> checkServerChatRoomIsNotRoom() async {
+    String url = '${_data.baseURL}/get_chatroom_id';
+    Uri? uri = Uri.tryParse(url);
+    if (uri == null) {
+      throw ('Invalid uri: $url');
+    }
+    http.Response response = await http.get(uri);
+    if (response.statusCode == 200) {
+      return response.body.replaceAll('"', '') != chatDataList.currentData.id;
+    }
+    return false;
   }
 
   @override
@@ -92,28 +108,17 @@ class ModelAtHome<T> extends BaseModel {
     Map<String, dynamic> parameters,
   ) async {
     try {
-      String url = '${_data.baseURL}/get_chatroom_id';
-      Uri? uri = Uri.tryParse(url);
-      if (uri == null) {
-        throw ('Invalid uri: $url');
+      if (await checkServerChatRoomIsNotRoom()) {
+        await setServerChatRoom(throwOnError: true);
       }
-      http.Response response = await http.get(uri);
-      if (response.statusCode == 200) {
-        String serverRoomId = response.body;
-        if (serverRoomId != chatDataList.currentData.id) {
-          if (!await setServerChatRoom()) {
-            throw ('setServerChatRoom Failed');
-          }
-        }
-      }
-      url = '${_data.baseURL}/generate_text';
-      uri = Uri.parse(url);
+      String url = '${_data.baseURL}/generate_text';
+      Uri uri = Uri.parse(url);
 
       if (kDebugMode) {
         print('JsonEncode: ${jsonEncode({"query": prompt, ...parameters})}');
       }
 
-      response = await http.post(
+      http.Response response = await http.post(
         uri,
         headers: postHeader,
         body: jsonEncode({

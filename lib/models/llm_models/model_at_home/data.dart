@@ -59,7 +59,7 @@ class Data {
         gpuName = responseJson['gpu_name'];
         ram = List<double>.from(responseJson['ram']);
         vram = List<double>.from(responseJson['vram']);
-        modelId = responseJson['model_id'];
+        modelId = responseJson['llmmodel_id'];
         llmModelMemoryUsage = responseJson['llmmodel_in_mem'];
         notifyListener();
 

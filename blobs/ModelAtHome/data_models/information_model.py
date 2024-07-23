@@ -3,19 +3,19 @@ from torch.cuda import mem_get_info
 
 from pydantic import BaseModel
 class InfomationData(BaseModel):
-    model_id: str
+    llmmodel_id: str
     llmmodel_in_mem: float
     gpu_name: str
     vram: list[float]
     ram: list[float]
     
-    def __init__(self, llm_model, model_id):
+    def __init__(self, llm_model, llmmodel_id):
         llmmodel_in_mem = self.get_model_mem_size(llm_model)
         gpus = GPUtil.getGPUs()
         gpu_name = gpus[0].name
         vram = self.get_vram()
         ram = self.get_ram()
-        super().__init__(llmmodel_in_mem=llmmodel_in_mem, gpu_name=gpu_name, vram=vram, ram=ram, model_id=model_id)
+        super().__init__(llmmodel_in_mem=llmmodel_in_mem, gpu_name=gpu_name, vram=vram, ram=ram, llmmodel_id=llmmodel_id)
     
     def get_model_mem_size(self, llm_model)  -> float:
       '''

@@ -88,7 +88,6 @@ class _ChatListState extends State<ChatList> {
                             .title
                             .toLowerCase()
                             .contains(searchedTitle.toLowerCase())) {
-                      print(searchedTitle);
                       return const SizedBox();
                     }
 

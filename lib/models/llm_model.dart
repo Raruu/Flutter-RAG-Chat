@@ -75,7 +75,7 @@ class LLMModel extends ChangeNotifier {
     provider = prefs.getString('provider') ?? 'Model at home';
   }
 
-  // TODO maybe implement embeddings?
+  // TODO ?
   String buildPrompt(ChatData chatData, String query) {
     String prompt = chatData.usePreprompt[0] ? chatData.prePrompt ?? '' : '';
     String chatContext = '';

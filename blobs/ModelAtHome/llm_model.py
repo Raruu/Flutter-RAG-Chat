@@ -1,4 +1,4 @@
-import torch, gc
+import torch, gc, asyncio
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from transformers.utils import (
     is_flash_attn_2_available,
@@ -6,6 +6,7 @@ from transformers.utils import (
 from data_models.request_data_model import RequestData
 from sentence_transformers import SentenceTransformer
 from data_models.chat_room import ChatRoom
+from functools import partial
 
 
 class Model:
@@ -40,22 +41,51 @@ class Model:
             attn_implementation=self.attn_implementation,
         )
 
-    def generate_text(self, data: RequestData) -> str:
+    def generate_text_for_executor(
+        self,
+        input_ids,
+        max_new_tokens,
+        temperature,
+        top_k,
+        top_p,
+        min_p,
+        do_sample,
+        typical_p,
+        repetition_penalty,
+    ):
+        return self.llm_model.generate(
+            input_ids,
+            max_new_tokens=max_new_tokens,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+            min_p=min_p,
+            do_sample=do_sample,
+            typical_p=typical_p,
+            repetition_penalty=repetition_penalty,
+        )
+
+    async def generate_text(self, data: RequestData) -> str:
         prompt = self.chat_room.build_prompt(data.query)
         print(f"Builded prompt: {prompt}")
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.to(
             self.device
         )
-        output = self.llm_model.generate(
-            input_ids,
-            max_new_tokens=data.max_new_tokens,
-            temperature=data.temperature,
-            top_k=data.top_k,
-            top_p=data.top_p,
-            min_p=data.min_p,
-            do_sample=data.do_sample,
-            typical_p=data.typical_p,
-            repetition_penalty=data.repetition_penalty,
+        loop = asyncio.get_running_loop()
+        output = await loop.run_in_executor(
+            None,
+            partial(
+                self.generate_text_for_executor,
+                input_ids,
+                data.max_new_tokens,
+                data.temperature,
+                data.top_k,
+                data.top_p,
+                data.min_p,
+                data.do_sample,
+                data.typical_p,
+                data.repetition_penalty,
+            ),
         )
         del input_ids
         gc.collect()

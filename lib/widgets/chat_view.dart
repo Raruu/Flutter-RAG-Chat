@@ -10,7 +10,6 @@ import '../models/llm_model.dart';
 import './chat_bubble.dart';
 import '../utils/my_colors.dart';
 import '../models/chat_data_list.dart';
-import '../utils/util.dart';
 import 'chat_bubble_typing.dart';
 import '../models/chat_data.dart';
 
@@ -242,19 +241,20 @@ class _ChatViewState extends State<ChatView> {
                 )),
           ),
           const Padding(padding: EdgeInsets.all(10.0)),
-          IconButton(
-              hoverColor: MyColors.bgTintPink.withOpacity(0.5),
-              highlightColor: MyColors.bgTintPink,
-              onPressed: () {
-                Utils.showSnackBar(
-                  context,
-                );
-              },
-              icon: SvgPicture.string(
-                SvgIcons.dotsVertical,
-                width: 30,
-                height: 30,
-              )),
+          PopupMenuButton(
+            offset: const Offset(0, 40),
+            color: Colors.white,
+            icon: SvgPicture.string(
+              SvgIcons.dotsVertical,
+              width: 30,
+              height: 30,
+            ),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                child: Text('Not Implemented'),
+              ),
+            ],
+          )
         ],
       ),
       heightOfExpandedChild: 120,
