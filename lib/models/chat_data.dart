@@ -10,7 +10,7 @@ class ChatData {
   List<bool> useChatConversationContext = [true];
   final List<Message> messageList;
   late final String dateCreated;
-  late final List<Map<String, String>> knowledges;
+  late final List<Map<String, dynamic>> knowledges;
 
   ChatData({
     this.title = 'Unknown chat ###',

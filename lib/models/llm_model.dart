@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,12 +13,13 @@ import './llm_models/default_preprompt.dart' as df_preprompt;
 class LLMModel extends ChangeNotifier {
   final ChatDataList chatDataList;
   BuildContext? context;
-  SharedPreferences? prefs;
+  late final SharedPreferences prefs;
 
   BaseModel? _llmModel;
   Function()? get onChatSettingsChanged => _llmModel?.onChatSettingsChanged;
-  Function(List<File> files)? get setKnowledge => _llmModel?.setKnowledge;
-  Function(File file)? get addKnowLedge => _llmModel?.addKnowledge;
+  Function(List<dynamic> value)? get setKnowledge => _llmModel?.setKnowledge;
+  Function(dynamic value, {String? webFileName})? get addKnowledge =>
+      _llmModel?.addKnowledge;
   Map<String, dynamic>? get defaultParameters => _llmModel?.defaultParameters;
   String get defaultPrePrompt => df_preprompt.defaultPrePrompt;
   Widget get settingsWidget =>
@@ -59,7 +58,7 @@ class LLMModel extends ChangeNotifier {
             }
           },
         );
-        prefs?.setString('provider', value!);
+        prefs.setString('provider', value!);
         break;
       default:
         _llmModel = null;
@@ -67,17 +66,12 @@ class LLMModel extends ChangeNotifier {
     _provider = value;
   }
 
-  LLMModel(this.chatDataList, {this.context}) {
-    SharedPreferences.getInstance().then(
-      (value) {
-        prefs = value;
-        // loadSavedData();
-      },
-    );
+  LLMModel(this.chatDataList, {this.context, required this.prefs}) {
+    loadSavedData();
   }
 
   void loadSavedData() {
-    provider = prefs?.getString('provider') ?? 'Model at home';
+    provider = prefs.getString('provider') ?? 'Model at home';
   }
 
   // TODO ?

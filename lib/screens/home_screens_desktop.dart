@@ -68,7 +68,6 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
     _menuSelected = widget.initialMenuSelected;
     isCtnRightOpen = widget.initialCtnRightOpen;
     widget.llmModel.context ??= context;
-    widget.llmModel.loadSavedData();
     super.initState();
   }
 

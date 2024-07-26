@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/utils/my_colors.dart';
 import 'package:flutter_rag_chat/utils/util.dart';
@@ -160,7 +159,7 @@ class _ChatConfigState extends State<ChatConfig> {
                         icon: const Icon(Icons.add),
                         tooltip: 'Add PDF',
                         onPressed: () async {
-                          var result = await knowLedgeDialog(
+                          var result = await knowledgeDialog(
                             context: context,
                             knowledge: {},
                           );
@@ -177,8 +176,14 @@ class _ChatConfigState extends State<ChatConfig> {
                               }
                               return;
                             } else {
-                              if (await widget.llmModel
-                                  .addKnowLedge!(File(result['path']!))) {
+                              var sendKnowledge = kIsWeb
+                                  ? await widget.llmModel.addKnowledge!(
+                                      result['web_data'],
+                                      webFileName: result['title'])
+                                  : await widget
+                                      .llmModel.addKnowledge!(result['path']);
+
+                              if (sendKnowledge) {
                                 widget.chatDataList.currentData.knowledges
                                     .add(result);
                                 setState(() {});
@@ -208,7 +213,6 @@ class _ChatConfigState extends State<ChatConfig> {
                     ),
                   ],
                 ),
-                const Text('Not Implemented'),
               ],
             ),
           ],

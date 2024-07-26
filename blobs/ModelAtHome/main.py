@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from llm_model import Model
 from data_models.request_data_model import RequestData
 from data_models.information_model import InfomationData
@@ -9,6 +10,18 @@ from data_models.chat_room import ChatRoom
 MODEL_ID = "./models/gemma-7b-it/"
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_methods=[
+        "GET",
+        "PUT",
+        "PATCH",
+        "POST",
+        "DELETE",
+    ],  
+    allow_headers=["Origin", "X-Requested-With", "Content-Type", "Accept"],
+)
 llm_model = Model(model_id=MODEL_ID)
 chat_room = llm_model.chat_room
 
@@ -45,12 +58,13 @@ async def set_chatroom(data: dict):
     chat_room.preprompt = data["preprompt"]
     chat_room.use_chat_history = data["use_chat_history"]
     chat_room.chat_history = data["chat_history"]
-    
-    
+
+
 @app.get("/reset_chatroom_knowledge")
 async def reset_chatroom_knowledge():
-    chat_room.context_knowledge = [] 
+    chat_room.context_knowledge = []
     return len(chat_room.context_knowledge)
+
 
 @app.post("/set_chatroom_knowledge")
 async def set_chatroom_knowledge(data: list[UploadFile] = File(...)):
@@ -59,15 +73,15 @@ async def set_chatroom_knowledge(data: list[UploadFile] = File(...)):
     )
     chat_room.context_knowledge = []
     for item in data:
-        await chat_room.add_context_knowledge(item)    
+        await chat_room.add_context_knowledge(item)
     return len(chat_room.context_knowledge)
+
 
 @app.post("/add_context_knowledge")
 async def add_context_knowledge(data: UploadFile = File(...)):
     print(f"[add_context_knowledge] Data: {data}")
     await chat_room.add_context_knowledge(data)
     return len(chat_room.context_knowledge)
-    
 
 
 @app.post("/generate_text")

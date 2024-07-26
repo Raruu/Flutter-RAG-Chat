@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http_parser/http_parser.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -52,8 +51,8 @@ class ModelAtHome<T> extends BaseModel {
 
   // TODO: implement setKnowledge
   @override
-  Function(List<File>)? get setKnowledge => _setKnowLedge;
-  void _setKnowLedge(List<File> files) async {
+  Function(List<dynamic>)? get setKnowledge => _setKnowLedge;
+  void _setKnowLedge(List<dynamic> files) async {
     try {
       Uri uri = Uri.parse('${_data.baseURL}/reset_chatroom_knowledge');
       http.Response response = await http.get(uri);
@@ -73,16 +72,28 @@ class ModelAtHome<T> extends BaseModel {
   }
 
   @override
-  Future<bool> Function(File file) get addKnowledge => _addKnowledge;
-  Future<bool> _addKnowledge(File file) async {
+  Future<bool> Function(dynamic value, {String? webFileName})
+      get addKnowledge => _addKnowledge;
+  Future<bool> _addKnowledge(dynamic value, {String? webFileName}) async {
     try {
+      print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+      print(value);
       Uri uri = Uri.parse('${_data.baseURL}/add_context_knowledge');
-      var request = http.MultipartRequest('POST', uri)
-        ..files.add(await http.MultipartFile.fromPath(
-          'data',
-          file.path,
-          contentType: MediaType('application', 'pdf'),
-        ));
+      var request = http.MultipartRequest('POST', uri);
+      if (kIsWeb) {
+        request.files.add(
+          http.MultipartFile.fromBytes('data', value,
+              contentType: MediaType('application', 'pdf'),
+              filename: webFileName),
+        );
+      } else {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'data',
+            value,
+          ),
+        );
+      }
 
       http.StreamedResponse response = await request.send();
       if (response.statusCode == 200) {

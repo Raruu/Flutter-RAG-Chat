@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:pdfx/pdfx.dart';
+import 'package:pdfrx/pdfrx.dart';
 
 import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
@@ -10,8 +10,8 @@ import '../utils/util.dart';
 import './pink_textfield.dart';
 
 class KnowledgeWidget extends StatefulWidget {
-  final Map<String, String> knowledge;
-  final List<Map<String, String>> knowledges;
+  final Map<String, dynamic> knowledge;
+  final List<Map<String, dynamic>> knowledges;
   const KnowledgeWidget({
     super.key,
     required this.knowledge,
@@ -43,7 +43,7 @@ class _KnowledgeWidgetState extends State<KnowledgeWidget> {
             borderRadius: BorderRadius.circular(5.0)),
         child: InkWell(
           onTap: () {
-            knowLedgeDialog(
+            knowledgeDialog(
               context: context,
               knowledge: widget.knowledge,
               deleteFunc: () {
@@ -75,15 +75,16 @@ class _KnowledgeWidgetState extends State<KnowledgeWidget> {
   }
 }
 
-Future<Map<String, String>> knowLedgeDialog({
+Future<Map<String, dynamic>> knowledgeDialog({
   required BuildContext context,
-  required Map<String, String> knowledge,
+  required Map<String, dynamic> knowledge,
   Function()? deleteFunc,
 }) async {
   TextEditingController textEditingController = TextEditingController()
     ..text = knowledge.isNotEmpty ? knowledge['path']! : '';
   String path = textEditingController.text;
   bool isFileExists = kIsWeb ? false : await File(path).exists();
+  Uint8List? fileUint8;
 
   var result = await showDialog(
     // ignore: use_build_context_synchronously
@@ -122,6 +123,9 @@ Future<Map<String, String>> knowLedgeDialog({
                               if (!kIsWeb) {
                                 isFileExists = await File(path).exists();
                               }
+                              if (kIsWeb) {
+                                fileUint8 = result.files.first.bytes;
+                              }
                               setState(() {});
                             }
                           },
@@ -152,19 +156,29 @@ Future<Map<String, String>> knowLedgeDialog({
                     ],
                   ),
                   Visibility(
-                    visible: isFileExists,
+                    visible: isFileExists || fileUint8 != null,
                     child: SizedBox(
-                        width: MediaQuery.sizeOf(context).width * 2 / 3,
-                        height: MediaQuery.sizeOf(context).height * 2 / 3,
-                        child: isFileExists
-                            ? PdfView(
-                                scrollDirection: Axis.vertical,
-                                controller: PdfController(
-                                  document: PdfDocument.openFile(
-                                      textEditingController.text),
-                                )..dispose(),
-                              )
-                            : const SizedBox()),
+                      width: MediaQuery.sizeOf(context).width * 2 / 3,
+                      height: MediaQuery.sizeOf(context).height * 2 / 3,
+                      child: isFileExists || fileUint8 != null
+                          ? kIsWeb
+                              ? PdfViewer.data(
+                                  Uint8List.fromList(fileUint8!),
+                                  sourceName: path,
+                                  params: const PdfViewerParams(
+                                    enableTextSelection: true,
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                )
+                              : PdfViewer.file(
+                                  path,
+                                  params: const PdfViewerParams(
+                                    enableTextSelection: true,
+                                    backgroundColor: Colors.transparent,
+                                  ),
+                                )
+                          : const SizedBox(),
+                    ),
                   ),
                 ],
               ),
@@ -180,9 +194,15 @@ Future<Map<String, String>> knowLedgeDialog({
         TextButton(
           onPressed: () async {
             path = textEditingController.text;
-            if (await File(path).exists()) {
-              knowledge['title'] = path.split(Platform.pathSeparator).last;
-              knowledge['path'] = path;
+            if (fileUint8 != null || await File(path).exists()) {
+              if (kIsWeb) {
+                knowledge['title'] = path;
+                knowledge['path'] = path;
+                knowledge['web_data'] = fileUint8;
+              } else {
+                knowledge['title'] = path.split(Platform.pathSeparator).last;
+                knowledge['path'] = path;
+              }
               if (context.mounted) {
                 Navigator.pop(context, knowledge);
               }
