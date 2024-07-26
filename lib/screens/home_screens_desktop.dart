@@ -181,7 +181,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
   Widget loadCtnLeft(int value) {
     if (value == 0) {
       return ChatList(
-        newChatFunction: () => chatDataList.newChat(),
+        newChatFunction: () => chatDataList.newChat(llmModel: widget.llmModel),
         searchEditingController: _searchEditingController,
         chatDataList: chatDataList,
         llmModel: widget.llmModel,

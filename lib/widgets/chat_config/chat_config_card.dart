@@ -6,6 +6,7 @@ class ChatConfigCard extends StatelessWidget {
   final String title;
   final String strIcon;
   final Function(bool value)? onExpansionChanged;
+  final CrossAxisAlignment? expandedCrossAxisAlignment;
 
   const ChatConfigCard({
     super.key,
@@ -13,6 +14,7 @@ class ChatConfigCard extends StatelessWidget {
     required this.strIcon,
     required this.children,
     this.onExpansionChanged,
+    this.expandedCrossAxisAlignment,
   });
 
   @override
@@ -23,6 +25,7 @@ class ChatConfigCard extends StatelessWidget {
       color: Colors.white,
       elevation: 0,
       child: ExpansionTile(
+        expandedCrossAxisAlignment: expandedCrossAxisAlignment,
         onExpansionChanged: onExpansionChanged,
         tilePadding: const EdgeInsets.symmetric(horizontal: 8.0),
         childrenPadding: const EdgeInsets.all(0.0),

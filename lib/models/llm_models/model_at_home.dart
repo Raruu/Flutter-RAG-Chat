@@ -1,5 +1,6 @@
 import 'dart:convert';
-
+import 'dart:io';
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -47,6 +48,56 @@ class ModelAtHome<T> extends BaseModel {
     _informationWidget = InformationWidget(
       data: _data,
     );
+  }
+
+  // TODO: implement setKnowledge
+  @override
+  Function(List<File>)? get setKnowledge => _setKnowLedge;
+  void _setKnowLedge(List<File> files) async {
+    try {
+      Uri uri = Uri.parse('${_data.baseURL}/reset_chatroom_knowledge');
+      http.Response response = await http.get(uri);
+      // Uri uri = Uri.parse('${_data.baseURL}/set_chatroom_knowledge');
+      // http.Response response =
+      //     await http.post(uri, headers: postHeader, body: files);
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print('[setKnowledge]: ${response.body}');
+        }
+      } else {
+        throw ('[setKnowledge] ${response.statusCode}');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> Function(File file) get addKnowledge => _addKnowledge;
+  Future<bool> _addKnowledge(File file) async {
+    try {
+      Uri uri = Uri.parse('${_data.baseURL}/add_context_knowledge');
+      var request = http.MultipartRequest('POST', uri)
+        ..files.add(await http.MultipartFile.fromPath(
+          'data',
+          file.path,
+          contentType: MediaType('application', 'pdf'),
+        ));
+
+      http.StreamedResponse response = await request.send();
+      if (response.statusCode == 200) {
+        if (kDebugMode) {
+          print('[addKnowledge]: ${response.toString()}');
+          return true;
+        }
+      } else {
+        throw ('[addKnowledge] ${response.reasonPhrase}');
+        // return false;
+      }
+    } catch (e) {
+      rethrow;
+    }
+    return false;
   }
 
   @override

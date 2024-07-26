@@ -8,9 +8,11 @@ class PinkTextField extends StatefulWidget {
   final String hintText;
   final String? labelText;
   final String? strIconLeft;
+  final String? tooltipIconLeft;
   final double? iconSizeLeft;
-  final double? iconSizeRight;
   final String? strIconRight;
+  final String? tooltipIconRight;
+  final double? iconSizeRight;
   final Function()? leftButtonFunc;
   final Function()? rightButtonFunc;
   final Function()? onEditingComplete;
@@ -38,6 +40,8 @@ class PinkTextField extends StatefulWidget {
     this.labelText,
     this.backgroundColor = MyColors.bgTintPink,
     this.newLineOnEnter = true,
+    this.tooltipIconLeft,
+    this.tooltipIconRight,
   });
 
   @override
@@ -104,6 +108,7 @@ class _PinkTextFieldState extends State<PinkTextField> {
                     horizontal: 16.0,
                   ),
                   child: IconButton(
+                    tooltip: widget.tooltipIconLeft,
                     onPressed: widget.leftButtonFunc,
                     icon: SvgPicture.string(
                       widget.strIconLeft!,
@@ -127,6 +132,7 @@ class _PinkTextFieldState extends State<PinkTextField> {
                   padding: const EdgeInsets.symmetric(
                       vertical: 6.0, horizontal: 16.0),
                   child: IconButton(
+                    tooltip: widget.tooltipIconRight,
                     onPressed: widget.rightButtonFunc,
                     icon: SvgPicture.string(
                       widget.strIconRight!,

@@ -1,6 +1,7 @@
 from spacy.lang.en import English
-from helper import split_list, clamp
-import re, torch
+from helper import *
+from fastapi import UploadFile
+import re, torch, fitz
 from sentence_transformers import SentenceTransformer, util
 
 
@@ -16,6 +17,68 @@ class ChatRoom:
         self.preprompt = ""
         self.use_preprompt = False
         self.chat_context_embedding = None
+        self.context_knowledge = []
+
+    async def add_context_knowledge(self, data: UploadFile):
+        new_dict = {"filename": data.filename}
+        contents = await data.read()
+        doc = fitz.open(stream=contents, filetype="pdf")
+        pages_and_texts = []
+        for page_number, page in enumerate(doc):
+            text = page.get_text().replace("\n", " ").strip()
+            sentences = [str(sentence) for sentence in list(self.nlp(text).sents)]
+            sentences_chunks = split_list(sentences, 10)
+            for sentences_chunk in sentences_chunks:
+                joined_sentence_chunk = join_sentences_chunk_to_paragraph(
+                    sentences_chunk
+                )
+            embeddings = self.embedding_model.encode(
+                joined_sentence_chunk, convert_to_tensor=True
+            ).to(self.device)
+            pages_and_texts.append(
+                {
+                    "page_number": page_number,
+                    "text": text,
+                    "sentences_chunks": sentences_chunks,
+                    "joined_sentence_chunk":joined_sentence_chunk,
+                    "embeddings": embeddings,
+                }
+            )
+        new_dict["pages_and_texts"] = pages_and_texts
+        self.context_knowledge.append(new_dict)
+
+    def get_context_knowledge(self):
+        top_products_avg = torch.zeros(1).to(self.device)
+        len_top_products_avg = 0
+        possible_contexts = []
+        for knowledges in self.context_knowledge:
+            for item in knowledges["pages_and_texts"]:
+                dot_scores = util.dot_score(a=self.query_embedding, b=item["embeddings"])[0]
+                k = clamp(len(dot_scores), 0, 5)
+                top_products = torch.topk(dot_scores, k=k)
+                for i in top_products[0]:
+                    top_products_avg += i
+                len_top_products_avg += k
+                possible_contexts.append(
+                    {
+                        "context": [
+                            item["sentences_chunks"][top_products[1][i]] for i in range(k)
+                        ],
+                        "top_products": top_products,
+                    }
+                )
+        top_products_avg = top_products_avg / len_top_products_avg
+        higher_quality_context = []
+        for item in possible_contexts:
+            i = 0
+            for context in item["context"]:
+                if i > 3:
+                    break
+                if item["top_products"][0][i] > top_products_avg:
+                    higher_quality_context.append(context[item["top_products"][1][i]])
+                i += 1
+
+        return higher_quality_context
 
     def update_chat_history(self, user_input, response):
         self.chat_history.append(f"User: {user_input}")
@@ -27,42 +90,50 @@ class ChatRoom:
             sentences = [str(sentence) for sentence in list(self.nlp(text_chat).sents)]
             sentences_chunks = split_list(sentences, 7)
             for sentences_chunk in sentences_chunks:
-                joined_sentence_chunk = (
-                    "".join(sentences_chunk).replace("  ", " ").strip()
-                )
-                joined_sentence_chunk = re.sub(
-                    r"\.([A-Z])", r". \1", joined_sentence_chunk
+                joined_sentence_chunk = join_sentences_chunk_to_paragraph(
+                    sentences_chunk
                 )
                 self.joined_sentence_chunks.append(joined_sentence_chunk)
         self.chat_context_embedding = self.embedding_model.encode(
             self.joined_sentence_chunks, convert_to_tensor=True
         ).to(self.device)
 
-    def get_context_chat_history(self, query: str):
-        query_embedding = self.embedding_model.encode(query, convert_to_tensor=True).to(
-            self.device
-        )
-        dot_scores = util.dot_score(a=query_embedding, b=self.chat_context_embedding)[0]
+    def get_context_chat_history(self):
+        dot_scores = util.dot_score(
+            a=self.query_embedding, b=self.chat_context_embedding
+        )[0]
         k = clamp(len(dot_scores), 0, 3)
         top_products = torch.topk(dot_scores, k=k)
-        # print(f"[get_context_chat_history] top_products: {top_products}")
-        # print(f"chat_history len: {len(self.chat_history)}")
-        # print(top_products[1][i] for i in range(k))
+        print(f"[chat_room/get_context_chat_history] top_products: {top_products}")
 
         return [self.joined_sentence_chunks[top_products[1][i]] for i in range(k)]
 
     def build_prompt(self, query: str):
+        self.query_embedding = self.embedding_model.encode(
+            query, convert_to_tensor=True
+        ).to(self.device)
         prompt = ""
         if self.use_preprompt:
             prompt = self.preprompt
+
+        if len(self.context_knowledge) > 0:
+            get_knowledge_context = "\n".join(self.get_context_knowledge())
+            print(
+                f"[chat_room/build_prompt] context_knowledge : {get_knowledge_context}"
+            )
+            if "{context_knowledge}" in prompt:
+                prompt = prompt.replace("{context_knowledge}", get_knowledge_context)
+            else:
+                prompt = prompt + f"Context1:\n {get_knowledge_context}"
+
         if self.use_chat_history and len(self.chat_history) > 0:
             self.update_chat_context()
-            get_chat_context = "\n".join(self.get_context_chat_history(query))
-            print(f"[build_prompt] chat_history_context : {get_chat_context}")
+            get_chat_context = "\n".join(self.get_context_chat_history())
+            print(f"[chat_room/build_prompt] chat_history_context : {get_chat_context}")
             if "{chat_history}" in prompt:
                 prompt = prompt.replace("{chat_history}", get_chat_context)
             else:
-                prompt = prompt + f"Context:\n {get_chat_context}"
+                prompt = prompt + f"Context2:\n {get_chat_context}"
 
         if "{query}" in prompt:
             prompt = prompt.replace("{query}", query)

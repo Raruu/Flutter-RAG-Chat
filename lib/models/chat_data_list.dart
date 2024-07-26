@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_rag_chat/models/llm_model.dart';
 
 import 'message.dart';
 import 'chat_data.dart';
@@ -22,9 +23,10 @@ class ChatDataList extends ChangeNotifier {
     notifyChatDataListner = notifyListeners;
   }
 
-  void newChat() {
+  void newChat({LLMModel? llmModel}) {
     currentData = ChatData(messageList: List<Message>.empty(growable: true));
     currentSelected = -1;
+    llmModel?.setKnowledge?.call([]);
   }
 
   void add(ChatData value, {bool checkDuplicate = false}) {

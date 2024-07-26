@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/utils/my_colors.dart';
 import 'package:flutter_rag_chat/utils/util.dart';
@@ -10,6 +12,7 @@ import 'chat_config/parameter_bool.dart';
 import '../models/chat_data_list.dart';
 import 'nice_button.dart';
 import 'pink_textfield.dart';
+import 'knowledge_widget.dart';
 
 class ChatConfig extends StatefulWidget {
   final LLMModel llmModel;
@@ -134,6 +137,7 @@ class _ChatConfigState extends State<ChatConfig> {
             ChatConfigCard(
               title: 'KNOWLEDGE',
               strIcon: SvgIcons.knowledge,
+              expandedCrossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ParameterBool(
                     textKey: 'Use Chat Conversation Context',
@@ -146,6 +150,64 @@ class _ChatConfigState extends State<ChatConfig> {
                     },
                     value: widget
                         .chatDataList.currentData.useChatConversationContext),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('PDF Knowledge'),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        tooltip: 'Add PDF',
+                        onPressed: () async {
+                          var result = await knowLedgeDialog(
+                            context: context,
+                            knowledge: {},
+                          );
+                          if (result.isNotEmpty) {
+                            var isAlreadyExist = widget
+                                .chatDataList.currentData.knowledges
+                                .where(
+                              (element) => element['title'] == result['title'],
+                            );
+                            if (isAlreadyExist.isNotEmpty) {
+                              if (context.mounted) {
+                                Utils.showSnackBar(context,
+                                    title: 'Already exist: ${result['title']}');
+                              }
+                              return;
+                            } else {
+                              if (await widget.llmModel
+                                  .addKnowLedge!(File(result['path']!))) {
+                                widget.chatDataList.currentData.knowledges
+                                    .add(result);
+                                setState(() {});
+                              }
+                            }
+                          }
+                        },
+                      )
+                    ],
+                  ),
+                ),
+                const Padding(padding: EdgeInsets.only(top: 4.0)),
+                Wrap(
+                  spacing: 5,
+                  runSpacing: 7,
+                  children: [
+                    ...List.generate(
+                      widget.chatDataList.currentData.knowledges.length,
+                      (index) {
+                        return KnowledgeWidget(
+                          knowledge:
+                              widget.chatDataList.currentData.knowledges[index],
+                          knowledges:
+                              widget.chatDataList.currentData.knowledges,
+                        );
+                      },
+                    ),
+                  ],
+                ),
                 const Text('Not Implemented'),
               ],
             ),
