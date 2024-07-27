@@ -26,7 +26,7 @@ class ChatDataList extends ChangeNotifier {
   void newChat({LLMModel? llmModel}) {
     currentData = ChatData(messageList: List<Message>.empty(growable: true));
     currentSelected = -1;
-    llmModel?.setKnowledge?.call([]);
+    llmModel?.resetKnowledge?.call();
   }
 
   void add(ChatData value, {bool checkDuplicate = false}) {
@@ -48,13 +48,14 @@ class ChatDataList extends ChangeNotifier {
     }
   }
 
-  void loadData(int index) {
+  void loadData(int index, {LLMModel? llmModel}) {
     if (index > dataList.length - 1 || index < 0) {
       newChat();
       return;
     }
     currentSelected = index;
     currentData = dataList[index];
+    llmModel?.setKnowledge?.call(currentData.knowledges);
   }
 
   void applyParameter(Map<String, dynamic> toApply) {

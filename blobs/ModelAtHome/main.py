@@ -31,7 +31,7 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/information", response_model=InfomationData)
+@app.get("/get_information", response_model=InfomationData)
 async def get_information():
     return InfomationData(
         llm_model.llm_model, MODEL_ID.replace("./models/", "").replace("/", "")
@@ -59,10 +59,13 @@ async def set_chatroom(data: dict):
     chat_room.use_chat_history = data["use_chat_history"]
     chat_room.chat_history = data["chat_history"]
 
+@app.delete("/delete_chatroom_knowledge")
+async def delete_chatroom_knowledge(data: dict):
+    return chat_room.delete_context_knowledge(data["filename"])
 
-@app.get("/reset_chatroom_knowledge")
+@app.delete("/reset_chatroom_knowledge")
 async def reset_chatroom_knowledge():
-    chat_room.context_knowledge = []
+    chat_room.delete_context_knowledge("")
     return len(chat_room.context_knowledge)
 
 
@@ -71,7 +74,7 @@ async def set_chatroom_knowledge(data: list[UploadFile] = File(...)):
     print(
         f"[set_chatroom_knowledge] Data: {data}",
     )
-    chat_room.context_knowledge = []
+    chat_room.delete_context_knowledge("")
     for item in data:
         await chat_room.add_context_knowledge(item)
     return len(chat_room.context_knowledge)

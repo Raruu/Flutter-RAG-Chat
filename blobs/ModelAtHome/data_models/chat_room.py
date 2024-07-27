@@ -19,6 +19,21 @@ class ChatRoom:
         self.chat_context_embedding = None
         self.context_knowledge = []
 
+    def delete_context_knowledge(self, filename: str):
+        if filename == "":
+            for contexts in self.context_knowledge:
+                self.context_knowledge.remove(contexts)
+                del contexts
+            self.context_knowledge = []
+            return True
+        else:
+            for contexts in self.context_knowledge:
+                if contexts["filename"] == filename:
+                    self.context_knowledge.remove(contexts)
+                    del contexts
+                    return True
+        return False
+
     async def add_context_knowledge(self, data: UploadFile):
         new_dict = {"filename": data.filename}
         contents = await data.read()
@@ -40,7 +55,7 @@ class ChatRoom:
                     "page_number": page_number,
                     "text": text,
                     "sentences_chunks": sentences_chunks,
-                    "joined_sentence_chunk":joined_sentence_chunk,
+                    "joined_sentence_chunk": joined_sentence_chunk,
                     "embeddings": embeddings,
                 }
             )
@@ -53,7 +68,9 @@ class ChatRoom:
         possible_contexts = []
         for knowledges in self.context_knowledge:
             for item in knowledges["pages_and_texts"]:
-                dot_scores = util.dot_score(a=self.query_embedding, b=item["embeddings"])[0]
+                dot_scores = util.dot_score(
+                    a=self.query_embedding, b=item["embeddings"]
+                )[0]
                 k = clamp(len(dot_scores), 0, 5)
                 top_products = torch.topk(dot_scores, k=k)
                 for i in top_products[0]:
@@ -62,7 +79,8 @@ class ChatRoom:
                 possible_contexts.append(
                     {
                         "context": [
-                            item["sentences_chunks"][top_products[1][i]] for i in range(k)
+                            item["sentences_chunks"][top_products[1][i]]
+                            for i in range(k)
                         ],
                         "top_products": top_products,
                     }

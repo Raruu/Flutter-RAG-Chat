@@ -6,7 +6,9 @@ abstract class BaseModel {
   late Widget informationWidget;
   late Function() notifyListener;
   Function()? onChatSettingsChanged;
-  Function(List<dynamic> values)? setKnowledge;
+  Function()? resetKnowledge;
+  Function(String filename)? deleteKnowledge;
+  Function(List<Map<String, dynamic>> knowledges)? setKnowledge;
   Function(dynamic value, {String? webFileName})? addKnowledge;
   BaseModel(this.notifyListener);
 

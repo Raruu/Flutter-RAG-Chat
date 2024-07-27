@@ -12,7 +12,7 @@ import './model_at_home/information_widget.dart';
 import '../chat_data_list.dart';
 
 class ModelAtHome<T> extends BaseModel {
-  Map<String, String> postHeader = const {
+  Map<String, String> justHeader = const {
     'Content-Type': 'application/json; charset=UTF-8'
   };
 
@@ -49,22 +49,61 @@ class ModelAtHome<T> extends BaseModel {
     );
   }
 
+  @override
+  Function()? get resetKnowledge => _resetKnowledge;
+  void _resetKnowledge() async {
+    Uri uri = Uri.parse('${_data.baseURL}/reset_chatroom_knowledge');
+    http.Response response = await http.delete(uri);
+    if (response.statusCode == 200) {
+      if (kDebugMode) {
+        print('[resetKnowledge]: ${response.body}');
+      }
+    }
+  }
+
+  @override
+  Function(String filename)? get deleteKnowledge => _deleteKnowledge;
+  Future<bool> _deleteKnowledge(String filename) async {
+    Uri uri = Uri.parse('${_data.baseURL}/delete_chatroom_knowledge');
+    http.Response response = await http.delete(uri,
+        headers: justHeader, body: jsonEncode({'filename': filename}));
+    return response.body.toLowerCase().contains('true');
+  }
+
   // TODO: implement setKnowledge
   @override
-  Function(List<dynamic>)? get setKnowledge => _setKnowLedge;
-  void _setKnowLedge(List<dynamic> files) async {
+  Function(List<Map<String, dynamic>>)? get setKnowledge => _setKnowledge;
+  void _setKnowledge(List<Map<String, dynamic>> knowledges) async {
+    if (knowledges.isEmpty) {
+      return;
+    }
     try {
-      Uri uri = Uri.parse('${_data.baseURL}/reset_chatroom_knowledge');
-      http.Response response = await http.get(uri);
-      // Uri uri = Uri.parse('${_data.baseURL}/set_chatroom_knowledge');
-      // http.Response response =
-      //     await http.post(uri, headers: postHeader, body: files);
+      Uri uri = Uri.parse('${_data.baseURL}/set_chatroom_knowledge');
+      var request = http.MultipartRequest('POST', uri);
+      for (var knowledge in knowledges) {
+        if (kIsWeb) {
+          request.files.add(
+            http.MultipartFile.fromBytes('data', knowledge['web_data'],
+                contentType: MediaType('application', 'pdf'),
+                filename: knowledge['title']),
+          );
+        } else {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'data',
+              knowledge['path'],
+            ),
+          );
+        }
+      }
+
+      http.StreamedResponse response = await request.send();
       if (response.statusCode == 200) {
         if (kDebugMode) {
-          print('[setKnowledge]: ${response.body}');
+          print('[setKnowledge]: ${response.toString()}');
         }
       } else {
-        throw ('[setKnowledge] ${response.statusCode}');
+        throw ('[setKnowledge] ${response.reasonPhrase}');
       }
     } catch (e) {
       rethrow;
@@ -76,8 +115,6 @@ class ModelAtHome<T> extends BaseModel {
       get addKnowledge => _addKnowledge;
   Future<bool> _addKnowledge(dynamic value, {String? webFileName}) async {
     try {
-      print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-      print(value);
       Uri uri = Uri.parse('${_data.baseURL}/add_context_knowledge');
       var request = http.MultipartRequest('POST', uri);
       if (kIsWeb) {
@@ -132,7 +169,7 @@ class ModelAtHome<T> extends BaseModel {
       }
       http.Response response = await http.post(
         uri,
-        headers: postHeader,
+        headers: justHeader,
         body: jsonEncode({
           'id': chatDataList.currentData.id,
           'use_preprompt': currentData.usePreprompt[0],
@@ -182,7 +219,7 @@ class ModelAtHome<T> extends BaseModel {
 
       http.Response response = await http.post(
         uri,
-        headers: postHeader,
+        headers: justHeader,
         body: jsonEncode({
           "query": prompt,
           ...parameters,

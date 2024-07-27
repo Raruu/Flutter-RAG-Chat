@@ -198,7 +198,8 @@ class _ChatListState extends State<ChatList> {
                               }),
                           icon: const Icon(Icons.more_horiz_rounded)),
                       onTap: () {
-                        widget.chatDataList.loadData(index);
+                        widget.chatDataList
+                            .loadData(index, llmModel: widget.llmModel);
                         widget.chatDataList
                             .applyParameter(widget.llmModel.parameters!);
                       },

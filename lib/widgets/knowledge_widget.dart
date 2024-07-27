@@ -8,14 +8,17 @@ import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
 import '../utils/util.dart';
 import './pink_textfield.dart';
+import '../models/llm_model.dart';
 
 class KnowledgeWidget extends StatefulWidget {
   final Map<String, dynamic> knowledge;
   final List<Map<String, dynamic>> knowledges;
+  final LLMModel llmModel;
   const KnowledgeWidget({
     super.key,
     required this.knowledge,
     required this.knowledges,
+    required this.llmModel,
   });
 
   @override
@@ -49,10 +52,14 @@ class _KnowledgeWidgetState extends State<KnowledgeWidget> {
               deleteFunc: () {
                 Utils.showDialogYesNo(
                         context: context, title: const Text('Delete'))
-                    .then((value) {
+                    .then((value) async {
                   if (value) {
-                    if (widget.knowledges.remove(widget.knowledge)) {
-                      Navigator.pop(context, null);
+                    if (await widget.llmModel.deleteKnowledge
+                        ?.call(widget.knowledge['title'])) {
+                      if (widget.knowledges.remove(widget.knowledge) &&
+                          context.mounted) {
+                        Navigator.pop(context, null);
+                      }
                     }
                   }
                 });

@@ -17,7 +17,10 @@ class LLMModel extends ChangeNotifier {
 
   BaseModel? _llmModel;
   Function()? get onChatSettingsChanged => _llmModel?.onChatSettingsChanged;
-  Function(List<dynamic> value)? get setKnowledge => _llmModel?.setKnowledge;
+  Function()? get resetKnowledge => _llmModel?.resetKnowledge;
+  Function(String filename)? get deleteKnowledge => _llmModel?.deleteKnowledge;
+  Function(List<Map<String, dynamic>> knowledges)? get setKnowledge =>
+      _llmModel?.setKnowledge;
   Function(dynamic value, {String? webFileName})? get addKnowledge =>
       _llmModel?.addKnowledge;
   Map<String, dynamic>? get defaultParameters => _llmModel?.defaultParameters;
@@ -66,9 +69,7 @@ class LLMModel extends ChangeNotifier {
     _provider = value;
   }
 
-  LLMModel(this.chatDataList, {this.context, required this.prefs}) {
-    loadSavedData();
-  }
+  LLMModel(this.chatDataList, {this.context, required this.prefs});
 
   void loadSavedData() {
     provider = prefs.getString('provider') ?? 'Model at home';

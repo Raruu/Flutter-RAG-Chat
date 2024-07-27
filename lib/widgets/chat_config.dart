@@ -155,42 +155,59 @@ class _ChatConfigState extends State<ChatConfig> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text('PDF Knowledge'),
-                      IconButton(
-                        icon: const Icon(Icons.add),
-                        tooltip: 'Add PDF',
-                        onPressed: () async {
-                          var result = await knowledgeDialog(
-                            context: context,
-                            knowledge: {},
-                          );
-                          if (result.isNotEmpty) {
-                            var isAlreadyExist = widget
-                                .chatDataList.currentData.knowledges
-                                .where(
-                              (element) => element['title'] == result['title'],
-                            );
-                            if (isAlreadyExist.isNotEmpty) {
-                              if (context.mounted) {
-                                Utils.showSnackBar(context,
-                                    title: 'Already exist: ${result['title']}');
-                              }
-                              return;
-                            } else {
-                              var sendKnowledge = kIsWeb
-                                  ? await widget.llmModel.addKnowledge!(
-                                      result['web_data'],
-                                      webFileName: result['title'])
-                                  : await widget
-                                      .llmModel.addKnowledge!(result['path']);
+                      Row(
+                        children: [
+                          Visibility(
+                            visible: widget
+                                .chatDataList.currentData.knowledges.isNotEmpty,
+                            child: IconButton(
+                              icon: const Icon(Icons.restore_page_outlined),
+                              tooltip: 'Re-Apply Knowledge',
+                              onPressed: () => widget.llmModel.setKnowledge
+                                  ?.call(widget
+                                      .chatDataList.currentData.knowledges),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.add),
+                            tooltip: 'Add PDF',
+                            onPressed: () async {
+                              var result = await knowledgeDialog(
+                                context: context,
+                                knowledge: {},
+                              );
+                              if (result.isNotEmpty) {
+                                var isAlreadyExist = widget
+                                    .chatDataList.currentData.knowledges
+                                    .where(
+                                  (element) =>
+                                      element['title'] == result['title'],
+                                );
+                                if (isAlreadyExist.isNotEmpty) {
+                                  if (context.mounted) {
+                                    Utils.showSnackBar(context,
+                                        title:
+                                            'Already exist: ${result['title']}');
+                                  }
+                                  return;
+                                } else {
+                                  var sendKnowledge = kIsWeb
+                                      ? await widget.llmModel.addKnowledge!(
+                                          result['web_data'],
+                                          webFileName: result['title'])
+                                      : await widget.llmModel
+                                          .addKnowledge!(result['path']);
 
-                              if (sendKnowledge) {
-                                widget.chatDataList.currentData.knowledges
-                                    .add(result);
-                                setState(() {});
+                                  if (sendKnowledge) {
+                                    widget.chatDataList.currentData.knowledges
+                                        .add(result);
+                                    setState(() {});
+                                  }
+                                }
                               }
-                            }
-                          }
-                        },
+                            },
+                          ),
+                        ],
                       )
                     ],
                   ),
@@ -208,11 +225,13 @@ class _ChatConfigState extends State<ChatConfig> {
                               widget.chatDataList.currentData.knowledges[index],
                           knowledges:
                               widget.chatDataList.currentData.knowledges,
+                          llmModel: widget.llmModel,
                         );
                       },
                     ),
                   ],
                 ),
+                const Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
               ],
             ),
           ],

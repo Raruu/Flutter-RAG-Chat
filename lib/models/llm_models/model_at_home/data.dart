@@ -49,7 +49,7 @@ class Data {
   bool getInformationTryReconnect = true;
   void getInformation() async {
     try {
-      Uri uri = Uri.parse('$baseURL/information');
+      Uri uri = Uri.parse('$baseURL/get_information');
       http.Response response = await http.get(uri);
       if (response.statusCode == 200) {
         Map<String, dynamic> responseJson = jsonDecode(response.body);
