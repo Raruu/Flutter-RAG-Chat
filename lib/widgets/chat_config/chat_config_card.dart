@@ -7,6 +7,8 @@ class ChatConfigCard extends StatelessWidget {
   final String strIcon;
   final Function(bool value)? onExpansionChanged;
   final CrossAxisAlignment? expandedCrossAxisAlignment;
+  final double titleFontSize;
+  final double iconSize;
 
   const ChatConfigCard({
     super.key,
@@ -15,6 +17,8 @@ class ChatConfigCard extends StatelessWidget {
     required this.children,
     this.onExpansionChanged,
     this.expandedCrossAxisAlignment,
+    this.titleFontSize = 18,
+    this.iconSize = 32,
   });
 
   @override
@@ -22,9 +26,10 @@ class ChatConfigCard extends StatelessWidget {
     return Card(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.all(0),
-      color: Colors.white,
+      color: Colors.transparent,
       elevation: 0,
       child: ExpansionTile(
+        expandedAlignment: Alignment.topLeft,
         expandedCrossAxisAlignment: expandedCrossAxisAlignment,
         onExpansionChanged: onExpansionChanged,
         tilePadding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -32,11 +37,16 @@ class ChatConfigCard extends StatelessWidget {
         title: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SvgPicture.string(strIcon),
+            SvgPicture.string(
+              strIcon,
+              height: iconSize,
+              width: iconSize,
+            ),
             const Padding(padding: EdgeInsets.all(4.0)),
             Text(
               title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                  fontSize: titleFontSize, fontWeight: FontWeight.w700),
             ),
           ],
         ),

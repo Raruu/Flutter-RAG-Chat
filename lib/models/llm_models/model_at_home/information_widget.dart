@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/models/llm_model.dart';
+import 'package:flutter_rag_chat/utils/svg_icons.dart';
 import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
 
 import '../../../utils/my_colors.dart';
 import 'data.dart';
+import '../../../widgets/chat_config/chat_config_card.dart';
 
 class InformationWidget extends StatefulWidget {
   final Data data;
@@ -75,6 +77,31 @@ class _InformationWidgetState extends State<InformationWidget> {
                                 Text('Model ID: ${widget.data.modelId}'),
                                 Text(
                                     'LLM Model in Memory: ${widget.data.llmModelMemoryUsage?.toStringAsFixed(2)} MB'),
+                                Theme(
+                                  data: Theme.of(context).copyWith(
+                                      dividerColor: Colors.transparent),
+                                  child: ChatConfigCard(
+                                    title:
+                                        'Knowledge length: ${widget.data.lenContextKnowledge}',
+                                    titleFontSize: 14,
+                                    iconSize: 22,
+                                    strIcon: SvgIcons.knowledge,
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          ...List.generate(
+                                            widget.data.lenContextKnowledge ??
+                                                0,
+                                            (index) => Text(widget.data
+                                                .listContextKnowledge![index]),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                )
                               ],
                             ),
                           ),

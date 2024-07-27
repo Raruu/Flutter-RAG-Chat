@@ -24,6 +24,8 @@ class Data {
   List<double>? vram;
   String? modelId;
   double? llmModelMemoryUsage;
+  int? lenContextKnowledge;
+  List<String>? listContextKnowledge;
   void setNull() {
     gpuName = null;
     ram = null;
@@ -61,6 +63,9 @@ class Data {
         vram = List<double>.from(responseJson['vram']);
         modelId = responseJson['llmmodel_id'];
         llmModelMemoryUsage = responseJson['llmmodel_in_mem'];
+        lenContextKnowledge = responseJson['len_context_knowledge'];
+        listContextKnowledge =
+            List.from(responseJson['list_context_knowledge']);
         notifyListener();
 
         getInformationTryReconnect = false;

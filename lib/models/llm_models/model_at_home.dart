@@ -70,7 +70,6 @@ class ModelAtHome<T> extends BaseModel {
     return response.body.toLowerCase().contains('true');
   }
 
-  // TODO: implement setKnowledge
   @override
   Function(List<Map<String, dynamic>>)? get setKnowledge => _setKnowledge;
   void _setKnowledge(List<Map<String, dynamic>> knowledges) async {

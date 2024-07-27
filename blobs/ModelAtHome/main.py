@@ -34,7 +34,7 @@ async def root():
 @app.get("/get_information", response_model=InfomationData)
 async def get_information():
     return InfomationData(
-        llm_model.llm_model, MODEL_ID.replace("./models/", "").replace("/", "")
+        llm_model, MODEL_ID.replace("./models/", "").replace("/", "")
     )
 
 
