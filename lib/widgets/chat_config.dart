@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/utils/my_colors.dart';
 import 'package:flutter_rag_chat/utils/util.dart';
@@ -171,40 +170,12 @@ class _ChatConfigState extends State<ChatConfig> {
                           IconButton(
                             icon: const Icon(Icons.add),
                             tooltip: 'Add PDF',
-                            onPressed: () async {
-                              var result = await knowledgeDialog(
-                                context: context,
-                                knowledge: {},
-                              );
-                              if (result.isNotEmpty) {
-                                var isAlreadyExist = widget
-                                    .chatDataList.currentData.knowledges
-                                    .where(
-                                  (element) =>
-                                      element['title'] == result['title'],
-                                );
-                                if (isAlreadyExist.isNotEmpty) {
-                                  if (context.mounted) {
-                                    Utils.showSnackBar(context,
-                                        title:
-                                            'Already exist: ${result['title']}');
-                                  }
-                                  return;
-                                } else {
-                                  var sendKnowledge = kIsWeb
-                                      ? await widget.llmModel.addKnowledge!(
-                                          result['web_data'],
-                                          webFileName: result['title'])
-                                      : await widget.llmModel
-                                          .addKnowledge!(result['path']);
-
-                                  if (sendKnowledge) {
-                                    widget.chatDataList.currentData.knowledges
-                                        .add(result);
-                                    setState(() {});
-                                  }
-                                }
-                              }
+                            onPressed: () {
+                              Utils.dialogAddContext(
+                                  context: context,
+                                  chatDataList: widget.chatDataList,
+                                  llmModel: widget.llmModel,
+                                  setState: setState);
                             },
                           ),
                         ],

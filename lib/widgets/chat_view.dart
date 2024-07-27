@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
@@ -160,8 +161,16 @@ class _ChatViewState extends State<ChatView> {
         iconSizeLeft: 28,
         iconSizeRight: 28,
         borderRadiusCircular: 32.0,
-        leftButtonFunc: () {},
+        leftButtonFunc: () {
+          Utils.dialogAddContext(
+              context: context,
+              chatDataList: chatDataList,
+              llmModel: widget.llmModel,
+              setState: setState);
+        },
+        tooltipIconLeft: 'Add Context',
         rightButtonFunc: sendMessage,
+        tooltipIconRight: 'Send Message',
         onEditingComplete: sendMessage,
         newLineOnEnter: false,
       ),
@@ -201,6 +210,17 @@ class _ChatViewState extends State<ChatView> {
                           messageList[index].role == MessageRole.user
                               ? MyColors.bgTintPink
                               : MyColors.bgTintBlue,
+                      // TODO Regenerate
+                      regenerate: () {},
+                      deleteFunc: () async {
+                        if (await Utils.showDialogYesNo(
+                            context: context,
+                            title: const Text('Delete Message?'),
+                            content: const Text('. . .'))) {
+                          messageList.remove(messageList[index]);
+                          widget.llmModel.onChatSettingsChanged?.call();
+                        }
+                      },
                     ),
                   ),
                 );

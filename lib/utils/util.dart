@@ -1,13 +1,49 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rag_chat/models/chat_data_list.dart';
+import 'package:flutter_rag_chat/models/llm_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math' as math;
 
 import 'kafuu_chino.dart';
 import 'my_colors.dart';
+import '../widgets/knowledge_widget.dart';
 
 class Utils<T> {
+  static void dialogAddContext(
+      {required BuildContext context,
+      required ChatDataList chatDataList,
+      required LLMModel llmModel,
+      required Function(Function()) setState}) async {
+    var result = await knowledgeDialog(
+      context: context,
+      knowledge: {},
+    );
+    if (result.isNotEmpty) {
+      var isAlreadyExist = chatDataList.currentData.knowledges.where(
+        (element) => element['title'] == result['title'],
+      );
+      if (isAlreadyExist.isNotEmpty) {
+        if (context.mounted) {
+          showSnackBar(context, title: 'Already exist: ${result['title']}');
+        }
+        return;
+      } else {
+        var sendKnowledge = kIsWeb
+            ? await llmModel.addKnowledge!(result['web_data'],
+                webFileName: result['title'])
+            : await llmModel.addKnowledge!(result['path']);
+
+        if (sendKnowledge) {
+          chatDataList.currentData.knowledges.add(result);
+          setState(() {});
+        }
+      }
+    }
+  }
+
   static String randomKafuuChino() {
     int rng = math.Random().nextInt(4);
     switch (rng) {

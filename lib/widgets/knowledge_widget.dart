@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:universal_html/html.dart' as html;
 
 import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
@@ -54,12 +56,11 @@ class _KnowledgeWidgetState extends State<KnowledgeWidget> {
                         context: context, title: const Text('Delete'))
                     .then((value) async {
                   if (value) {
-                    if (await widget.llmModel.deleteKnowledge
-                        ?.call(widget.knowledge['title'])) {
-                      if (widget.knowledges.remove(widget.knowledge) &&
-                          context.mounted) {
-                        Navigator.pop(context, null);
-                      }
+                    await widget.llmModel.deleteKnowledge
+                        ?.call(widget.knowledge['title']);
+                    if (widget.knowledges.remove(widget.knowledge) &&
+                        context.mounted) {
+                      Navigator.pop(context, null);
                     }
                   }
                 });
@@ -91,7 +92,7 @@ Future<Map<String, dynamic>> knowledgeDialog({
     ..text = knowledge.isNotEmpty ? knowledge['path']! : '';
   String path = textEditingController.text;
   bool isFileExists = kIsWeb ? false : await File(path).exists();
-  Uint8List? fileUint8;
+  Uint8List? fileUint8 = knowledge['web_data'];
 
   var result = await showDialog(
     // ignore: use_build_context_synchronously
@@ -140,7 +141,7 @@ Future<Map<String, dynamic>> knowledgeDialog({
                       ),
                       const Padding(padding: EdgeInsets.all(2.0)),
                       Visibility(
-                        visible: isFileExists,
+                        visible: isFileExists || fileUint8 != null,
                         child: Row(
                           children: [
                             Visibility(
@@ -151,11 +152,20 @@ Future<Map<String, dynamic>> knowledgeDialog({
                                 onPressed: deleteFunc,
                               ),
                             ),
-                            // TODO Open With
                             IconButton(
                               tooltip: 'Open With',
                               icon: const Icon(Icons.open_in_new_rounded),
-                              onPressed: () {},
+                              onPressed: kIsWeb
+                                  ? () {
+                                      final blob = html.Blob(
+                                          [fileUint8], 'application/pdf');
+                                      final url =
+                                          html.Url.createObjectUrlFromBlob(
+                                              blob);
+                                      html.window.open(url, '_blank');
+                                      html.Url.revokeObjectUrl(url);
+                                    }
+                                  : () => OpenFilex.open(path),
                             ),
                           ],
                         ),
