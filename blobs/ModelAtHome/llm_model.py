@@ -3,11 +3,11 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from transformers.utils import (
     is_flash_attn_2_available,
 )  # https://github.com/Dao-AILab/flash-attention
-from data_models.request_data_model import RequestData
 from sentence_transformers import SentenceTransformer
-from data_models.chat_room import ChatRoom
 from functools import partial
 
+from data_models.chat_room import ChatRoom
+from data_models.post_generate_text_model import PostGenerateText
 
 class Model:
     def __init__(self, model_id: str):
@@ -65,7 +65,7 @@ class Model:
             repetition_penalty=repetition_penalty,
         )
 
-    async def generate_text(self, data: RequestData) -> str:
+    async def generate_text(self, data: PostGenerateText) -> str:
         prompt = self.chat_room.build_prompt(data.query)
         print(f"Builded prompt: {prompt}")
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.to(

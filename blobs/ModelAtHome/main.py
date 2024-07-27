@@ -1,10 +1,11 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from llm_model import Model
-from data_models.request_data_model import RequestData
-from data_models.information_model import InfomationData
 import os
-from data_models.chat_room import ChatRoom
+
+from data_models.post_generate_text_model import PostGenerateText
+from data_models.information_model import InfomationData
+from data_models.post_set_chatroom_model import PostSetChatRoomModel
 
 # Put Your Model Here
 MODEL_ID = "./models/gemma-7b-it/"
@@ -49,15 +50,15 @@ async def get_chatroom_id():
 
 
 @app.post("/set_chatroom")
-async def set_chatroom(data: dict):
+async def set_chatroom(data: PostSetChatRoomModel):
     print(
         f"[set_chatroom] Data: {data}",
     )
-    chat_room.id = data["id"]
-    chat_room.use_preprompt = data["use_preprompt"]
-    chat_room.preprompt = data["preprompt"]
-    chat_room.use_chat_history = data["use_chat_history"]
-    chat_room.chat_history = data["chat_history"]
+    chat_room.id = data.id
+    chat_room.use_preprompt = data.use_preprompt
+    chat_room.preprompt = data.preprompt
+    chat_room.use_chat_history = data.use_chat_history
+    chat_room.chat_history = data.chat_history
 
 @app.delete("/delete_chatroom_knowledge")
 async def delete_chatroom_knowledge(data: dict):
@@ -88,7 +89,7 @@ async def add_context_knowledge(data: UploadFile = File(...)):
 
 
 @app.post("/generate_text")
-async def generate_text(data: RequestData):
+async def generate_text(data: PostGenerateText):
     print(f"[generate_text] Data: {data}")
     output = await llm_model.generate_text(data)
     print(f"[generate_text] Generate Text: {output}")
