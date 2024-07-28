@@ -12,5 +12,6 @@ abstract class BaseModel {
   Function(dynamic value, {String? webFileName})? addKnowledge;
   BaseModel(this.notifyListener);
 
-  Future<String?> generateText(String prompt, Map<String, dynamic> parameters);
+  Future<Map<String, dynamic>?> generateText(
+      String prompt, Map<String, dynamic> parameters);
 }

@@ -110,7 +110,8 @@ class LLMModel extends ChangeNotifier {
     return prompt;
   }
 
-  Future<String?> generateText(BuildContext context, String prompt) async {
+  Future<Map<String, dynamic>?> generateText(
+      BuildContext context, String prompt) async {
     return _llmModel!.generateText(prompt, parameters!).catchError((e) {
       if (kDebugMode) {
         print(e);

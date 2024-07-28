@@ -43,10 +43,14 @@ class ChatConfigCard extends StatelessWidget {
               width: iconSize,
             ),
             const Padding(padding: EdgeInsets.all(4.0)),
-            Text(
-              title,
-              style: TextStyle(
-                  fontSize: titleFontSize, fontWeight: FontWeight.w700),
+            Expanded(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: titleFontSize, fontWeight: FontWeight.w700),
+              ),
             ),
           ],
         ),

@@ -7,7 +7,7 @@ from sentence_transformers import SentenceTransformer
 from functools import partial
 
 from data_models.chat_room import ChatRoom
-from data_models.post_generate_text_model import PostGenerateText
+from data_models.generate_text_model import PostGenerateText, ReturnGeneratedText
 
 class Model:
     def __init__(self, model_id: str):
@@ -41,7 +41,7 @@ class Model:
             attn_implementation=self.attn_implementation,
         )
 
-    def generate_text_for_executor(
+    def generate_text_executor(
         self,
         input_ids,
         max_new_tokens,
@@ -65,8 +65,10 @@ class Model:
             repetition_penalty=repetition_penalty,
         )
 
-    async def generate_text(self, data: PostGenerateText) -> str:
-        prompt = self.chat_room.build_prompt(data.query)
+    async def generate_text(self, data: PostGenerateText) -> ReturnGeneratedText:
+        return_generated_text = ReturnGeneratedText()
+        return_generated_text.query = data.query
+        prompt = self.chat_room.build_prompt(data.query, return_generated_text)
         print(f"Builded prompt: {prompt}")
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.to(
             self.device
@@ -75,7 +77,7 @@ class Model:
         output = await loop.run_in_executor(
             None,
             partial(
-                self.generate_text_for_executor,
+                self.generate_text_executor,
                 input_ids,
                 data.max_new_tokens,
                 data.temperature,
@@ -96,4 +98,5 @@ class Model:
             .strip()
         )
         self.chat_room.update_chat_history(data.query, response)
-        return response
+        return_generated_text.generated_text = response
+        return return_generated_text

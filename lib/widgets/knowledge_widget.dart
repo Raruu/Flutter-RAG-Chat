@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:open_filex/open_filex.dart';
-import 'package:universal_html/html.dart' as html;
 
 import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
@@ -155,17 +153,8 @@ Future<Map<String, dynamic>> knowledgeDialog({
                             IconButton(
                               tooltip: 'Open With',
                               icon: const Icon(Icons.open_in_new_rounded),
-                              onPressed: kIsWeb
-                                  ? () {
-                                      final blob = html.Blob(
-                                          [fileUint8], 'application/pdf');
-                                      final url =
-                                          html.Url.createObjectUrlFromBlob(
-                                              blob);
-                                      html.window.open(url, '_blank');
-                                      html.Url.revokeObjectUrl(url);
-                                    }
-                                  : () => OpenFilex.open(path),
+                              onPressed: () => Utils.openPdfInBrowser(
+                                  kIsWeb ? fileUint8 : path),
                             ),
                           ],
                         ),

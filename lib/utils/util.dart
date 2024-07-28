@@ -6,12 +6,25 @@ import 'package:flutter_rag_chat/models/chat_data_list.dart';
 import 'package:flutter_rag_chat/models/llm_model.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math' as math;
+import 'package:open_filex/open_filex.dart';
+import 'package:universal_html/html.dart' as html;
 
 import 'kafuu_chino.dart';
 import 'my_colors.dart';
 import '../widgets/knowledge_widget.dart';
 
 class Utils<T> {
+  static void openPdfInBrowser(dynamic value) {
+    if (kIsWeb) {
+      final blob = html.Blob([value], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      html.window.open(url, '_blank');
+      html.Url.revokeObjectUrl(url);
+    } else {
+      OpenFilex.open(value);
+    }
+  }
+
   static void dialogAddContext(
       {required BuildContext context,
       required ChatDataList chatDataList,

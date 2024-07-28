@@ -4,6 +4,8 @@ from fastapi import UploadFile
 import re, torch, fitz
 from sentence_transformers import SentenceTransformer, util
 
+from data_models.generate_text_model import ReturnGeneratedText
+
 
 class ChatRoom:
     def __init__(self, device: str, embedding_model: SentenceTransformer):
@@ -83,18 +85,28 @@ class ChatRoom:
                             for i in range(k)
                         ],
                         "top_products": top_products,
+                        "page_number": item["page_number"],
+                        "filename": knowledges["filename"],
                     }
                 )
         top_products_avg = top_products_avg / len_top_products_avg
         higher_quality_context = []
         for item in possible_contexts:
-            i = 0
-            for context in item["context"]:
+            high_context = []
+            for i in range(len(item["context"])):
                 if i > 3:
                     break
                 if item["top_products"][0][i] > top_products_avg:
-                    higher_quality_context.append(context[item["top_products"][1][i]])
-                i += 1
+                    high_context.append(item["context"][i])
+            if len(high_context) > 0:
+                higher_quality_context.append(
+                    {
+                        "filename": item["filename"],
+                        "page_number": item["page_number"],
+                        "score": item["top_products"][0][i].item(),
+                        "context": high_context,
+                    }
+                )
 
         return higher_quality_context
 
@@ -126,7 +138,7 @@ class ChatRoom:
 
         return [self.joined_sentence_chunks[top_products[1][i]] for i in range(k)]
 
-    def build_prompt(self, query: str):
+    def build_prompt(self, query: str, return_generate_text: ReturnGeneratedText):
         self.query_embedding = self.embedding_model.encode(
             query, convert_to_tensor=True
         ).to(self.device)
@@ -135,7 +147,18 @@ class ChatRoom:
             prompt = self.preprompt
 
         if len(self.context_knowledge) > 0:
-            get_knowledge_context = "\n".join(self.get_context_knowledge())
+            get_knowledge_context = self.get_context_knowledge()
+            print(
+                f"[chat_room/build_prompt] get_context_knowledge : {get_knowledge_context}"
+            )
+
+            return_generate_text.context1 = get_knowledge_context
+            knowledge_list = []
+            for item in get_knowledge_context:
+                for contexts in item["context"]:
+                    for context in contexts:
+                        knowledge_list.append(context)
+            get_knowledge_context = "\n".join(knowledge_list)
             print(
                 f"[chat_room/build_prompt] context_knowledge : {get_knowledge_context}"
             )
@@ -147,6 +170,7 @@ class ChatRoom:
         if self.use_chat_history and len(self.chat_history) > 0:
             self.update_chat_context()
             get_chat_context = "\n".join(self.get_context_chat_history())
+            return_generate_text.context2 = get_chat_context
             print(f"[chat_room/build_prompt] chat_history_context : {get_chat_context}")
             if "{chat_history}" in prompt:
                 prompt = prompt.replace("{chat_history}", get_chat_context)

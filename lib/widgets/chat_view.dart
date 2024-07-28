@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -13,6 +14,7 @@ import '../utils/my_colors.dart';
 import '../models/chat_data_list.dart';
 import 'chat_bubble_typing.dart';
 import '../models/chat_data.dart';
+import './chat_config/chat_config_card.dart';
 
 class ChatView extends StatefulWidget {
   final LLMModel llmModel;
@@ -87,6 +89,21 @@ class _ChatViewState extends State<ChatView> {
     chatDataList.notifyChatDataListner();
   }
 
+  void generateText(BuildContext context, String prompt, ChatData currentData,
+      List<Message> currentMessageList) {
+    widget.llmModel.generateText(context, prompt).then(
+      (value) {
+        if (value == null) {
+          revertMessage(messageList, currentData);
+          return;
+        }
+        receiveMessage(value, currentMessageList);
+      },
+    );
+    currentMessageList
+        .add(Message(message: '', token: 0, role: MessageRole.modelTyping));
+  }
+
   void sendMessage() {
     if (_messageTextEditingController.text.trim().isEmpty) {
       return;
@@ -102,21 +119,10 @@ class _ChatViewState extends State<ChatView> {
     addMessage(Message(message: query, token: token, role: MessageRole.user),
         currentMessageList);
 
-    String prompt = query;
+    generateText(context, query, currentData, currentMessageList);
 
-    widget.llmModel.generateText(context, prompt).then(
-      (value) {
-        if (value == null) {
-          revertMessage(messageList, currentData);
-          return;
-        }
-        receiveMessage(value, currentMessageList);
-      },
-    );
-    currentMessageList
-        .add(Message(message: '', token: 0, role: MessageRole.modelTyping));
     if (isEmpty) {
-      chatDataList.currentData.title = prompt;
+      chatDataList.currentData.title = query;
       widget.llmModel.parameters!.forEach(
           (key, value) => chatDataList.currentData.parameters[key] = value);
 
@@ -124,9 +130,11 @@ class _ChatViewState extends State<ChatView> {
     }
   }
 
-  void receiveMessage(String text, List<Message> messageList) {
-    int token = text.length ~/ 4;
-    addMessage(Message(message: text, token: token, role: MessageRole.model),
+  void receiveMessage(
+      Map<String, dynamic> textData, List<Message> messageList) {
+    int token = textData.length ~/ 4;
+    addMessage(
+        Message(textData: textData, token: token, role: MessageRole.model),
         messageList);
   }
 
@@ -210,8 +218,120 @@ class _ChatViewState extends State<ChatView> {
                           messageList[index].role == MessageRole.user
                               ? MyColors.bgTintPink
                               : MyColors.bgTintBlue,
-                      // TODO Regenerate
-                      regenerate: () {},
+                      showContext: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            content: SizedBox(
+                              width: MediaQuery.sizeOf(context).width * 3 / 4,
+                              child: Wrap(
+                                children: [
+                                  ...List.generate(
+                                    messageList[index]
+                                        .textData['context1']
+                                        .length,
+                                    (indexj) {
+                                      Map<String, dynamic> data =
+                                          messageList[index]
+                                              .textData['context1'][indexj];
+                                      String filename = data['filename'];
+                                      int pageNumber = data['page_number'];
+                                      double score = data['score'];
+
+                                      List<dynamic> contextData =
+                                          data['context'][0];
+                                      return ChatConfigCard(
+                                        title: '[$pageNumber] $filename',
+                                        strIcon: SvgIcons.knowledge,
+                                        expandedCrossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      'File Name: $filename',
+                                                      style: const TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w700),
+                                                    ),
+                                                    const Padding(
+                                                        padding: EdgeInsets
+                                                            .symmetric(
+                                                                horizontal:
+                                                                    1.0)),
+                                                    IconButton(
+                                                      onPressed: () {
+                                                        var knowledge = chatDataList
+                                                            .currentData
+                                                            .knowledges
+                                                            .where((element) =>
+                                                                element[
+                                                                    'title'] ==
+                                                                filename)
+                                                            .toList()
+                                                            .first;
+                                                        var value = kIsWeb
+                                                            ? knowledge[
+                                                                'web_data']
+                                                            : knowledge['path'];
+                                                        Utils.openPdfInBrowser(
+                                                            value);
+                                                      },
+                                                      icon: const Icon(
+                                                          Icons.open_in_new),
+                                                    )
+                                                  ],
+                                                ),
+                                                Text(
+                                                  'Page: $pageNumber\nScore: $score\nContext:',
+                                                  style: const TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.w700),
+                                                ),
+                                                ...List.generate(
+                                                  contextData.length,
+                                                  (indexz) =>
+                                                      Text(contextData[indexz]),
+                                                )
+                                              ],
+                                            ),
+                                          )
+                                        ],
+                                      );
+                                    },
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      regenerate: () async {
+                        String query = messageList[index].textData['query'];
+                        messageList.remove(messageList[index]);
+                        widget.llmModel.onChatSettingsChanged?.call();
+                        ChatData currentData = chatDataList.currentData;
+                        List<Message> currentMessageList = messageList;
+                        await widget.llmModel.onChatSettingsChanged?.call();
+                        generateText(
+                            // ignore: use_build_context_synchronously
+                            context,
+                            query,
+                            currentData,
+                            currentMessageList);
+                        setState(() {});
+                      },
                       deleteFunc: () async {
                         if (await Utils.showDialogYesNo(
                             context: context,

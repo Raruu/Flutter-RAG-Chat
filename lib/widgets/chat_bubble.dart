@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rag_chat/utils/my_colors.dart';
 
 import '../models/message.dart';
 
@@ -40,8 +41,12 @@ class ChatBubble extends StatelessWidget {
             children: [
               Visibility(
                 visible: role == MessageRole.model,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 4.0),
+                child: Container(
+                  padding: const EdgeInsets.all(2.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: MyColors.bgSelectedBlue.withOpacity(0.5),
+                  ),
                   child: Wrap(
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
@@ -65,6 +70,7 @@ class ChatBubble extends StatelessWidget {
                   ),
                 ),
               ),
+              const Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
               SelectableText(
                 text,
                 style: const TextStyle(fontSize: 18),

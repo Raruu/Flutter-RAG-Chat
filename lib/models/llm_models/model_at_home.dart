@@ -201,7 +201,7 @@ class ModelAtHome<T> extends BaseModel {
   }
 
   @override
-  Future<String?> generateText(
+  Future<Map<String, dynamic>?> generateText(
     String prompt,
     Map<String, dynamic> parameters,
   ) async {
@@ -226,7 +226,13 @@ class ModelAtHome<T> extends BaseModel {
       );
 
       if (response.statusCode == 200) {
-        return formatOutputText(response.body);
+        var responseJson = jsonDecode(response.body);
+        return {
+          'context1': responseJson['context1'],
+          'context2': responseJson['context2'],
+          'query': responseJson['query'],
+          'generated_text': formatOutputText(responseJson['generated_text']),
+        };
       } else {
         throw (response.statusCode);
       }
