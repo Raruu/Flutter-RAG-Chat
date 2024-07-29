@@ -224,94 +224,102 @@ class _ChatViewState extends State<ChatView> {
                           builder: (context) => AlertDialog(
                             content: SizedBox(
                               width: MediaQuery.sizeOf(context).width * 3 / 4,
-                              child: Wrap(
-                                children: [
-                                  ...List.generate(
-                                    messageList[index]
-                                        .textData['context1']
-                                        .length,
-                                    (indexj) {
-                                      Map<String, dynamic> data =
-                                          messageList[index]
-                                              .textData['context1'][indexj];
-                                      String filename = data['filename'];
-                                      int pageNumber = data['page_number'];
-                                      double score = data['score'];
+                              child: SingleChildScrollView(
+                                child: Wrap(
+                                  children: [
+                                    ...List.generate(
+                                      messageList[index]
+                                          .textData['context1']
+                                          .length,
+                                      (indexj) {
+                                        Map<String, dynamic> data =
+                                            messageList[index]
+                                                .textData['context1'][indexj];
+                                        String filename = data['filename'];
+                                        int pageNumber = data['page_number'];
+                                        double score = data['score'];
 
-                                      List<dynamic> contextData =
-                                          data['context'][0];
-                                      return ChatConfigCard(
-                                        title: '[$pageNumber] $filename',
-                                        strIcon: SvgIcons.knowledge,
-                                        expandedCrossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      'File Name: $filename',
-                                                      style: const TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w700),
-                                                    ),
-                                                    const Padding(
-                                                        padding: EdgeInsets
-                                                            .symmetric(
-                                                                horizontal:
-                                                                    1.0)),
-                                                    IconButton(
-                                                      onPressed: () {
-                                                        var knowledge = chatDataList
-                                                            .currentData
-                                                            .knowledges
-                                                            .where((element) =>
-                                                                element[
-                                                                    'title'] ==
-                                                                filename)
-                                                            .toList()
-                                                            .first;
-                                                        var value = kIsWeb
-                                                            ? knowledge[
-                                                                'web_data']
-                                                            : knowledge['path'];
-                                                        Utils.openPdfInBrowser(
-                                                            value);
-                                                      },
-                                                      icon: const Icon(
-                                                          Icons.open_in_new),
-                                                    )
-                                                  ],
-                                                ),
-                                                Text(
-                                                  'Page: $pageNumber\nScore: $score\nContext:',
-                                                  style: const TextStyle(
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w700),
-                                                ),
-                                                ...List.generate(
-                                                  contextData.length,
-                                                  (indexz) =>
-                                                      Text(contextData[indexz]),
-                                                )
-                                              ],
-                                            ),
-                                          )
-                                        ],
-                                      );
-                                    },
-                                  )
-                                ],
+                                        List<dynamic> contextData =
+                                            data['context'][0];
+                                        return ChatConfigCard(
+                                          title: '[$pageNumber] $filename',
+                                          strIcon: SvgIcons.knowledge,
+                                          expandedCrossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8.0),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        'File Name: $filename',
+                                                        style: const TextStyle(
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w700),
+                                                      ),
+                                                      const Padding(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                                  horizontal:
+                                                                      1.0)),
+                                                      IconButton(
+                                                        onPressed: () {
+                                                          var knowledge = chatDataList
+                                                              .currentData
+                                                              .knowledges
+                                                              .where((element) =>
+                                                                  element[
+                                                                      'title'] ==
+                                                                  filename)
+                                                              .toList()
+                                                              .first;
+                                                          var value = kIsWeb
+                                                              ? knowledge[
+                                                                  'web_data']
+                                                              : knowledge[
+                                                                  'path'];
+                                                          Utils.openPdf(value,
+                                                              context: context,
+                                                              title: filename,
+                                                              pageAt:
+                                                                  pageNumber);
+                                                        },
+                                                        icon: const Icon(
+                                                            Icons.open_in_new),
+                                                      )
+                                                    ],
+                                                  ),
+                                                  Text(
+                                                    'Page: $pageNumber\nScore: $score\nContext:',
+                                                    style: const TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w700),
+                                                  ),
+                                                  ...List.generate(
+                                                    contextData.length,
+                                                    (indexz) => Text(
+                                                        contextData[indexz]),
+                                                  )
+                                                ],
+                                              ),
+                                            )
+                                          ],
+                                        );
+                                      },
+                                    )
+                                  ],
+                                ),
                               ),
                             ),
                           ),

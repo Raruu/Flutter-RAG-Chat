@@ -70,6 +70,8 @@ class ChatRoom:
         possible_contexts = []
         for knowledges in self.context_knowledge:
             for item in knowledges["pages_and_texts"]:
+                if len(item["sentences_chunks"]) <= 0:
+                    continue
                 dot_scores = util.dot_score(
                     a=self.query_embedding, b=item["embeddings"]
                 )[0]
@@ -138,6 +140,7 @@ class ChatRoom:
 
         return [self.joined_sentence_chunks[top_products[1][i]] for i in range(k)]
 
+    # TODO Optomize this
     def build_prompt(self, query: str, return_generate_text: ReturnGeneratedText):
         self.query_embedding = self.embedding_model.encode(
             query, convert_to_tensor=True

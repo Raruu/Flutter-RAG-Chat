@@ -242,6 +242,9 @@ class ModelAtHome<T> extends BaseModel {
   }
 
   String formatOutputText(String text) {
+    if (text.isEmpty) {
+      return text;
+    }
     String formattedString =
         text.substring(1, text.length - 1).replaceAll('\\n', '\n');
     return formattedString;

@@ -22,6 +22,8 @@ class PinkTextField extends StatefulWidget {
   final bool multiLine;
   final Color backgroundColor;
   final bool newLineOnEnter;
+  final TextInputType? textInputType;
+  final TextAlign textAlign;
 
   const PinkTextField({
     super.key,
@@ -42,6 +44,8 @@ class PinkTextField extends StatefulWidget {
     this.newLineOnEnter = true,
     this.tooltipIconLeft,
     this.tooltipIconRight,
+    this.textInputType,
+    this.textAlign = TextAlign.start,
   });
 
   @override
@@ -84,8 +88,9 @@ class _PinkTextFieldState extends State<PinkTextField> {
   @override
   Widget build(BuildContext context) {
     return TextField(
-      keyboardType:
-          widget.multiLine ? TextInputType.multiline : TextInputType.text,
+      textAlign: widget.textAlign,
+      keyboardType: widget.textInputType ??
+          (widget.multiLine ? TextInputType.multiline : TextInputType.text),
       maxLines: widget.multiLine ? null : 1,
       onEditingComplete: widget.onEditingComplete,
       onChanged: widget.onChanged,
@@ -93,8 +98,6 @@ class _PinkTextFieldState extends State<PinkTextField> {
       focusNode: _focus,
       style: const TextStyle(fontWeight: FontWeight.w700),
       decoration: InputDecoration(
-        // floatingLabelBehavior: FloatingLabelBehavior.always,
-        // alignLabelWithHint: true,
         labelText: widget.labelText,
         prefixIcon: widget.strIconLeft == null
             ? null

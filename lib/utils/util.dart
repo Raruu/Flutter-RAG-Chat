@@ -4,9 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/models/chat_data_list.dart';
 import 'package:flutter_rag_chat/models/llm_model.dart';
+import 'package:flutter_rag_chat/utils/svg_icons.dart';
+import 'package:flutter_rag_chat/widgets/pink_textfield.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math' as math;
 import 'package:open_filex/open_filex.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:universal_html/html.dart' as html;
 
 import 'kafuu_chino.dart';
@@ -14,14 +17,96 @@ import 'my_colors.dart';
 import '../widgets/knowledge_widget.dart';
 
 class Utils<T> {
-  static void openPdfInBrowser(dynamic value) {
+  static void openPdf(
+    dynamic value, {
+    int pageAt = 0,
+    BuildContext? context,
+    String? title,
+  }) async {
     if (kIsWeb) {
       final blob = html.Blob([value], 'application/pdf');
-      final url = html.Url.createObjectUrlFromBlob(blob);
+      final url = '${html.Url.createObjectUrlFromBlob(blob)}#page=$pageAt';
       html.window.open(url, '_blank');
       html.Url.revokeObjectUrl(url);
     } else {
-      OpenFilex.open(value);
+      if (context != null) {
+        PdfViewerController pdfViewerController = PdfViewerController();
+        TextEditingController textEditingController = TextEditingController();
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(Icons.arrow_back_ios_rounded)),
+                    const Padding(padding: EdgeInsets.all(1.0)),
+                    Text(title ?? ''),
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => pdfViewerController.zoomDown(),
+                      icon: const Icon(Icons.zoom_out_rounded),
+                    ),
+                    IconButton(
+                      onPressed: () => pdfViewerController.zoomUp(),
+                      icon: const Icon(Icons.zoom_in_rounded),
+                    ),
+                    SizedBox(
+                        width: 180,
+                        child: PinkTextField(
+                          textEditingController: textEditingController,
+                          strIconLeft: SvgIcons.iconamoonPlayerPreviousFill,
+                          textInputType: TextInputType.number,
+                          hintText: '',
+                          labelText: 'Page',
+                          textAlign: TextAlign.center,
+                          onChanged: (value) {
+                            int goPage = int.tryParse(value) ??
+                                pdfViewerController.pageNumber!;
+
+                            pdfViewerController.goToPage(
+                                pageNumber: goPage,
+                                duration: const Duration(microseconds: 0));
+                          },
+                          tooltipIconLeft: 'Previous',
+                          leftButtonFunc: () => pdfViewerController.goToPage(
+                              pageNumber: pdfViewerController.pageNumber! - 1),
+                          strIconRight: SvgIcons.iconamoonPlayerNextFill,
+                          tooltipIconRight: 'Next',
+                          rightButtonFunc: () => pdfViewerController.goToPage(
+                              pageNumber: pdfViewerController.pageNumber! + 1),
+                        )),
+                  ],
+                )
+              ],
+            ),
+            content: SizedBox(
+              width: MediaQuery.sizeOf(context).width,
+              height: MediaQuery.sizeOf(context).height,
+              child: PdfViewer.file(
+                value,
+                controller: pdfViewerController,
+                initialPageNumber: pageAt,
+                params: PdfViewerParams(
+                  onPageChanged: (pageNumber) =>
+                      textEditingController.text = pageNumber.toString(),
+                ),
+              ),
+            ),
+          ),
+        );
+        textEditingController.dispose();
+      } else {
+        OpenFilex.open(value);
+      }
     }
   }
 
