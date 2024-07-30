@@ -19,10 +19,10 @@ class InfomationData(BaseModel):
         gpu_name = gpus[0].name
         vram = self.get_vram()
         ram = self.get_ram()
-        len_context_knowledge = len(llm_model.chat_room.context_knowledge)
+        len_context_knowledge = len(llm_model.chat_room.context_knowledges)
         if len_context_knowledge > 0:
             list_context_knowledge = [
-                llm_model.chat_room.context_knowledge[i]["filename"]
+                llm_model.chat_room.context_knowledges[i]["filename"]
                 for i in range(len_context_knowledge)
             ]
         else:

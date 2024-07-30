@@ -239,8 +239,7 @@ class _ChatViewState extends State<ChatView> {
                                         int pageNumber = data['page_number'];
                                         double score = data['score'];
 
-                                        List<dynamic> contextData =
-                                            data['context'][0];
+                                        String contextData = data['context'];
                                         return ChatConfigCard(
                                           title: '[$pageNumber] $filename',
                                           strIcon: SvgIcons.knowledge,
@@ -306,11 +305,7 @@ class _ChatViewState extends State<ChatView> {
                                                         fontWeight:
                                                             FontWeight.w700),
                                                   ),
-                                                  ...List.generate(
-                                                    contextData.length,
-                                                    (indexz) => Text(
-                                                        contextData[indexz]),
-                                                  )
+                                                  Text(contextData)
                                                 ],
                                               ),
                                             )

@@ -1,7 +1,7 @@
 from spacy.lang.en import English
 from helper import *
 from fastapi import UploadFile
-import re, torch, fitz
+import torch, fitz
 from sentence_transformers import SentenceTransformer, util
 
 from data_models.generate_text_model import ReturnGeneratedText
@@ -19,19 +19,19 @@ class ChatRoom:
         self.preprompt = ""
         self.use_preprompt = False
         self.chat_context_embedding = None
-        self.context_knowledge = []
+        self.context_knowledges = []
 
     def delete_context_knowledge(self, filename: str):
         if filename == "":
-            for contexts in self.context_knowledge:
-                self.context_knowledge.remove(contexts)
+            for contexts in self.context_knowledges:
+                self.context_knowledges.remove(contexts)
                 del contexts
-            self.context_knowledge = []
+            self.context_knowledges = []
             return True
         else:
-            for contexts in self.context_knowledge:
+            for contexts in self.context_knowledges:
                 if contexts["filename"] == filename:
-                    self.context_knowledge.remove(contexts)
+                    self.context_knowledges.remove(contexts)
                     del contexts
                     return True
         return False
@@ -54,7 +54,7 @@ class ChatRoom:
             ).to(self.device)
             pages_and_texts.append(
                 {
-                    "page_number": page_number,
+                    "page_number": page_number+1,
                     "text": text,
                     "sentences_chunks": sentences_chunks,
                     "joined_sentence_chunk": joined_sentence_chunk,
@@ -62,55 +62,35 @@ class ChatRoom:
                 }
             )
         new_dict["pages_and_texts"] = pages_and_texts
-        self.context_knowledge.append(new_dict)
+        self.context_knowledges.append(new_dict)
 
     def get_context_knowledge(self):
         top_products_avg = torch.zeros(1).to(self.device)
         len_top_products_avg = 0
         possible_contexts = []
-        for knowledges in self.context_knowledge:
-            for item in knowledges["pages_and_texts"]:
-                if len(item["sentences_chunks"]) <= 0:
-                    continue
-                dot_scores = util.dot_score(
-                    a=self.query_embedding, b=item["embeddings"]
-                )[0]
-                k = clamp(len(dot_scores), 0, 5)
-                top_products = torch.topk(dot_scores, k=k)
-                for i in top_products[0]:
-                    top_products_avg += i
-                len_top_products_avg += k
+        for knowledge in self.context_knowledges:
+            pages_and_texts = knowledge["pages_and_texts"]
+            dot_scores = util.dot_score(
+                a=self.query_embedding,
+                b=torch.stack([pages_and_texts[i]["embeddings"] for i in range(len(pages_and_texts))]),
+            )[0]
+            k = clamp(len(dot_scores), 0, 5)
+            top_products = torch.topk(dot_scores, k=k)
+            for i in top_products[0]:
+                top_products_avg += i
+            len_top_products_avg += k
+
+            for score, idx in zip(top_products[0], top_products[1]):
                 possible_contexts.append(
                     {
-                        "context": [
-                            item["sentences_chunks"][top_products[1][i]]
-                            for i in range(k)
-                        ],
-                        "top_products": top_products,
-                        "page_number": item["page_number"],
-                        "filename": knowledges["filename"],
-                    }
-                )
-        top_products_avg = top_products_avg / len_top_products_avg
-        higher_quality_context = []
-        for item in possible_contexts:
-            high_context = []
-            for i in range(len(item["context"])):
-                if i > 3:
-                    break
-                if item["top_products"][0][i] > top_products_avg:
-                    high_context.append(item["context"][i])
-            if len(high_context) > 0:
-                higher_quality_context.append(
-                    {
-                        "filename": item["filename"],
-                        "page_number": item["page_number"],
-                        "score": item["top_products"][0][i].item(),
-                        "context": high_context,
+                        "context": pages_and_texts[idx]["joined_sentence_chunk"],
+                        "score": score.item(),
+                        "page_number": pages_and_texts[idx]["page_number"],
+                        "filename": knowledge["filename"],
                     }
                 )
 
-        return higher_quality_context
+        return possible_contexts
 
     def update_chat_history(self, user_input, response):
         self.chat_history.append(f"User: {user_input}")
@@ -140,7 +120,6 @@ class ChatRoom:
 
         return [self.joined_sentence_chunks[top_products[1][i]] for i in range(k)]
 
-    # TODO Optomize this
     def build_prompt(self, query: str, return_generate_text: ReturnGeneratedText):
         self.query_embedding = self.embedding_model.encode(
             query, convert_to_tensor=True
@@ -149,7 +128,7 @@ class ChatRoom:
         if self.use_preprompt:
             prompt = self.preprompt
 
-        if len(self.context_knowledge) > 0:
+        if len(self.context_knowledges) > 0:
             get_knowledge_context = self.get_context_knowledge()
             print(
                 f"[chat_room/build_prompt] get_context_knowledge : {get_knowledge_context}"
@@ -158,9 +137,8 @@ class ChatRoom:
             return_generate_text.context1 = get_knowledge_context
             knowledge_list = []
             for item in get_knowledge_context:
-                for contexts in item["context"]:
-                    for context in contexts:
-                        knowledge_list.append(context)
+                knowledge_list.append(item["context"])
+
             get_knowledge_context = "\n".join(knowledge_list)
             print(
                 f"[chat_room/build_prompt] context_knowledge : {get_knowledge_context}"

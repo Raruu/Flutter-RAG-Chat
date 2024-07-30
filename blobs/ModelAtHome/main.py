@@ -67,7 +67,7 @@ async def delete_chatroom_knowledge(data: dict):
 @app.delete("/reset_chatroom_knowledge")
 async def reset_chatroom_knowledge():
     chat_room.delete_context_knowledge("")
-    return len(chat_room.context_knowledge)
+    return len(chat_room.context_knowledges)
 
 
 @app.post("/set_chatroom_knowledge")
@@ -78,14 +78,14 @@ async def set_chatroom_knowledge(data: list[UploadFile] = File(...)):
     chat_room.delete_context_knowledge("")
     for item in data:
         await chat_room.add_context_knowledge(item)
-    return len(chat_room.context_knowledge)
+    return len(chat_room.context_knowledges)
 
 
 @app.post("/add_context_knowledge")
 async def add_context_knowledge(data: UploadFile = File(...)):
     print(f"[add_context_knowledge] Data: {data}")
     await chat_room.add_context_knowledge(data)
-    return len(chat_room.context_knowledge)
+    return len(chat_room.context_knowledges)
 
 
 @app.post("/generate_text", response_model=ReturnGeneratedText)
