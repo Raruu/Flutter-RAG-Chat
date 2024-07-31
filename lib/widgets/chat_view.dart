@@ -74,13 +74,16 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
-  void revertMessage(List<Message> currentMessageList, ChatData currentData) {
-    var lastMessage = currentMessageList.removeLast();
+  void removeMessage(List<Message> currentMessageList, ChatData currentData,
+      {int? removeIdx}) {
+    removeIdx ??= currentMessageList.length - 1;
+    var lastMessage = currentMessageList.removeAt(removeIdx);
     if (lastMessage.role == MessageRole.modelTyping) {
-      lastMessage = currentMessageList.removeLast();
+      lastMessage = currentMessageList.removeAt(removeIdx);
     }
     if (lastMessage.role == MessageRole.user &&
-        currentMessageList == messageList) {
+        currentMessageList == messageList &&
+        _messageTextEditingController.text.isEmpty) {
       _messageTextEditingController.text = lastMessage.message;
     }
     if (currentMessageList.isEmpty) {
@@ -94,7 +97,7 @@ class _ChatViewState extends State<ChatView> {
     widget.llmModel.generateText(context, prompt).then(
       (value) {
         if (value == null) {
-          revertMessage(messageList, currentData);
+          removeMessage(messageList, currentData);
           return;
         }
         receiveMessage(value, currentMessageList);
@@ -102,6 +105,22 @@ class _ChatViewState extends State<ChatView> {
     );
     currentMessageList
         .add(Message(message: '', token: 0, role: MessageRole.modelTyping));
+  }
+
+  void regenerateText(int index, {String? query}) async {
+    query ??= messageList[index].textData['query'];
+    messageList.remove(messageList[index]);
+    widget.llmModel.onChatSettingsChanged?.call();
+    ChatData currentData = chatDataList.currentData;
+    List<Message> currentMessageList = messageList;
+    await widget.llmModel.onChatSettingsChanged?.call();
+    generateText(
+        // ignore: use_build_context_synchronously
+        context,
+        query!,
+        currentData,
+        currentMessageList);
+    setState(() {});
   }
 
   void sendMessage() {
@@ -218,132 +237,178 @@ class _ChatViewState extends State<ChatView> {
                           messageList[index].role == MessageRole.user
                               ? MyColors.bgTintPink
                               : MyColors.bgTintBlue,
-                      showContext: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            content: SizedBox(
-                              width: MediaQuery.sizeOf(context).width * 3 / 4,
-                              child: SingleChildScrollView(
-                                child: Wrap(
-                                  children: [
-                                    ...List.generate(
-                                      messageList[index]
-                                          .textData['context1']
-                                          .length,
-                                      (indexj) {
-                                        Map<String, dynamic> data =
+                      showContext: (messageList[index]
+                                  .textData['context1']
+                                  ?.isEmpty ??
+                              true)
+                          ? null
+                          : () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  content: SizedBox(
+                                    width: MediaQuery.sizeOf(context).width *
+                                        3 /
+                                        4,
+                                    child: SingleChildScrollView(
+                                      child: Wrap(
+                                        children: [
+                                          ...List.generate(
                                             messageList[index]
-                                                .textData['context1'][indexj];
-                                        String filename = data['filename'];
-                                        int pageNumber = data['page_number'];
-                                        double score = data['score'];
+                                                .textData['context1']
+                                                .length,
+                                            (indexj) {
+                                              Map<String, dynamic> data =
+                                                  messageList[index]
+                                                          .textData['context1']
+                                                      [indexj];
+                                              String filename =
+                                                  data['filename'];
+                                              int pageNumber =
+                                                  data['page_number'];
+                                              double score = data['score'];
 
-                                        String contextData = data['context'];
-                                        return ChatConfigCard(
-                                          title: '[$pageNumber] $filename',
-                                          strIcon: SvgIcons.knowledge,
-                                          expandedCrossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 8.0),
-                                              child: Column(
-                                                crossAxisAlignment:
+                                              String contextData =
+                                                  data['context'];
+                                              return ChatConfigCard(
+                                                title:
+                                                    '[$pageNumber] $filename',
+                                                strIcon: SvgIcons.knowledge,
+                                                expandedCrossAxisAlignment:
                                                     CrossAxisAlignment.start,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
                                                 children: [
-                                                  Row(
-                                                    children: [
-                                                      Text(
-                                                        'File Name: $filename',
-                                                        style: const TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .w700),
-                                                      ),
-                                                      const Padding(
-                                                          padding: EdgeInsets
-                                                              .symmetric(
-                                                                  horizontal:
-                                                                      1.0)),
-                                                      IconButton(
-                                                        onPressed: () {
-                                                          var knowledge = chatDataList
-                                                              .currentData
-                                                              .knowledges
-                                                              .where((element) =>
-                                                                  element[
-                                                                      'title'] ==
-                                                                  filename)
-                                                              .toList()
-                                                              .first;
-                                                          var value = kIsWeb
-                                                              ? knowledge[
-                                                                  'web_data']
-                                                              : knowledge[
-                                                                  'path'];
-                                                          Utils.openPdf(value,
-                                                              context: context,
-                                                              title: filename,
-                                                              pageAt:
-                                                                  pageNumber);
-                                                        },
-                                                        icon: const Icon(
-                                                            Icons.open_in_new),
-                                                      )
-                                                    ],
-                                                  ),
-                                                  Text(
-                                                    'Page: $pageNumber\nScore: $score\nContext:',
-                                                    style: const TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w700),
-                                                  ),
-                                                  Text(contextData)
+                                                  Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 8.0),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              'File Name: $filename',
+                                                              style: const TextStyle(
+                                                                  fontSize: 14,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700),
+                                                            ),
+                                                            const Padding(
+                                                                padding: EdgeInsets
+                                                                    .symmetric(
+                                                                        horizontal:
+                                                                            1.0)),
+                                                            IconButton(
+                                                              onPressed: () {
+                                                                var knowledge = chatDataList
+                                                                    .currentData
+                                                                    .knowledges
+                                                                    .where((element) =>
+                                                                        element[
+                                                                            'title'] ==
+                                                                        filename)
+                                                                    .toList()
+                                                                    .first;
+                                                                var value = kIsWeb
+                                                                    ? knowledge[
+                                                                        'web_data']
+                                                                    : knowledge[
+                                                                        'path'];
+                                                                Utils.openPdf(
+                                                                    value,
+                                                                    context:
+                                                                        context,
+                                                                    title:
+                                                                        filename,
+                                                                    pageAt:
+                                                                        pageNumber);
+                                                              },
+                                                              icon: const Icon(Icons
+                                                                  .open_in_new),
+                                                            )
+                                                          ],
+                                                        ),
+                                                        Text(
+                                                          'Page: $pageNumber\nScore: $score\nContext:',
+                                                          style: const TextStyle(
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w700),
+                                                        ),
+                                                        Text(contextData)
+                                                      ],
+                                                    ),
+                                                  )
                                                 ],
-                                              ),
-                                            )
-                                          ],
-                                        );
-                                      },
-                                    )
-                                  ],
+                                              );
+                                            },
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                      regenerate: () async {
-                        String query = messageList[index].textData['query'];
-                        messageList.remove(messageList[index]);
-                        widget.llmModel.onChatSettingsChanged?.call();
-                        ChatData currentData = chatDataList.currentData;
-                        List<Message> currentMessageList = messageList;
-                        await widget.llmModel.onChatSettingsChanged?.call();
-                        generateText(
-                            // ignore: use_build_context_synchronously
-                            context,
-                            query,
-                            currentData,
-                            currentMessageList);
-                        setState(() {});
-                      },
+                              );
+                            },
+                      regenerate: () => regenerateText(index),
                       deleteFunc: () async {
                         if (await Utils.showDialogYesNo(
                             context: context,
                             title: const Text('Delete Message?'),
                             content: const Text('. . .'))) {
-                          messageList.remove(messageList[index]);
+                          removeMessage(
+                            messageList,
+                            chatDataList.currentData,
+                            removeIdx: index,
+                          );
                           widget.llmModel.onChatSettingsChanged?.call();
                         }
                       },
+                      userEditFunc: index == messageList.length - 2
+                          ? () async {
+                              TextEditingController textEditingController =
+                                  TextEditingController()
+                                    ..text = messageList[index].message;
+                              bool result = await Utils.showDialogYesNo(
+                                context: context,
+                                title: Container(
+                                  constraints: BoxConstraints(
+                                      minWidth:
+                                          MediaQuery.sizeOf(context).width *
+                                              1 /
+                                              4),
+                                  child: const Text(
+                                    'Edit Message',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                                content: PinkTextField(
+                                  textEditingController: textEditingController,
+                                  hintText: '',
+                                  labelText: 'Message',
+                                  backgroundColor: MyColors.bgTintBlue,
+                                ),
+                              );
+                              if (result) {
+                                messageList[index].message =
+                                    textEditingController.text;
+                              }
+                              if (messageList.length - 1 == index + 1) {
+                                regenerateText(index + 1,
+                                    query: textEditingController.text);
+                              }
+                              textEditingController.dispose();
+                            }
+                          : null,
                     ),
                   ),
                 );
