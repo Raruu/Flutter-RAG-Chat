@@ -18,13 +18,17 @@ import './chat_config/chat_config_card.dart';
 
 class ChatView extends StatefulWidget {
   final LLMModel llmModel;
-  final Function()? functionChatConfig;
+  final Function()? chatConfigFunc;
   final bool isChatConfigOpen;
+  final bool mobileUI;
+  final Function()? backFunc;
   const ChatView({
     super.key,
     required this.llmModel,
-    this.functionChatConfig,
+    this.chatConfigFunc,
     required this.isChatConfigOpen,
+    this.mobileUI = false,
+    this.backFunc,
   });
 
   @override
@@ -79,7 +83,7 @@ class _ChatViewState extends State<ChatView> {
     removeIdx ??= currentMessageList.length - 1;
     var lastMessage = currentMessageList.removeAt(removeIdx);
     if (lastMessage.role == MessageRole.modelTyping) {
-      lastMessage = currentMessageList.removeAt(removeIdx);
+      lastMessage = currentMessageList.removeLast();
     }
     if (lastMessage.role == MessageRole.user &&
         currentMessageList == messageList &&
@@ -145,7 +149,7 @@ class _ChatViewState extends State<ChatView> {
       widget.llmModel.parameters!.forEach(
           (key, value) => chatDataList.currentData.parameters[key] = value);
 
-      chatDataList.add(chatDataList.currentData);
+      chatDataList.add(chatDataList.currentData, context: context);
     }
   }
 
@@ -425,43 +429,69 @@ class _ChatViewState extends State<ChatView> {
       isShowExpandedChild: isExpandTopSection && messageList.isNotEmpty,
       chatTitle: chatDataList.currentData.title,
       chatSubtitle: '${chatDataList.currentData.totalToken} Tokens~',
+      leftWidget: widget.mobileUI
+          ? SizedBox(
+              width: 24,
+              child: IconButton(
+                  onPressed: widget.backFunc,
+                  padding: const EdgeInsets.all(0),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded)),
+            )
+          : null,
       rightWidget: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           widget.llmModel.informationWidget,
-          const Padding(padding: EdgeInsets.all(10.0)),
-          Ink(
-            decoration: ShapeDecoration(
-              shape: const CircleBorder(),
-              color: widget.isChatConfigOpen
-                  ? MyColors.bgTintPink.withOpacity(0.5)
-                  : Colors.transparent,
+          if (!widget.mobileUI) const Padding(padding: EdgeInsets.all(10.0)),
+          if (!widget.mobileUI)
+            Ink(
+              decoration: ShapeDecoration(
+                shape: const CircleBorder(),
+                color: widget.isChatConfigOpen
+                    ? MyColors.bgTintPink.withOpacity(0.5)
+                    : Colors.transparent,
+              ),
+              child: IconButton(
+                  hoverColor: MyColors.bgTintPink.withOpacity(0.5),
+                  highlightColor: MyColors.bgTintPink,
+                  onPressed: widget.chatConfigFunc,
+                  icon: SvgPicture.string(
+                    SvgIcons.fluentSettingsChat,
+                    width: 30,
+                    height: 30,
+                  )),
             ),
-            child: IconButton(
-                hoverColor: MyColors.bgTintPink.withOpacity(0.5),
-                highlightColor: MyColors.bgTintPink,
-                onPressed: widget.functionChatConfig,
-                icon: SvgPicture.string(
-                  SvgIcons.fluentSettingsChat,
-                  width: 30,
-                  height: 30,
-                )),
-          ),
-          const Padding(padding: EdgeInsets.all(10.0)),
+          if (!widget.mobileUI) const Padding(padding: EdgeInsets.all(10.0)),
           PopupMenuButton(
-            offset: const Offset(0, 40),
+            offset: widget.mobileUI ? const Offset(0, 60) : const Offset(0, 40),
             color: Colors.white,
             icon: SvgPicture.string(
               SvgIcons.dotsVertical,
               width: 30,
               height: 30,
             ),
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                child: Text('Not Implemented'),
-              ),
-            ],
+            itemBuilder: (context) => widget.mobileUI
+                ? [
+                    PopupMenuItem(
+                      onTap: widget.chatConfigFunc,
+                      child: Row(
+                        children: [
+                          SvgPicture.string(
+                            SvgIcons.fluentSettingsChat,
+                            width: 30,
+                            height: 30,
+                          ),
+                          const Text('Chat Settings')
+                        ],
+                      ),
+                    )
+                  ]
+                : [
+                    const PopupMenuItem(
+                      child: Text('Not Implemented'),
+                    ),
+                  ],
           )
         ],
       ),
@@ -471,16 +501,38 @@ class _ChatViewState extends State<ChatView> {
       mouseCursor: messageList.isEmpty
           ? SystemMouseCursors.basic
           : SystemMouseCursors.click,
-      onTap: () {
-        if (messageList.isEmpty) {
-          isExpandTopSection = false;
-          return;
-        }
-        setState(() {
-          _expandedEditingController.text = chatDataList.currentData.title;
-          isExpandTopSection = !isExpandTopSection;
-        });
-      },
+      onTap: widget.mobileUI
+          ? () async {
+              if (messageList.isEmpty) {
+                isExpandTopSection = false;
+                return;
+              }
+              _expandedEditingController.text = chatDataList.currentData.title;
+              if (await Utils.showDialogYesNo(
+                context: context,
+                title: const Text(
+                  'Rename',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                content: PinkTextField(
+                  textEditingController: _expandedEditingController,
+                  backgroundColor: MyColors.bgTintBlue,
+                ),
+              )) {
+                renameChat();
+              }
+            }
+          : () {
+              if (messageList.isEmpty) {
+                isExpandTopSection = false;
+                return;
+              }
+              setState(() {
+                _expandedEditingController.text =
+                    chatDataList.currentData.title;
+                isExpandTopSection = !isExpandTopSection;
+              });
+            },
       expandedChild: Padding(
         padding: const EdgeInsets.only(top: 63),
         child: Padding(
@@ -517,12 +569,7 @@ class _ChatViewState extends State<ChatView> {
                           overlayColor:
                               WidgetStatePropertyAll(MyColors.bgTintBlue),
                         ),
-                        onPressed: () {
-                          chatDataList.currentData.title =
-                              _expandedEditingController.text;
-                          isExpandTopSection = false;
-                          chatDataList.notifyChatDataListner();
-                        },
+                        onPressed: renameChat,
                         child: const Text('Save'),
                       ),
                     ),
@@ -534,6 +581,12 @@ class _ChatViewState extends State<ChatView> {
         ),
       ),
     );
+  }
+
+  void renameChat() {
+    chatDataList.currentData.title = _expandedEditingController.text;
+    isExpandTopSection = false;
+    chatDataList.notifyChatDataListner();
   }
 
   Center chatWhenEmpty(BuildContext context) {

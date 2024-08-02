@@ -7,6 +7,7 @@ import 'package:flutter_rag_chat/models/llm_model.dart';
 import 'package:flutter_rag_chat/utils/svg_icons.dart';
 import 'package:flutter_rag_chat/widgets/pink_textfield.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
 import 'package:open_filex/open_filex.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -17,6 +18,10 @@ import 'my_colors.dart';
 import '../widgets/knowledge_widget.dart';
 
 class Utils<T> {
+  static Map<String, List<String>> getURIParameters(BuildContext context) {
+    return GoRouterState.of(context).uri.queryParametersAll;
+  }
+
   static void openPdf(
     dynamic value, {
     int pageAt = 0,

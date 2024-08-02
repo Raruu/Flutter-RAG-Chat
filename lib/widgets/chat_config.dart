@@ -138,7 +138,7 @@ class _ChatConfigState extends State<ChatConfig> {
               expandedCrossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ParameterBool(
-                    textKey: 'Use Chat Conversation Context',
+                    textKey: 'Chat Conversation Context',
                     onChanged: (value) {
                       setState(() {
                         widget.chatDataList.currentData

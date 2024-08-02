@@ -82,7 +82,7 @@ class _InformationWidgetState extends State<InformationWidget> {
                                       dividerColor: Colors.transparent),
                                   child: ChatConfigCard(
                                     title:
-                                        'Knowledge length: ${widget.data.lenContextKnowledge}',
+                                        '${widget.data.lenContextKnowledge} Knowledges',
                                     titleFontSize: 14,
                                     iconSize: 22,
                                     strIcon: SvgIcons.knowledge,
@@ -126,11 +126,14 @@ class _InformationWidgetState extends State<InformationWidget> {
           var vram = widget.data.vram ?? [0, 0];
           String vramPercent =
               'VRAM: ${(vram[0] / vram[1] * 100).toStringAsPrecision(2)}%';
+          var ram = widget.data.ram ?? [0, 0];
+          String ramPercent =
+              'RAM: ${(ram[0] / ram[1] * 100).toStringAsPrecision(2)}%';
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(widget.data.gpuName ?? 'Disconnected'),
+              Text(ramPercent),
               Text(vramPercent),
             ],
           );

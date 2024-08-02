@@ -24,7 +24,7 @@ class PinkTextField extends StatefulWidget {
   final bool newLineOnEnter;
   final TextInputType? textInputType;
   final TextAlign textAlign;
-
+  final FocusNode? focusNode;
   const PinkTextField({
     super.key,
     this.hintText = 'Fill Me',
@@ -46,6 +46,7 @@ class PinkTextField extends StatefulWidget {
     this.tooltipIconRight,
     this.textInputType,
     this.textAlign = TextAlign.start,
+    this.focusNode,
   });
 
   @override
@@ -58,19 +59,18 @@ class _PinkTextFieldState extends State<PinkTextField> {
 
   @override
   void initState() {
-    _focus = FocusNode(
-      onKeyEvent: widget.newLineOnEnter
-          ? null
-          : (node, event) {
-              if (event is KeyDownEvent &&
-                  event.physicalKey == PhysicalKeyboardKey.enter &&
-                  !HardwareKeyboard.instance.isShiftPressed) {
-                widget.onEditingComplete?.call();
-                return KeyEventResult.handled;
-              }
-              return KeyEventResult.ignored;
-            },
-    );
+    _focus = widget.focusNode ?? FocusNode();
+    _focus.onKeyEvent = widget.newLineOnEnter
+        ? null
+        : (node, event) {
+            if (event is KeyDownEvent &&
+                event.physicalKey == PhysicalKeyboardKey.enter &&
+                !HardwareKeyboard.instance.isShiftPressed) {
+              widget.onEditingComplete?.call();
+              return KeyEventResult.handled;
+            }
+            return KeyEventResult.ignored;
+          };
     _focus.addListener(
       () => setState(() {
         isFocused = _focus.hasFocus;
@@ -81,7 +81,9 @@ class _PinkTextFieldState extends State<PinkTextField> {
 
   @override
   void dispose() {
-    _focus.dispose();
+    if (widget.focusNode == null) {
+      _focus.dispose();
+    }
     super.dispose();
   }
 

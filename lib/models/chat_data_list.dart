@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/models/llm_model.dart';
+import 'package:go_router/go_router.dart';
 
 import 'message.dart';
 import 'chat_data.dart';
+import '../utils/util.dart';
 
 class ChatDataList extends ChangeNotifier {
   late final List<ChatData> dataList;
@@ -23,13 +26,16 @@ class ChatDataList extends ChangeNotifier {
     notifyChatDataListner = notifyListeners;
   }
 
-  void newChat({LLMModel? llmModel}) {
+  void newChat({LLMModel? llmModel, BuildContext? context}) {
     currentData = ChatData(messageList: List<Message>.empty(growable: true));
     currentSelected = -1;
+    context?.goNamed('home',
+        queryParameters: {...Utils.getURIParameters(context), 'chat': '-1'});
     llmModel?.resetKnowledge?.call();
   }
 
-  void add(ChatData value, {bool checkDuplicate = false}) {
+  void add(ChatData value,
+      {bool checkDuplicate = false, BuildContext? context}) {
     if (dataList.contains(value) && checkDuplicate) {
       if (kDebugMode) {
         print('Duplicate! ${value.id}');
@@ -37,6 +43,11 @@ class ChatDataList extends ChangeNotifier {
       return;
     }
     dataList.insert(0, value);
+    currentSelected = 0;
+    context?.goNamed('home', queryParameters: {
+      ...Utils.getURIParameters(context),
+      'chat': value.id
+    });
     notifyListeners();
   }
 
@@ -48,13 +59,17 @@ class ChatDataList extends ChangeNotifier {
     }
   }
 
-  void loadData(int index, {LLMModel? llmModel}) {
+  void loadData(int index, {LLMModel? llmModel, BuildContext? context}) {
     if (index > dataList.length - 1 || index < 0) {
       newChat();
       return;
     }
     currentSelected = index;
     currentData = dataList[index];
+    context?.goNamed('home', queryParameters: {
+      ...Utils.getURIParameters(context),
+      'chat': currentData.id
+    });
     llmModel?.setKnowledge?.call(currentData.knowledges);
   }
 

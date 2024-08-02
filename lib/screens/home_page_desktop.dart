@@ -15,14 +15,18 @@ import '../widgets/chat_config.dart';
 import '../widgets/nice_drop_down_button.dart';
 
 class HomePageDesktop extends StatefulWidget {
+  final ChatDataList chatDataList;
   final LLMModel llmModel;
   final int initialMenuSelected;
   final bool initialCtnRightOpen;
+  final TextEditingController searchEditingController;
   const HomePageDesktop({
     super.key,
     required this.llmModel,
     required this.initialMenuSelected,
     required this.initialCtnRightOpen,
+    required this.chatDataList,
+    required this.searchEditingController,
   });
 
   @override
@@ -37,11 +41,11 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
   late int _menuSelected;
   int get menuSelected => _menuSelected;
   set menuSelected(int value) {
-    context.goNamed('home', queryParameters: {
-      ...GoRouterState.of(context).uri.queryParametersAll,
-      'menuSelected': value.toString()
-    });
     setState(() => _menuSelected = (_menuSelected == value) ? -1 : value);
+    context.goNamed('home', queryParameters: {
+      ...Utils.getURIParameters(context),
+      'menuSelected': _menuSelected.toString()
+    });
   }
 
   late bool isCtnRightOpen;
@@ -50,7 +54,6 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
 
   double _tmpCtnLeftWidth = 0;
   double _tmpCtnRightWidth = 0;
-  late ChatDataList chatDataList;
 
   void showChatConfigMenu() {
     isCtnRightOpen = !isCtnRightOpen;
@@ -63,19 +66,10 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
 
   @override
   void initState() {
-    chatDataList = ChatDataList();
-    _searchEditingController = TextEditingController();
+    _searchEditingController = widget.searchEditingController;
     _menuSelected = widget.initialMenuSelected;
     isCtnRightOpen = widget.initialCtnRightOpen;
-    widget.llmModel.context ??= context;
-    widget.llmModel.loadSavedData();
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    _searchEditingController.dispose();
-    super.dispose();
   }
 
   @override
@@ -98,8 +92,8 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
     //     (ctnMidFlex * (width - menuWidth)) / (ctnLeftFlex + ctnMidFlex);
     double ctnRightWidth = (ctnRightFlex * (width - menuWidth)) /
         (ctnLeftFlex + ctnMidFlex + ctnRightFlex);
-    if (ctnRightWidth < 410 && ctnRightFlex > 0) {
-      ctnRightWidth = 410;
+    if (ctnRightWidth < 375 && ctnRightFlex > 0) {
+      ctnRightWidth = 375;
     }
     if (ctnRightWidth != 0) _tmpCtnRightWidth = ctnRightWidth;
     return Scaffold(
@@ -121,7 +115,6 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
               clipBehavior: Clip.antiAlias,
               child: Consumer<ChatDataList>(
                 builder: (context, value, child) {
-                  chatDataList = value;
                   return Row(
                     children: [
                       ctnLeft(ctnLeftWidth),
@@ -157,7 +150,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
                 alignment: Alignment.topCenter,
                 child: ChatConfig(
                   llmModel: widget.llmModel,
-                  chatDataList: chatDataList,
+                  chatDataList: widget.chatDataList,
                 ),
               ),
             ),
@@ -172,7 +165,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
       fit: FlexFit.tight,
       child: ChatView(
         llmModel: widget.llmModel,
-        functionChatConfig: showChatConfigMenu,
+        chatConfigFunc: showChatConfigMenu,
         isChatConfigOpen: isCtnRightOpen,
       ),
     );
@@ -181,9 +174,10 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
   Widget loadCtnLeft(int value) {
     if (value == 0) {
       return ChatList(
-        newChatFunction: () => chatDataList.newChat(llmModel: widget.llmModel),
+        newChatFunction: () => widget.chatDataList
+            .newChat(llmModel: widget.llmModel, context: context),
         searchEditingController: _searchEditingController,
-        chatDataList: chatDataList,
+        chatDataList: widget.chatDataList,
         llmModel: widget.llmModel,
       );
     }

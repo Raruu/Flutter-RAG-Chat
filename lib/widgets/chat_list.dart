@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import 'package:flutter_rag_chat/utils/util.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../models/chat_data.dart';
 import '../models/llm_model.dart';
@@ -13,64 +14,146 @@ import '../models/chat_data_list.dart';
 class ChatList extends StatefulWidget {
   final TextEditingController searchEditingController;
   final ChatDataList chatDataList;
-  final Function() newChatFunction;
+  final Function()? newChatFunction;
   final LLMModel llmModel;
+  final bool mobileUI;
+  final Function()? loadedDataCallback;
   const ChatList({
     super.key,
     required this.searchEditingController,
     required this.chatDataList,
-    required this.newChatFunction,
+    this.newChatFunction,
     required this.llmModel,
+    this.mobileUI = false,
+    this.loadedDataCallback,
   });
 
   @override
   State<ChatList> createState() => _ChatListState();
 }
 
-String getDay(String value) {
-  DateTime dateTimeNow = DateTime.now().toUtc();
-  // print(value.substring(0));
-  final List<String> splittedValue = value.split('-');
-
-  int yearOfValue = int.parse(splittedValue[0]);
-  int todayYear = dateTimeNow.year;
-
-  int monthOfValue = int.parse(splittedValue[1]);
-  int todayMonth = dateTimeNow.month;
-
-  int dateOfValue = int.parse(splittedValue[2]);
-  int todayDate = dateTimeNow.day;
-
-  if (dateOfValue == todayDate) {
-    return 'Today';
-  }
-  int deltaDate = todayDate - dateOfValue;
-  if (deltaDate == 1 &&
-      monthOfValue == todayMonth &&
-      yearOfValue == todayYear) {
-    return 'Yesterday';
-  }
-  return value;
-}
-
-int idExpandedCardWidget = -1;
-
 class _ChatListState extends State<ChatList> {
+  String getDay(String value) {
+    DateTime dateTimeNow = DateTime.now().toUtc();
+    // print(value.substring(0));
+    final List<String> splittedValue = value.split('-');
+
+    int yearOfValue = int.parse(splittedValue[0]);
+    int todayYear = dateTimeNow.year;
+
+    int monthOfValue = int.parse(splittedValue[1]);
+    int todayMonth = dateTimeNow.month;
+
+    int dateOfValue = int.parse(splittedValue[2]);
+    int todayDate = dateTimeNow.day;
+
+    if (dateOfValue == todayDate) {
+      return 'Today';
+    }
+    int deltaDate = todayDate - dateOfValue;
+    if (deltaDate == 1 &&
+        monthOfValue == todayMonth &&
+        yearOfValue == todayYear) {
+      return 'Yesterday';
+    }
+    return value;
+  }
+
+  void loadChat(
+    int index,
+  ) {
+    widget.chatDataList
+        .loadData(index, llmModel: widget.llmModel, context: context);
+    widget.loadedDataCallback?.call();
+  }
+
+  late final FocusNode focusSearchTextField;
+  int idExpandedCardWidget = -1;
+  bool isShowSearch = false;
+
+  @override
+  void initState() {
+    focusSearchTextField = FocusNode();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    focusSearchTextField.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        PinkTextField(
-          strIconLeft: SvgIcons.search,
-          hintText: 'Search',
-          textEditingController: widget.searchEditingController,
-          leftButtonFunc: () {
-            setState(() {});
-          },
-          onChanged: (value) {
-            setState(() {});
-          },
-        ),
+        if (widget.mobileUI)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    double width = constraints.maxWidth;
+                    return Row(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.decelerate,
+                          width: isShowSearch ? width : 0,
+                          child: searchTextField(),
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const NeverScrollableScrollPhysics(),
+                            child: AnimatedOpacity(
+                              opacity: isShowSearch ? 0 : 1,
+                              duration: const Duration(milliseconds: 200),
+                              child: const Text(
+                                'Chat',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w900, fontSize: 24),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              IconButton(
+                onPressed: () => setState(() {
+                  isShowSearch = !isShowSearch;
+                  if (isShowSearch) {
+                    focusSearchTextField.requestFocus();
+                  } else {
+                    FocusScope.of(context).unfocus();
+                  }
+                }),
+                icon: SvgPicture.string(
+                  isShowSearch ? SvgIcons.miClose : SvgIcons.search,
+                  width: 26,
+                  height: 26,
+                ),
+              )
+            ],
+          ),
+        if (!widget.mobileUI) searchTextField(),
+        if (widget.searchEditingController.text.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              "Searched '${widget.searchEditingController.text}'",
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: Colors.grey,
+                fontSize: 12,
+              ),
+            ),
+          ),
         const Padding(padding: EdgeInsets.all(8.0)),
         Expanded(
           child: SingleChildScrollView(
@@ -197,12 +280,7 @@ class _ChatListState extends State<ChatList> {
                                 idExpandedCardWidget = index;
                               }),
                           icon: const Icon(Icons.more_horiz_rounded)),
-                      onTap: () {
-                        widget.chatDataList
-                            .loadData(index, llmModel: widget.llmModel);
-                        widget.chatDataList
-                            .applyParameter(widget.llmModel.parameters!);
-                      },
+                      onTap: () => loadChat(index),
                     );
                   },
                 ),
@@ -233,18 +311,34 @@ class _ChatListState extends State<ChatList> {
             ),
           ),
         ),
-        NiceButton(
-          onTap: () {
-            widget.newChatFunction();
-            idExpandedCardWidget = -1;
-          },
-          text: 'New Chat',
-          backgroundColor: MyColors.bgTintBlue,
-          strIcon: SvgIcons.plus,
-          iconSize: 24,
-          borderRadiusCircular: 32,
-        )
+        if (!widget.mobileUI)
+          NiceButton(
+            onTap: () {
+              widget.newChatFunction?.call();
+              idExpandedCardWidget = -1;
+            },
+            text: 'New Chat',
+            backgroundColor: MyColors.bgTintBlue,
+            strIcon: SvgIcons.plus,
+            iconSize: 24,
+            borderRadiusCircular: 32,
+          )
       ],
+    );
+  }
+
+  PinkTextField searchTextField() {
+    return PinkTextField(
+      focusNode: focusSearchTextField,
+      strIconLeft: SvgIcons.search,
+      hintText: 'Search',
+      textEditingController: widget.searchEditingController,
+      leftButtonFunc: () {
+        setState(() {});
+      },
+      onChanged: (value) {
+        setState(() {});
+      },
     );
   }
 }

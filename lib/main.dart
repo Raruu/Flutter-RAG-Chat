@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import './screens/home_screens_desktop.dart';
+import 'screens/home_page.dart';
 import 'models/llm_model.dart';
 import './models/chat_data_list.dart';
 
@@ -35,8 +35,9 @@ class MyApp extends StatelessWidget {
           name: "home",
           builder: (context, state) {
             var querys = state.uri.queryParametersAll;
-            return HomePageDesktop(
+            return HomePage(
               llmModel: llmModel,
+              chatDataList: llmModel.chatDataList,
               initialCtnRightOpen: querys['isCtnRightOpen']?.first == 'true',
               initialMenuSelected:
                   int.tryParse(querys['menuSelected']?.first ?? '-1')!,

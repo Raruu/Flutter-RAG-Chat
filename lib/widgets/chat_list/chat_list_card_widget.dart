@@ -12,6 +12,7 @@ class ChatListCardWidget extends StatefulWidget {
   final Color selectedColor;
   final bool isSelected;
   final Function()? onTap;
+  final Widget? leftWidget;
   final Widget? rightWidget;
   final Widget? rightWidgetOnHover;
   final bool isShowExpandedChild;
@@ -37,6 +38,7 @@ class ChatListCardWidget extends StatefulWidget {
     this.splashColor = MyColors.bgTintPink,
     this.expandDuration = const Duration(milliseconds: 700),
     this.mouseCursor,
+    this.leftWidget,
   });
 
   @override
@@ -113,6 +115,7 @@ class _ChatListCardWidgetState extends State<ChatListCardWidget> {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        if (widget.leftWidget != null) widget.leftWidget!,
         Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(16.0),
@@ -122,8 +125,8 @@ class _ChatListCardWidgetState extends State<ChatListCardWidget> {
           ),
           child: SvgPicture.string(
             SvgIcons.chatBold,
-            width: 26,
-            height: 26,
+            width: 18,
+            height: 18,
             colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
           ),
         ),
@@ -138,15 +141,14 @@ class _ChatListCardWidgetState extends State<ChatListCardWidget> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style:
-                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
               ),
-              const Spacer(),
               Text(
                 widget.chatSubtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style:
-                    const TextStyle(fontWeight: FontWeight.w300, fontSize: 16),
+                    const TextStyle(fontWeight: FontWeight.w300, fontSize: 14),
               )
             ],
           ),
