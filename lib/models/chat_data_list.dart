@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/models/llm_model.dart';
-import 'package:go_router/go_router.dart';
 
 import 'message.dart';
 import 'chat_data.dart';
@@ -26,11 +25,15 @@ class ChatDataList extends ChangeNotifier {
     notifyChatDataListner = notifyListeners;
   }
 
-  void newChat({LLMModel? llmModel, BuildContext? context}) {
+  void newChat({
+    LLMModel? llmModel,
+    BuildContext? context,
+  }) {
     currentData = ChatData(messageList: List<Message>.empty(growable: true));
     currentSelected = -1;
-    context?.goNamed('home',
-        queryParameters: {...Utils.getURIParameters(context), 'chat': '-1'});
+    if (context != null) {
+      Utils.navigateWithNewQueryParams(context, {'chat': '0'});
+    }
     llmModel?.resetKnowledge?.call();
   }
 
@@ -44,10 +47,9 @@ class ChatDataList extends ChangeNotifier {
     }
     dataList.insert(0, value);
     currentSelected = 0;
-    context?.goNamed('home', queryParameters: {
-      ...Utils.getURIParameters(context),
-      'chat': value.id
-    });
+    if (context != null) {
+      Utils.navigateWithNewQueryParams(context, {'chat': value.id});
+    }
     notifyListeners();
   }
 
@@ -66,10 +68,10 @@ class ChatDataList extends ChangeNotifier {
     }
     currentSelected = index;
     currentData = dataList[index];
-    context?.goNamed('home', queryParameters: {
-      ...Utils.getURIParameters(context),
-      'chat': currentData.id
-    });
+    if (context != null) {
+      Utils.navigateWithNewQueryParams(context, {'chat': currentData.id});
+    }
+
     llmModel?.setKnowledge?.call(currentData.knowledges);
   }
 

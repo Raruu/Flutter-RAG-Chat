@@ -26,7 +26,7 @@ class ChatView extends StatefulWidget {
     super.key,
     required this.llmModel,
     this.chatConfigFunc,
-    required this.isChatConfigOpen,
+    this.isChatConfigOpen = false,
     this.mobileUI = false,
     this.backFunc,
   });
@@ -58,11 +58,13 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void scrollDown() {
-    _listViewMessageController.animateTo(
-      _listViewMessageController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.decelerate,
-    );
+    if (_listViewMessageController.positions.isNotEmpty) {
+      _listViewMessageController.animateTo(
+        _listViewMessageController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.decelerate,
+      );
+    }
   }
 
   void addMessage(Message messageWidget, List<Message> messageList) {

@@ -18,6 +18,18 @@ import 'my_colors.dart';
 import '../widgets/knowledge_widget.dart';
 
 class Utils<T> {
+  static void navigateWithNewQueryParams(
+      BuildContext context, Map<String, String> newQueryParams) {
+    final currentUri = GoRouterState.of(context).uri;
+    final path = Uri.parse(currentUri.toString()).path;
+    final combinedQueryParams = {
+      ...currentUri.queryParameters,
+      ...newQueryParams,
+    };
+    final newUri = Uri(path: path, queryParameters: combinedQueryParams);
+    context.go(newUri.toString());
+  }
+
   static Map<String, List<String>> getURIParameters(BuildContext context) {
     return GoRouterState.of(context).uri.queryParametersAll;
   }
@@ -163,6 +175,9 @@ class Utils<T> {
     }
   }
 
+  static bool isMobileSize(BuildContext context) =>
+      MediaQuery.of(context).size.shortestSide < 550;
+
   static void showSnackBar(
     BuildContext context, {
     String title = 'Not Implemented',
@@ -179,68 +194,86 @@ class Utils<T> {
   }) {
     strIcon ??= randomKafuuChino();
     bool onHover = false;
+    bool isMobile = isMobileSize(context);
+    if (isMobile) {
+      if (iconSize > 50) {
+        iconSize = 50;
+      }
+      if (textSize > 16) {
+        textSize = 16;
+      }
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        behavior: SnackBarBehavior.floating,
+        behavior: isMobile ? null : SnackBarBehavior.floating,
         duration: const Duration(hours: 1),
-        backgroundColor: Colors.transparent,
+        backgroundColor: isMobile ? null : Colors.transparent,
         shape: const Border(),
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 66.0, vertical: 16.0),
+        elevation: isMobile ? null : 0,
+        padding: isMobile
+            ? null
+            : const EdgeInsets.symmetric(horizontal: 66.0, vertical: 16.0),
         showCloseIcon: showCloseIcon,
         closeIconColor: closeIconColor,
-        content: MouseRegion(
-          onEnter: (event) => onHover = true,
-          onExit: (event) => onHover = false,
-          child: Align(
-            alignment: Alignment.center,
-            child: Container(
-              padding: padding,
-              constraints: BoxConstraints(
-                minHeight: iconSize,
-              ),
-              decoration: BoxDecoration(
-                boxShadow: const [
-                  BoxShadow(
-                    color: MyColors.bgSelectedBlue,
-                    spreadRadius: 5,
-                    blurRadius: 7,
-                  )
-                ],
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SvgPicture.string(
-                    strIcon,
-                    colorFilter:
-                        const ColorFilter.mode(Colors.black, BlendMode.srcIn),
-                    width: iconSize,
-                    height: iconSize,
-                  ),
-                  const Padding(padding: EdgeInsets.all(8.0)),
-                  Flexible(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: TextStyle(
-                              color: textColor,
-                              fontSize: textSize + 8,
-                              fontWeight: FontWeight.w900),
-                        ),
-                        Text(subTitle,
-                            style: TextStyle(
-                                color: textColor, fontSize: textSize)),
-                      ],
+        content: ColorFiltered(
+          colorFilter: isMobile
+              ? const ColorFilter.mode(Colors.white, BlendMode.srcIn)
+              : const ColorFilter.mode(Colors.transparent, BlendMode.overlay),
+          child: MouseRegion(
+            onEnter: (event) => onHover = true,
+            onExit: (event) => onHover = false,
+            child: Align(
+              alignment: Alignment.center,
+              child: Container(
+                padding: padding,
+                constraints: BoxConstraints(
+                  minHeight: iconSize,
+                ),
+                decoration: isMobile
+                    ? null
+                    : BoxDecoration(
+                        boxShadow: const [
+                          BoxShadow(
+                            color: MyColors.bgSelectedBlue,
+                            spreadRadius: 5,
+                            blurRadius: 7,
+                          )
+                        ],
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SvgPicture.string(
+                      strIcon,
+                      colorFilter:
+                          const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                      width: iconSize,
+                      height: iconSize,
                     ),
-                  )
-                ],
+                    const Padding(padding: EdgeInsets.all(8.0)),
+                    Flexible(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                                color: textColor,
+                                fontSize: textSize + 8,
+                                fontWeight: FontWeight.w900),
+                          ),
+                          Text(subTitle,
+                              style: TextStyle(
+                                  color: textColor, fontSize: textSize)),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ),
@@ -249,7 +282,7 @@ class Utils<T> {
       snackBarAnimationStyle: AnimationStyle(
         curve: Curves.easeIn,
         duration: const Duration(milliseconds: 300),
-        reverseDuration: const Duration(seconds: 2),
+        reverseDuration: isMobile ? null : const Duration(seconds: 2),
         reverseCurve: Curves.easeOut,
       ),
     );

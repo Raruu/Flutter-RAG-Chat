@@ -11,6 +11,7 @@ class ChatListCardWidget extends StatefulWidget {
   final Color hoverColor;
   final Color selectedColor;
   final bool isSelected;
+  final Function()? onLongPress;
   final Function()? onTap;
   final Widget? leftWidget;
   final Widget? rightWidget;
@@ -39,6 +40,7 @@ class ChatListCardWidget extends StatefulWidget {
     this.expandDuration = const Duration(milliseconds: 700),
     this.mouseCursor,
     this.leftWidget,
+    this.onLongPress,
   });
 
   @override
@@ -78,6 +80,7 @@ class _ChatListCardWidgetState extends State<ChatListCardWidget> {
             color: Colors.transparent,
             child: InkWell(
               mouseCursor: widget.mouseCursor,
+              onLongPress: widget.onLongPress,
               onTap: widget.onTap,
               splashColor: widget.splashColor,
               highlightColor: Colors.transparent,

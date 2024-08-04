@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
 import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/my_colors.dart';
@@ -42,10 +41,8 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
   int get menuSelected => _menuSelected;
   set menuSelected(int value) {
     setState(() => _menuSelected = (_menuSelected == value) ? -1 : value);
-    context.goNamed('home', queryParameters: {
-      ...Utils.getURIParameters(context),
-      'menuSelected': _menuSelected.toString()
-    });
+    Utils.navigateWithNewQueryParams(
+        context, {'menuSelected': _menuSelected.toString()});
   }
 
   late bool isCtnRightOpen;
@@ -57,10 +54,8 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
 
   void showChatConfigMenu() {
     isCtnRightOpen = !isCtnRightOpen;
-    context.goNamed('home', queryParameters: {
-      ...GoRouterState.of(context).uri.queryParametersAll,
-      'isCtnRightOpen': isCtnRightOpen.toString()
-    });
+    Utils.navigateWithNewQueryParams(
+        context, {'isCtnRightOpen': isCtnRightOpen.toString()});
     setState(() {});
   }
 

@@ -95,6 +95,7 @@ class Data {
           subTitle: 'Reconnecting');
       getInformationTryReconnect = true;
     } catch (e) {
+      getInformationPeriodic?.cancel();
       if (context != null && context!.mounted) {
         Utils.showSnackBar(context!,
             title: 'Get Information:', subTitle: e.toString());

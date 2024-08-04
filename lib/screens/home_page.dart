@@ -4,18 +4,21 @@ import '../models/llm_model.dart';
 import '../models/chat_data_list.dart';
 import './home_page_desktop.dart';
 import './home_page_mobile.dart';
+import '../utils/util.dart';
 
 class HomePage extends StatefulWidget {
   final ChatDataList chatDataList;
   final LLMModel llmModel;
   final int initialMenuSelected;
   final bool initialCtnRightOpen;
+  final String initialChatId;
   const HomePage({
     super.key,
     required this.llmModel,
     required this.initialMenuSelected,
     required this.initialCtnRightOpen,
     required this.chatDataList,
+    required this.initialChatId,
   });
   @override
   State<HomePage> createState() => _HomePageState();
@@ -29,6 +32,15 @@ class _HomePageState extends State<HomePage> {
     searchEditingController = TextEditingController();
     widget.llmModel.context ??= context;
     widget.llmModel.loadSavedData();
+    if (widget.initialChatId.length > 2) {
+      for (var i = 0; i < widget.chatDataList.dataList.length; i++) {
+        var data = widget.chatDataList.dataList[i];
+        if (data.id == widget.initialChatId) {
+          widget.chatDataList.loadData(i);
+          break;
+        }
+      }
+    }
     super.initState();
   }
 
@@ -40,7 +52,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (MediaQuery.of(context).size.shortestSide < 550) {
+    if (Utils.isMobileSize(context)) {
       return HomePageMobile(
         llmModel: widget.llmModel,
         chatDataList: widget.chatDataList,

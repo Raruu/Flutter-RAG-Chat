@@ -68,7 +68,7 @@ class _ChatListState extends State<ChatList> {
   }
 
   late final FocusNode focusSearchTextField;
-  int idExpandedCardWidget = -1;
+  int idxExpandedCardWidget = -1;
   bool isShowSearch = false;
 
   @override
@@ -186,7 +186,7 @@ class _ChatListState extends State<ChatList> {
                                   .message
                               : dataList[index].messageList.last.message,
                       rightWidget: Text(getDay(dataList[index].dateCreated)),
-                      isShowExpandedChild: idExpandedCardWidget == index,
+                      isShowExpandedChild: idxExpandedCardWidget == index,
                       expandedChild: Padding(
                         padding: const EdgeInsets.only(top: 71),
                         child: Container(
@@ -259,7 +259,7 @@ class _ChatListState extends State<ChatList> {
                                           widget.chatDataList.remove(widget
                                               .chatDataList.dataList[index]);
                                           setState(() {
-                                            idExpandedCardWidget = -1;
+                                            idxExpandedCardWidget = -1;
                                           });
                                         },
                                         icon: const Icon(Icons.delete)),
@@ -273,14 +273,21 @@ class _ChatListState extends State<ChatList> {
                       ),
                       rightWidgetOnHover: IconButton(
                           onPressed: () => setState(() {
-                                if (idExpandedCardWidget == index) {
-                                  idExpandedCardWidget = -1;
+                                if (idxExpandedCardWidget == index) {
+                                  idxExpandedCardWidget = -1;
                                   return;
                                 }
-                                idExpandedCardWidget = index;
+                                idxExpandedCardWidget = index;
                               }),
                           icon: const Icon(Icons.more_horiz_rounded)),
                       onTap: () => loadChat(index),
+                      onLongPress: () => setState(() {
+                        if (idxExpandedCardWidget == index) {
+                          idxExpandedCardWidget = -1;
+                          return;
+                        }
+                        idxExpandedCardWidget = index;
+                      }),
                     );
                   },
                 ),
@@ -315,7 +322,7 @@ class _ChatListState extends State<ChatList> {
           NiceButton(
             onTap: () {
               widget.newChatFunction?.call();
-              idExpandedCardWidget = -1;
+              idxExpandedCardWidget = -1;
             },
             text: 'New Chat',
             backgroundColor: MyColors.bgTintBlue,

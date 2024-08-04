@@ -7,10 +7,8 @@ import 'package:provider/provider.dart';
 import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
 import '../widgets/chat_list.dart';
-import '../widgets/chat_view.dart';
 import '../models/llm_model.dart';
 import '../models/chat_data_list.dart';
-import '../widgets/chat_config.dart';
 import '../widgets/nice_drop_down_button.dart';
 
 class HomePageMobile extends StatefulWidget {
@@ -34,10 +32,8 @@ class _HomePageMobileState extends State<HomePageMobile> {
   late int _menuSelected;
   int get menuSelected => _menuSelected;
   set menuSelected(int value) {
-    context.goNamed('home', queryParameters: {
-      ...Utils.getURIParameters(context),
-      'menuSelected': value.toString()
-    });
+    Utils.navigateWithNewQueryParams(
+        context, {'menuSelected': value.toString()});
     if (value != _menuSelected) {
       pageController.animateToPage(value,
           duration: const Duration(milliseconds: 500),
@@ -48,7 +44,8 @@ class _HomePageMobileState extends State<HomePageMobile> {
 
   late final PageController pageController;
 
-  void onChatLoaded() {}
+  void onChatLoaded() => context.goNamed('mobile_chatview',
+      queryParameters: Utils.getURIParameters(context));
 
   @override
   void initState() {
@@ -66,41 +63,6 @@ class _HomePageMobileState extends State<HomePageMobile> {
 
   @override
   Widget build(BuildContext context) {
-    var urlQuerys = Utils.getURIParameters(context);
-
-    if ((urlQuerys['chat']?.first.length ?? 0) > 1 && _menuSelected == 0) {
-      return Scaffold(
-        body: SafeArea(
-          child: ChatView(
-            llmModel: widget.llmModel,
-            isChatConfigOpen: false,
-            mobileUI: true,
-            backFunc: () {
-              context.goNamed('home', queryParameters: {
-                ...Utils.getURIParameters(context),
-                'chat': '0'
-              });
-              widget.chatDataList.currentSelected = -1;
-            },
-            chatConfigFunc: () {
-              showModalBottomSheet(
-                context: context,
-                showDragHandle: true,
-                enableDrag: true,
-                isScrollControlled: true,
-                builder: (context) => SizedBox(
-                  height: MediaQuery.sizeOf(context).height * 3 / 4,
-                  child: ChatConfig(
-                    llmModel: widget.llmModel,
-                    chatDataList: widget.chatDataList,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      );
-    }
     return Scaffold(
       backgroundColor: MyColors.backgroundDark,
       body: SafeArea(
