@@ -38,9 +38,9 @@ class ModelAtHome<T> extends BaseModel {
   @override
   Widget get informationWidget => _informationWidget;
 
-  ModelAtHome(super.notifyListeners,
+  ModelAtHome(super.notifyListeners, super.prefs,
       {BuildContext? context, required this.chatDataList}) {
-    _data = Data(super.notifyListener, context: context);
+    _data = Data(super.notifyListener, super.prefs, context: context);
     _settingsWidget = SettingsWidget(
       data: _data,
     );

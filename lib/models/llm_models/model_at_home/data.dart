@@ -37,14 +37,9 @@ class Data {
   }
 
   BuildContext? context;
-  Data(this.notifyListener, {this.context}) {
-    SharedPreferences.getInstance().then(
-      (value) {
-        prefs = value;
-        _baseURL = prefs.getString('providerUrl') ?? '';
-        getInformation();
-      },
-    );
+  Data(this.notifyListener, this.prefs, {this.context}) {
+    _baseURL = prefs.getString('providerUrl') ?? '';
+    getInformation();
   }
 
   Timer? getInformationPeriodic;

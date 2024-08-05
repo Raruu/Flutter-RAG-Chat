@@ -47,6 +47,7 @@ class LLMModel extends ChangeNotifier {
       case 'model at home':
         _llmModel = ModelAtHome(
           notifyListeners,
+          prefs,
           context: context,
           chatDataList: chatDataList,
         );
