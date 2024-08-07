@@ -1,9 +1,13 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/widgets/chat_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_strategy/url_strategy.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'screens/home_page.dart';
 import 'models/llm_model.dart';
@@ -11,7 +15,13 @@ import './models/chat_data_list.dart';
 import 'widgets/chat_config.dart';
 
 void main() async {
-  setPathUrlStrategy(); // see https://pub.dev/packages/url_strategy
+  if (kIsWeb) {
+  } else if (Platform.isWindows) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
+  setPathUrlStrategy();
   GoRouter.optionURLReflectsImperativeAPIs = true;
   WidgetsFlutterBinding.ensureInitialized();
   ChatDataList chatDataList = ChatDataList();
@@ -65,25 +75,27 @@ class MyApp extends StatelessWidget {
                   }
 
                   return Scaffold(
-                    body: ChatView(
-                      llmModel: llmModel,
-                      mobileUI: true,
-                      backFunc: backFunc,
-                      chatConfigFunc: () {
-                        showModalBottomSheet(
-                          context: context,
-                          showDragHandle: true,
-                          enableDrag: true,
-                          isScrollControlled: true,
-                          builder: (context) => SizedBox(
-                            height: MediaQuery.sizeOf(context).height * 3 / 4,
-                            child: ChatConfig(
-                              llmModel: llmModel,
-                              chatDataList: llmModel.chatDataList,
+                    body: SafeArea(
+                      child: ChatView(
+                        llmModel: llmModel,
+                        mobileUI: true,
+                        backFunc: backFunc,
+                        chatConfigFunc: () {
+                          showModalBottomSheet(
+                            context: context,
+                            showDragHandle: true,
+                            enableDrag: true,
+                            isScrollControlled: true,
+                            builder: (context) => SizedBox(
+                              height: MediaQuery.sizeOf(context).height * 3 / 4,
+                              child: ChatConfig(
+                                llmModel: llmModel,
+                                chatDataList: llmModel.chatDataList,
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   );
                 },

@@ -16,7 +16,11 @@ class LLMModel extends ChangeNotifier {
   late final SharedPreferences prefs;
 
   BaseModel? _llmModel;
-  Function()? get onChatSettingsChanged => _llmModel?.onChatSettingsChanged;
+  Function()? get onChatSettingsChanged {
+    chatDataList.updateConfigToDatabase();
+    return _llmModel?.onChatSettingsChanged;
+  }
+
   Function()? get resetKnowledge => _llmModel?.resetKnowledge;
   Function(String filename)? get deleteKnowledge => _llmModel?.deleteKnowledge;
   Function(List<Map<String, dynamic>> knowledges)? get setKnowledge =>

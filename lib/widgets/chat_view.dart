@@ -68,11 +68,7 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void addMessage(Message messageWidget, List<Message> messageList) {
-    if (messageList.isNotEmpty &&
-        messageList.last.role == MessageRole.modelTyping) {
-      messageList.removeLast();
-    }
-    messageList.add(messageWidget);
+    chatDataList.addToMessageList(messageWidget, chatDataList.currentData);
     chatDataList.notifyChatDataListner();
     Future.delayed(
       const Duration(milliseconds: 50),
@@ -402,15 +398,16 @@ class _ChatViewState extends State<ChatView> {
                                   hintText: '',
                                   labelText: 'Message',
                                   backgroundColor: MyColors.bgTintBlue,
+                                  multiLine: true,
                                 ),
                               );
                               if (result) {
                                 messageList[index].message =
                                     textEditingController.text;
-                              }
-                              if (messageList.length - 1 == index + 1) {
-                                regenerateText(index + 1,
-                                    query: textEditingController.text);
+                                if (messageList.length - 1 == index + 1) {
+                                  regenerateText(index + 1,
+                                      query: textEditingController.text);
+                                }
                               }
                               textEditingController.dispose();
                             }
