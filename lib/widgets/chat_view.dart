@@ -76,13 +76,19 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
-  void removeMessage(List<Message> currentMessageList, ChatData currentData,
-      {int? removeIdx}) {
-    removeIdx ??= currentMessageList.length - 1;
-    var lastMessage = currentMessageList.removeAt(removeIdx);
-    if (lastMessage.role == MessageRole.modelTyping) {
-      lastMessage = currentMessageList.removeLast();
+  void removeMessage(ChatData currentData, {int? removeIdx}) async {
+    List<Message> currentMessageList = currentData.messageList;
+    if (removeIdx == null) {
+      removeIdx ??= currentMessageList.length - 1;
+      if (currentMessageList[removeIdx].role == MessageRole.modelTyping) {
+        currentMessageList.removeLast();
+      }
     }
+    var lastMessage = await chatDataList.removeToMessageList(
+      removeIdx,
+      chatData: currentData,
+    );
+
     if (lastMessage.role == MessageRole.user &&
         currentMessageList == messageList &&
         _messageTextEditingController.text.isEmpty) {
@@ -99,7 +105,7 @@ class _ChatViewState extends State<ChatView> {
     widget.llmModel.generateText(context, prompt).then(
       (value) {
         if (value == null) {
-          removeMessage(messageList, currentData);
+          removeMessage(currentData);
           return;
         }
         receiveMessage(value, currentMessageList);
@@ -111,7 +117,7 @@ class _ChatViewState extends State<ChatView> {
 
   void regenerateText(int index, {String? query}) async {
     query ??= messageList[index].textData['query'];
-    messageList.remove(messageList[index]);
+    chatDataList.removeToMessageList(index);
     widget.llmModel.onChatSettingsChanged?.call();
     ChatData currentData = chatDataList.currentData;
     List<Message> currentMessageList = messageList;
@@ -366,7 +372,6 @@ class _ChatViewState extends State<ChatView> {
                             title: const Text('Delete Message?'),
                             content: const Text('. . .'))) {
                           removeMessage(
-                            messageList,
                             chatDataList.currentData,
                             removeIdx: index,
                           );

@@ -109,8 +109,9 @@ Future<Map<String, dynamic>> knowledgeDialog({
                 children: [
                   Row(
                     children: [
-                      SizedBox(
-                        width: MediaQuery.sizeOf(context).width * 2 / 3,
+                      Flexible(
+                        fit: FlexFit.tight,
+                        // width: MediaQuery.sizeOf(context).width * 2 / 3,
                         child: PinkTextField(
                           textEditingController: pathEditingController,
                           hintText: '',

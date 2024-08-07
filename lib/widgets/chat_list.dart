@@ -255,9 +255,18 @@ class _ChatListState extends State<ChatList> {
                                   children: [
                                     IconButton(
                                         tooltip: 'Delete',
-                                        onPressed: () {
-                                          widget.chatDataList.remove(widget
-                                              .chatDataList.dataList[index]);
+                                        onPressed: () async {
+                                          ChatData chatData = widget
+                                              .chatDataList.dataList[index];
+                                          if (await Utils.showDialogYesNo(
+                                              context: context,
+                                              title: const Text('Delete Chat?'),
+                                              content: Text(
+                                                  "'${chatData.title}'"))) {
+                                            widget.chatDataList
+                                                .remove(chatData);
+                                          }
+
                                           setState(() {
                                             idxExpandedCardWidget = -1;
                                           });

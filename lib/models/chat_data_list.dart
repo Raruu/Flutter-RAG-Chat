@@ -135,6 +135,27 @@ class ChatDataList extends ChangeNotifier {
     });
   }
 
+  Future<Message> removeToMessageList(int index, {ChatData? chatData}) async {
+    chatData ??= currentData;
+    Message message = chatData.messageList[index];
+
+    await db.delete(
+      ChatDatabase.tableChatMessages,
+      where:
+          '${ChatDatabase.chatId} = ? AND ${ChatDatabase.message} = ? AND ${ChatDatabase.messageTextData} = ?',
+      whereArgs: [
+        chatData.id,
+        message.message,
+        jsonEncode(
+          message.textData,
+        )
+      ],
+    );
+
+    chatData.messageList.remove(message);
+    return message;
+  }
+
   void updateConfigToDatabase() {
     ChatDatabase().updateValue(
       table: ChatDatabase.tableChatList,
