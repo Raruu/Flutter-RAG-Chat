@@ -7,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_strategy/url_strategy.dart';
+
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import 'screens/home_page.dart';
 import 'models/llm_model.dart';
@@ -16,6 +18,7 @@ import 'widgets/chat_config.dart';
 
 void main() async {
   if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb;
   } else if (Platform.isWindows) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;

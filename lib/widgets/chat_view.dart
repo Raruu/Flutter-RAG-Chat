@@ -82,6 +82,7 @@ class _ChatViewState extends State<ChatView> {
       removeIdx ??= currentMessageList.length - 1;
       if (currentMessageList[removeIdx].role == MessageRole.modelTyping) {
         currentMessageList.removeLast();
+        removeIdx = currentMessageList.length - 1;
       }
     }
     var lastMessage = await chatDataList.removeToMessageList(
