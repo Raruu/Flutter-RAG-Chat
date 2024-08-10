@@ -12,6 +12,7 @@ class HomePage extends StatefulWidget {
   final int initialMenuSelected;
   final bool initialCtnRightOpen;
   final String initialChatId;
+  final Function() toggleDarkMode;
   const HomePage({
     super.key,
     required this.llmModel,
@@ -19,6 +20,7 @@ class HomePage extends StatefulWidget {
     required this.initialCtnRightOpen,
     required this.chatDataList,
     required this.initialChatId,
+    required this.toggleDarkMode,
   });
   @override
   State<HomePage> createState() => _HomePageState();
@@ -58,6 +60,7 @@ class _HomePageState extends State<HomePage> {
         chatDataList: widget.chatDataList,
         initialMenuSelected: widget.initialMenuSelected,
         searchEditingController: searchEditingController,
+        toggleDarkMode: widget.toggleDarkMode,
       );
     }
     return HomePageDesktop(
@@ -66,6 +69,7 @@ class _HomePageState extends State<HomePage> {
       initialCtnRightOpen: widget.initialCtnRightOpen,
       initialMenuSelected: widget.initialMenuSelected,
       searchEditingController: searchEditingController,
+      toggleDarkMode: widget.toggleDarkMode,
     );
   }
 }

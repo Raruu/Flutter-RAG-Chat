@@ -27,6 +27,11 @@ class NiceDropDownButton extends StatelessWidget {
         child: ButtonTheme(
           alignedDropdown: true,
           child: DropdownButton(
+            iconEnabledColor: Colors.black,
+            style: Theme.of(context)
+                .textTheme
+                .bodyLarge!
+                .copyWith(color: Colors.black),
             value: value,
             dropdownColor: color,
             borderRadius: BorderRadius.circular(10),

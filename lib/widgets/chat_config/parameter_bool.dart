@@ -6,11 +6,13 @@ class ParameterBool extends StatefulWidget {
   final String textKey;
   final List<bool> value;
   final Function(bool value) onChanged;
+  final bool setStateOnValueChange;
   const ParameterBool({
     super.key,
     required this.textKey,
     required this.onChanged,
     required this.value,
+    this.setStateOnValueChange = true,
   });
 
   @override
@@ -22,7 +24,9 @@ class _ParameterBoolState extends State<ParameterBool> {
   set parameterValue(bool value) {
     widget.onChanged(value);
     widget.value[0] = value;
-    setState(() {});
+    if (widget.setStateOnValueChange) {
+      setState(() {});
+    }
   }
 
   @override
@@ -51,8 +55,10 @@ class _ParameterBoolState extends State<ParameterBool> {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Switch(
               activeColor: MyColors.bgTintPink,
-              thumbIcon: WidgetStatePropertyAll(
-                  Icon(parameterValue ? Icons.check : Icons.close)),
+              thumbIcon: WidgetStatePropertyAll(Icon(
+                parameterValue ? Icons.check : Icons.close,
+                color: parameterValue ? MyColors.backgroundDark0 : null,
+              )),
               value: parameterValue,
               onChanged: (value) => parameterValue = value,
             ),

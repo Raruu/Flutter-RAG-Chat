@@ -1,17 +1,16 @@
 import "package:flutter/material.dart";
-import 'package:flutter_rag_chat/utils/util.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
+import '../utils/util.dart';
 import '../widgets/desktop_menu_button.dart';
 import '../widgets/chat_list.dart';
 import '../widgets/chat_view.dart';
 import '../models/llm_model.dart';
 import '../models/chat_data_list.dart';
 import '../widgets/chat_config.dart';
-import '../widgets/nice_drop_down_button.dart';
+import '../widgets/general_settings.dart';
 
 class HomePageDesktop extends StatefulWidget {
   final ChatDataList chatDataList;
@@ -19,6 +18,7 @@ class HomePageDesktop extends StatefulWidget {
   final int initialMenuSelected;
   final bool initialCtnRightOpen;
   final TextEditingController searchEditingController;
+  final Function() toggleDarkMode;
   const HomePageDesktop({
     super.key,
     required this.llmModel,
@@ -26,6 +26,7 @@ class HomePageDesktop extends StatefulWidget {
     required this.initialCtnRightOpen,
     required this.chatDataList,
     required this.searchEditingController,
+    required this.toggleDarkMode,
   });
 
   @override
@@ -92,7 +93,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
     }
     if (ctnRightWidth != 0) _tmpCtnRightWidth = ctnRightWidth;
     return Scaffold(
-      backgroundColor: MyColors.backgroundDark,
+      backgroundColor: MyColors.backgroundDark0,
       body: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const NeverScrollableScrollPhysics(),
@@ -104,7 +105,7 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
               curve: Easing.standardDecelerate,
               width: chatWidth,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16.0),
               ),
               clipBehavior: Clip.antiAlias,
@@ -177,7 +178,10 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
       );
     }
     if (value == 1) {
-      return settingList();
+      return GeneralSettings(
+        llmModel: widget.llmModel,
+        toggleDarkMode: widget.toggleDarkMode,
+      );
     }
     return const SizedBox();
   }
@@ -205,42 +209,6 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
     );
   }
 
-  Widget settingList() {
-    return StatefulBuilder(
-      builder: (context, setState) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              SvgPicture.string(SvgIcons.modelIcon),
-              const Text(
-                'Model Provider',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-              ),
-            ],
-          ),
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
-            child: Column(
-              children: [
-                NiceDropDownButton(
-                  value: widget.llmModel.provider,
-                  items: widget.llmModel.providersList
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (value) => widget.llmModel.provider = value,
-                ),
-                const Padding(padding: EdgeInsets.all(4)),
-                widget.llmModel.settingsWidget
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
   AnimatedContainer menuBar(double menuWidth) {
     return AnimatedContainer(
       width: menuWidth,
@@ -256,12 +224,12 @@ class _HomePageDesktopState extends State<HomePageDesktop> {
             onEnter: (event) => menuHover(true),
             onExit: (event) => menuHover(false),
             child: DesktopMenuButton(
-              stringSvg: SvgIcons.lightMode,
-              text: "Light Mode",
+              stringSvg: Utils.isLightMode(context)
+                  ? SvgIcons.lightMode
+                  : SvgIcons.darkMode,
+              text: Utils.isLightMode(context) ? 'Light Mode' : 'Dark Mode',
               textVisibilty: menuExtended || menuHovered,
-              onTap: () {
-                Utils.showSnackBar(context);
-              },
+              onTap: widget.toggleDarkMode,
             ),
           ),
           const Spacer(),

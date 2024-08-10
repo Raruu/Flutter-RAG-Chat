@@ -50,8 +50,6 @@ class ChatData {
     ];
     dateCreated = jsonChat[ChatDatabase.lastMessageTimestamp] as String;
 
-    print(jsonDecode(jsonChat[ChatDatabase.knowledges] as String));
-
     totalToken = 0;
     messageList = [];
     for (var item in jsonMessages) {

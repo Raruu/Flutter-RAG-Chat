@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import 'package:flutter_rag_chat/utils/util.dart';
+import 'package:flutter_rag_chat/widgets/general_settings.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -9,19 +10,20 @@ import '../utils/svg_icons.dart';
 import '../widgets/chat_list.dart';
 import '../models/llm_model.dart';
 import '../models/chat_data_list.dart';
-import '../widgets/nice_drop_down_button.dart';
 
 class HomePageMobile extends StatefulWidget {
   final ChatDataList chatDataList;
   final LLMModel llmModel;
   final int initialMenuSelected;
   final TextEditingController searchEditingController;
+  final Function() toggleDarkMode;
   const HomePageMobile({
     super.key,
     required this.llmModel,
     required this.initialMenuSelected,
     required this.chatDataList,
     required this.searchEditingController,
+    required this.toggleDarkMode,
   });
 
   @override
@@ -64,7 +66,7 @@ class _HomePageMobileState extends State<HomePageMobile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MyColors.backgroundDark,
+      backgroundColor: MyColors.backgroundDark0,
       body: SafeArea(
         child: Column(
           children: [
@@ -72,7 +74,7 @@ class _HomePageMobileState extends State<HomePageMobile> {
               child: Container(
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: PageView(
@@ -97,42 +99,9 @@ class _HomePageMobileState extends State<HomePageMobile> {
                     ),
                     Padding(
                       padding: const EdgeInsets.all(20.0),
-                      child: StatefulBuilder(
-                        builder: (context, setState) => Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                SvgPicture.string(SvgIcons.modelIcon),
-                                const Text(
-                                  'Model Provider',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 20),
-                                ),
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 5.0, vertical: 10.0),
-                              child: Column(
-                                children: [
-                                  NiceDropDownButton(
-                                    value: widget.llmModel.provider,
-                                    items: widget.llmModel.providersList
-                                        .map((e) => DropdownMenuItem(
-                                            value: e, child: Text(e)))
-                                        .toList(),
-                                    onChanged: (value) =>
-                                        widget.llmModel.provider = value,
-                                  ),
-                                  const Padding(padding: EdgeInsets.all(4)),
-                                  widget.llmModel.settingsWidget
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
+                      child: GeneralSettings(
+                        llmModel: widget.llmModel,
+                        toggleDarkMode: widget.toggleDarkMode,
                       ),
                     ),
                   ],

@@ -89,6 +89,7 @@ class _ParameterSliderState extends State<ParameterSlider> {
               child: TextField(
                 controller: textValueController,
                 textAlign: TextAlign.center,
+                style: const TextStyle(color: MyColors.textTintBlue),
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
@@ -106,7 +107,6 @@ class _ParameterSliderState extends State<ParameterSlider> {
                 },
                 decoration: const InputDecoration(
                     contentPadding: EdgeInsets.all(0),
-                    // constraints: BoxConstraints(maxHeight: 40),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(24.0)),
                         borderSide: BorderSide.none),

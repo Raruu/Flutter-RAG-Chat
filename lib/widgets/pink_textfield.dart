@@ -7,6 +7,7 @@ import '../utils/my_colors.dart';
 class PinkTextField extends StatefulWidget {
   final String hintText;
   final String? labelText;
+  final Color floatingLabelColor;
   final String? strIconLeft;
   final String? tooltipIconLeft;
   final double? iconSizeLeft;
@@ -47,6 +48,7 @@ class PinkTextField extends StatefulWidget {
     this.textInputType,
     this.textAlign = TextAlign.start,
     this.focusNode,
+    this.floatingLabelColor = MyColors.bgTintBlue,
   });
 
   @override
@@ -98,9 +100,13 @@ class _PinkTextFieldState extends State<PinkTextField> {
       onChanged: widget.onChanged,
       controller: widget.textEditingController,
       focusNode: _focus,
-      style: const TextStyle(fontWeight: FontWeight.w700),
+      style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.black),
       decoration: InputDecoration(
         labelText: widget.labelText,
+        floatingLabelStyle: TextStyle(
+            color: widget.floatingLabelColor,
+            fontSize: 18,fontWeight: FontWeight.w700,
+            shadows: const [Shadow(color: Colors.black, blurRadius: 3)]),
         prefixIcon: widget.strIconLeft == null
             ? null
             : Align(
@@ -152,9 +158,9 @@ class _PinkTextFieldState extends State<PinkTextField> {
                 ),
               ),
         hintStyle: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w900,
-        ),
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            color: MyColors.textTintPink),
         hintText: widget.hintText,
         border: OutlineInputBorder(
             borderRadius:

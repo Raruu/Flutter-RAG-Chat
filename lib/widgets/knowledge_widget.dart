@@ -68,7 +68,7 @@ class _KnowledgeWidgetState extends State<KnowledgeWidget> {
           onHover: (value) => setState(() {
             isHover = value;
           }),
-          hoverColor: MyColors.bgTintBlue,
+          hoverColor: MyColors.bgTintBlue.withOpacity(0.5),
           splashColor: Colors.white,
           child: Padding(
             padding:
@@ -222,13 +222,18 @@ Future<Map<String, dynamic>> knowledgeDialog({
                                       IconButton(
                                         onPressed: () =>
                                             pdfViewerController.zoomDown(),
-                                        icon:
-                                            const Icon(Icons.zoom_out_rounded),
+                                        icon: const Icon(
+                                          Icons.zoom_out_rounded,
+                                          color: MyColors.textTintBlue,
+                                        ),
                                       ),
                                       IconButton(
                                         onPressed: () =>
                                             pdfViewerController.zoomUp(),
-                                        icon: const Icon(Icons.zoom_in_rounded),
+                                        icon: const Icon(
+                                          Icons.zoom_in_rounded,
+                                          color: MyColors.textTintBlue,
+                                        ),
                                       ),
                                       SizedBox(
                                           width: 180,

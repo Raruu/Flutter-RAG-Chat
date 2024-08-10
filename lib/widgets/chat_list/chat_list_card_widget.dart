@@ -27,7 +27,7 @@ class ChatListCardWidget extends StatefulWidget {
     this.chatTitle = 'Title Chat',
     this.chatSubtitle = 'Anone anone anone',
     this.rightWidget,
-    this.hoverColor = Colors.white,
+    this.hoverColor = Colors.transparent,
     this.selectedColor = MyColors.bgSelectedBlue,
     this.isSelected = false,
     this.onTap,
@@ -66,7 +66,7 @@ class _ChatListCardWidgetState extends State<ChatListCardWidget> {
         padding: const EdgeInsets.symmetric(vertical: 2.0),
         child: AnimatedContainer(
           duration: widget.expandDuration,
-          curve: widget.expandingCurve,
+          curve: widget.isSelected ? widget.expandingCurve : Curves.ease,
           clipBehavior: Clip.antiAlias,
           height: widget.isShowExpandedChild
               ? 71 + widget.heightOfExpandedChild
@@ -74,7 +74,7 @@ class _ChatListCardWidgetState extends State<ChatListCardWidget> {
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10.0),
-            color: widget.isSelected ? widget.selectedColor : Colors.white,
+            color: widget.isSelected ? widget.selectedColor : null,
           ),
           child: Material(
             color: Colors.transparent,
@@ -143,15 +143,19 @@ class _ChatListCardWidgetState extends State<ChatListCardWidget> {
                 widget.chatTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style:
-                    const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    color: widget.isSelected ? Colors.black : null),
               ),
               Text(
                 widget.chatSubtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style:
-                    const TextStyle(fontWeight: FontWeight.w300, fontSize: 14),
+                style: TextStyle(
+                    fontWeight: FontWeight.w300,
+                    fontSize: 14,
+                    color: widget.isSelected ? Colors.black : null),
               )
             ],
           ),

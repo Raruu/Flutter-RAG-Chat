@@ -440,7 +440,10 @@ class _ChatViewState extends State<ChatView> {
               child: IconButton(
                   onPressed: widget.backFunc,
                   padding: const EdgeInsets.all(0),
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded)),
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Utils.getDefaultTextColor(context),
+                  )),
             )
           : null,
       rightWidget: Row(
@@ -458,23 +461,32 @@ class _ChatViewState extends State<ChatView> {
                     : Colors.transparent,
               ),
               child: IconButton(
-                  hoverColor: MyColors.bgTintPink.withOpacity(0.5),
-                  highlightColor: MyColors.bgTintPink,
-                  onPressed: widget.chatConfigFunc,
-                  icon: SvgPicture.string(
-                    SvgIcons.fluentSettingsChat,
-                    width: 30,
-                    height: 30,
-                  )),
+                hoverColor: MyColors.bgTintPink.withOpacity(0.5),
+                highlightColor: MyColors.bgTintPink,
+                onPressed: widget.chatConfigFunc,
+                icon: SvgPicture.string(
+                  SvgIcons.fluentSettingsChat,
+                  width: 30,
+                  height: 30,
+                  colorFilter: ColorFilter.mode(
+                    Utils.getDefaultTextColor(context)!,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
             ),
           if (!widget.mobileUI) const Padding(padding: EdgeInsets.all(10.0)),
           PopupMenuButton(
             offset: widget.mobileUI ? const Offset(0, 60) : const Offset(0, 40),
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             icon: SvgPicture.string(
               SvgIcons.dotsVertical,
               width: 30,
               height: 30,
+              colorFilter: ColorFilter.mode(
+                Utils.getDefaultTextColor(context)!,
+                BlendMode.srcIn,
+              ),
             ),
             itemBuilder: (context) => widget.mobileUI
                 ? [
@@ -486,7 +498,12 @@ class _ChatViewState extends State<ChatView> {
                             SvgIcons.fluentSettingsChat,
                             width: 30,
                             height: 30,
+                            colorFilter: ColorFilter.mode(
+                              Utils.getDefaultTextColor(context)!,
+                              BlendMode.srcIn,
+                            ),
                           ),
+                          const Padding(padding: EdgeInsets.all(1)),
                           const Text('Chat Settings')
                         ],
                       ),
@@ -603,8 +620,8 @@ class _ChatViewState extends State<ChatView> {
           children: [
             SvgPicture.string(
               SvgIcons.rengeShiranai,
-              colorFilter:
-                  const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+              colorFilter: ColorFilter.mode(
+                  Utils.getDefaultTextColor(context)!, BlendMode.srcIn),
               height: MediaQuery.sizeOf(context).height * 2 / 3,
               width: MediaQuery.sizeOf(context).height * 2 / 3,
             ),

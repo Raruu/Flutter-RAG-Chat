@@ -18,6 +18,12 @@ import 'my_colors.dart';
 import '../widgets/knowledge_widget.dart';
 
 class Utils<T> {
+  static bool isLightMode(BuildContext context) =>
+      Theme.of(context).colorScheme.brightness == Brightness.light;
+
+  static Color? getDefaultTextColor(BuildContext context) =>
+      Theme.of(context).textTheme.bodyLarge!.color;
+
   static void navigateWithNewQueryParams(
       BuildContext context, Map<String, String> newQueryParams) {
     final currentUri = GoRouterState.of(context).uri;
@@ -183,7 +189,7 @@ class Utils<T> {
     String title = 'Not Implemented',
     String subTitle = 'See You Later. . .',
     double textSize = 20,
-    Color textColor = Colors.black,
+    Color? textColor,
     String? strIcon,
     Color? iconColor,
     double iconSize = 150,
@@ -192,6 +198,7 @@ class Utils<T> {
     Color? closeIconColor,
     EdgeInsets padding = const EdgeInsets.all(0),
   }) {
+    textColor ??= getDefaultTextColor(context);
     strIcon ??= randomKafuuChino();
     bool onHover = false;
     bool isMobile = isMobileSize(context);
@@ -208,7 +215,8 @@ class Utils<T> {
       SnackBar(
         behavior: isMobile ? null : SnackBarBehavior.floating,
         duration: const Duration(hours: 1),
-        backgroundColor: isMobile ? null : Colors.transparent,
+        backgroundColor:
+            isMobile ? MyColors.backgroundDark0 : Colors.transparent,
         shape: const Border(),
         elevation: isMobile ? null : 0,
         padding: isMobile
@@ -240,7 +248,7 @@ class Utils<T> {
                             blurRadius: 7,
                           )
                         ],
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                       ),
                 child: Row(
@@ -248,8 +256,8 @@ class Utils<T> {
                   children: [
                     SvgPicture.string(
                       strIcon,
-                      colorFilter:
-                          const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                      colorFilter: ColorFilter.mode(
+                          getDefaultTextColor(context)!, BlendMode.srcIn),
                       width: iconSize,
                       height: iconSize,
                     ),

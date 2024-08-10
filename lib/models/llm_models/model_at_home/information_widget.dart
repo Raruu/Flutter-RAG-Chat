@@ -53,15 +53,30 @@ class _InformationWidgetState extends State<InformationWidget> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             MemoryUsage(
-                                title: 'VRAM',
-                                memoryList: widget.data.vram ?? const [0, 0]),
+                              title: 'VRAM',
+                              memoryList: widget.data.vram ?? const [0, 0],
+                              colorList: Utils.isLightMode(context)
+                                  ? const [
+                                      MyColors.textTintBlue,
+                                      MyColors.bgTintBlue,
+                                    ]
+                                  : const [
+                                      MyColors.bgTintBlue,
+                                      MyColors.textTintBlue,
+                                    ],
+                            ),
                             MemoryUsage(
                               title: 'RAM',
                               memoryList: widget.data.ram ?? const [0, 0],
-                              colorList: const [
-                                MyColors.textTintPink,
-                                MyColors.bgTintPink
-                              ],
+                              colorList: Utils.isLightMode(context)
+                                  ? const [
+                                      MyColors.textTintPink,
+                                      MyColors.bgTintPink,
+                                    ]
+                                  : const [
+                                      MyColors.bgTintPink,
+                                      MyColors.textTintPink,
+                                    ],
                             )
                           ],
                         ),
@@ -175,6 +190,7 @@ class MemoryUsage extends StatelessWidget {
             chartType: ChartType.ring,
             ringStrokeWidth: 10,
             centerText: '${gbVramUsed}GB\nof\n${gbVramTotal}GB',
+            centerTextStyle: Theme.of(context).textTheme.bodySmall,
             legendOptions: const LegendOptions(showLegends: false),
             chartValuesOptions: const ChartValuesOptions(
               showChartValueBackground: false,

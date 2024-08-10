@@ -116,16 +116,18 @@ class LLMModel extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>?> generateText(
-      BuildContext context, String prompt) async {
+      BuildContext context, String prompt) {
     return _llmModel!.generateText(prompt, parameters!).catchError((e) {
       if (kDebugMode) {
         print(e);
       }
-      Utils.showSnackBar(
-        context,
-        title: '[GenerateText] Master! Something Went Wrong:',
-        subTitle: e.toString(),
-      );
+      if (context.mounted) {
+        Utils.showSnackBar(
+          context,
+          title: '[GenerateText] Master! Something Went Wrong:',
+          subTitle: e.toString(),
+        );
+      }
       return null;
     });
   }

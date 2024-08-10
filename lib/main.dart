@@ -15,6 +15,7 @@ import 'screens/home_page.dart';
 import 'models/llm_model.dart';
 import './models/chat_data_list.dart';
 import 'widgets/chat_config.dart';
+import './utils/my_colors.dart';
 
 void main() async {
   if (kIsWeb) {
@@ -41,11 +42,19 @@ void main() async {
   ));
 }
 
-class MyApp extends StatelessWidget {
-  late final GoRouter _router;
+class MyApp extends StatefulWidget {
   final LLMModel llmModel;
+  const MyApp({super.key, required this.llmModel});
 
-  MyApp({super.key, required this.llmModel}) {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final GoRouter _router;
+
+  @override
+  void initState() {
     _router = GoRouter(
       routes: [
         GoRoute(
@@ -54,12 +63,13 @@ class MyApp extends StatelessWidget {
             builder: (context, state) {
               var querys = state.uri.queryParametersAll;
               return HomePage(
-                llmModel: llmModel,
-                chatDataList: llmModel.chatDataList,
+                llmModel: widget.llmModel,
+                chatDataList: widget.llmModel.chatDataList,
                 initialCtnRightOpen: querys['isCtnRightOpen']?.first == 'true',
                 initialMenuSelected:
                     int.tryParse(querys['menuSelected']?.first ?? '-1')!,
                 initialChatId: querys['chat']?.first ?? '0',
+                toggleDarkMode: toggleDarkMode,
               );
             },
             routes: [
@@ -68,7 +78,7 @@ class MyApp extends StatelessWidget {
                 name: 'mobile_chatview',
                 builder: (context, state) {
                   backFunc() {
-                    llmModel.chatDataList.currentSelected = -1;
+                    widget.llmModel.chatDataList.currentSelected = -1;
                     if (context.canPop()) {
                       context.pop();
                     } else {
@@ -80,7 +90,7 @@ class MyApp extends StatelessWidget {
                   return Scaffold(
                     body: SafeArea(
                       child: ChatView(
-                        llmModel: llmModel,
+                        llmModel: widget.llmModel,
                         mobileUI: true,
                         backFunc: backFunc,
                         chatConfigFunc: () {
@@ -92,8 +102,8 @@ class MyApp extends StatelessWidget {
                             builder: (context) => SizedBox(
                               height: MediaQuery.sizeOf(context).height * 3 / 4,
                               child: ChatConfig(
-                                llmModel: llmModel,
-                                chatDataList: llmModel.chatDataList,
+                                llmModel: widget.llmModel,
+                                chatDataList: widget.llmModel.chatDataList,
                               ),
                             ),
                           );
@@ -107,6 +117,15 @@ class MyApp extends StatelessWidget {
       ],
       initialLocation: "/",
     );
+    super.initState();
+  }
+
+  ThemeMode themeMode = ThemeMode.light;
+  void toggleDarkMode() {
+    setState(() {
+      themeMode =
+          themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    });
   }
 
   // This widget is the root of your application.
@@ -115,10 +134,25 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Flutter RAG-Chat',
       theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-          // textTheme: GoogleFonts.montserratTextTheme(),
-          fontFamily: 'Montserrat'),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: MyColors.bgTintBlue,
+          surface: Colors.white,
+        ),
+        useMaterial3: true,
+        fontFamily: 'Montserrat',
+        brightness: Brightness.light,
+      ),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: MyColors.bgTintBlue,
+          brightness: Brightness.dark,
+          surface: MyColors.backgroundDark1,
+        ),
+        useMaterial3: true,
+        fontFamily: 'Montserrat',
+        brightness: Brightness.dark,
+      ),
+      themeMode: themeMode,
       routerConfig: _router,
     );
   }

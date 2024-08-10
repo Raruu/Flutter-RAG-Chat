@@ -137,6 +137,10 @@ class _ChatListState extends State<ChatList> {
                   isShowSearch ? SvgIcons.miClose : SvgIcons.search,
                   width: 26,
                   height: 26,
+                  colorFilter: ColorFilter.mode(
+                    Utils.getDefaultTextColor(context)!,
+                    BlendMode.srcIn,
+                  ),
                 ),
               )
             ],
@@ -185,7 +189,12 @@ class _ChatListState extends State<ChatList> {
                                       dataList[index].messageList.length - 2]
                                   .message
                               : dataList[index].messageList.last.message,
-                      rightWidget: Text(getDay(dataList[index].dateCreated)),
+                      rightWidget: Text(
+                        getDay(dataList[index].dateCreated),
+                        style: index == widget.chatDataList.currentSelected
+                            ? const TextStyle(color: MyColors.textTintBlue)
+                            : null,
+                      ),
                       isShowExpandedChild: idxExpandedCardWidget == index,
                       expandedChild: Padding(
                         padding: const EdgeInsets.only(top: 71),
@@ -245,8 +254,14 @@ class _ChatListState extends State<ChatList> {
                                           }
                                           textEditingController.dispose();
                                         },
-                                        icon: const Icon(Icons.edit)),
-                                    const Text('Rename')
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: MyColors.textTintBlue,
+                                        )),
+                                    const Text('Rename',
+                                        style: TextStyle(
+                                          color: MyColors.textTintBlue,
+                                        ))
                                   ],
                                 ),
                                 Column(
@@ -265,14 +280,19 @@ class _ChatListState extends State<ChatList> {
                                                   "'${chatData.title}'"))) {
                                             widget.chatDataList
                                                 .remove(chatData);
+                                            setState(() {
+                                              idxExpandedCardWidget = -1;
+                                            });
                                           }
-
-                                          setState(() {
-                                            idxExpandedCardWidget = -1;
-                                          });
                                         },
-                                        icon: const Icon(Icons.delete)),
-                                    const Text('Delete')
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: MyColors.textTintBlue,
+                                        )),
+                                    const Text('Delete',
+                                        style: TextStyle(
+                                          color: MyColors.textTintBlue,
+                                        ))
                                   ],
                                 ),
                               ],
@@ -288,7 +308,8 @@ class _ChatListState extends State<ChatList> {
                                 }
                                 idxExpandedCardWidget = index;
                               }),
-                          icon: const Icon(Icons.more_horiz_rounded)),
+                          icon: Icon(Icons.more_horiz_rounded,
+                              color: Utils.getDefaultTextColor(context))),
                       onTap: () => loadChat(index),
                       onLongPress: () => setState(() {
                         if (idxExpandedCardWidget == index) {

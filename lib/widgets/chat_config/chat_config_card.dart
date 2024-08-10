@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
+import '../../utils/util.dart';
+
 class ChatConfigCard extends StatelessWidget {
   final List<Widget> children;
   final String title;
@@ -41,6 +43,10 @@ class ChatConfigCard extends StatelessWidget {
               strIcon,
               height: iconSize,
               width: iconSize,
+              colorFilter: ColorFilter.mode(
+                Utils.getDefaultTextColor(context)!,
+                BlendMode.srcIn,
+              ),
             ),
             const Padding(padding: EdgeInsets.all(4.0)),
             Expanded(
