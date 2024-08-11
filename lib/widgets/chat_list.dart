@@ -196,110 +196,7 @@ class _ChatListState extends State<ChatList> {
                             : null,
                       ),
                       isShowExpandedChild: idxExpandedCardWidget == index,
-                      expandedChild: Padding(
-                        padding: const EdgeInsets.only(top: 71),
-                        child: Container(
-                          margin: const EdgeInsets.all(18.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: SingleChildScrollView(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    IconButton(
-                                        tooltip: 'Rename',
-                                        onPressed: () async {
-                                          TextEditingController
-                                              textEditingController =
-                                              TextEditingController()
-                                                ..text = widget.chatDataList
-                                                    .dataList[index].title;
-                                          bool result =
-                                              await Utils.showDialogYesNo(
-                                            context: context,
-                                            title: Container(
-                                              constraints: BoxConstraints(
-                                                  minWidth:
-                                                      MediaQuery.sizeOf(context)
-                                                              .width *
-                                                          1 /
-                                                          4),
-                                              child: const Text(
-                                                'Rename',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                            ),
-                                            content: PinkTextField(
-                                              textEditingController:
-                                                  textEditingController,
-                                              hintText: '',
-                                              labelText: 'CHAT TITLE',
-                                              backgroundColor:
-                                                  MyColors.bgTintBlue,
-                                            ),
-                                          );
-                                          if (result) {
-                                            widget.chatDataList.dataList[index]
-                                                    .title =
-                                                textEditingController.text;
-                                          }
-                                          textEditingController.dispose();
-                                        },
-                                        icon: const Icon(
-                                          Icons.edit,
-                                          color: MyColors.textTintBlue,
-                                        )),
-                                    const Text('Rename',
-                                        style: TextStyle(
-                                          color: MyColors.textTintBlue,
-                                        ))
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    IconButton(
-                                        tooltip: 'Delete',
-                                        onPressed: () async {
-                                          ChatData chatData = widget
-                                              .chatDataList.dataList[index];
-                                          if (await Utils.showDialogYesNo(
-                                              context: context,
-                                              title: const Text('Delete Chat?'),
-                                              content: Text(
-                                                  "'${chatData.title}'"))) {
-                                            widget.chatDataList
-                                                .remove(chatData);
-                                            setState(() {
-                                              idxExpandedCardWidget = -1;
-                                            });
-                                          }
-                                        },
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: MyColors.textTintBlue,
-                                        )),
-                                    const Text('Delete',
-                                        style: TextStyle(
-                                          color: MyColors.textTintBlue,
-                                        ))
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                      expandedChild: expandedChild(index, context),
                       rightWidgetOnHover: IconButton(
                           onPressed: () => setState(() {
                                 if (idxExpandedCardWidget == index) {
@@ -309,7 +206,10 @@ class _ChatListState extends State<ChatList> {
                                 idxExpandedCardWidget = index;
                               }),
                           icon: Icon(Icons.more_horiz_rounded,
-                              color: Utils.getDefaultTextColor(context))),
+                              color:
+                                  index == widget.chatDataList.currentSelected
+                                      ? MyColors.textTintBlue
+                                      : Utils.getDefaultTextColor(context))),
                       onTap: () => loadChat(index),
                       onLongPress: () => setState(() {
                         if (idxExpandedCardWidget == index) {
@@ -361,6 +261,104 @@ class _ChatListState extends State<ChatList> {
             borderRadiusCircular: 32,
           )
       ],
+    );
+  }
+
+  Padding expandedChild(int index, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 71),
+      child: Container(
+        margin: const EdgeInsets.all(18.0),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: SingleChildScrollView(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                      tooltip: 'Rename',
+                      onPressed: () async {
+                        TextEditingController textEditingController =
+                            TextEditingController()
+                              ..text =
+                                  widget.chatDataList.dataList[index].title;
+                        bool result = await Utils.showDialogYesNo(
+                          context: context,
+                          title: Container(
+                            constraints: BoxConstraints(
+                                minWidth:
+                                    MediaQuery.sizeOf(context).width * 1 / 4),
+                            child: const Text(
+                              'Rename',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          content: PinkTextField(
+                            textEditingController: textEditingController,
+                            hintText: '',
+                            labelText: 'CHAT TITLE',
+                            backgroundColor: MyColors.bgTintBlue,
+                          ),
+                        );
+                        if (result) {
+                          widget.chatDataList.dataList[index].title =
+                              textEditingController.text;
+                          widget.chatDataList
+                              .renameChat(textEditingController.text);
+                        }
+                        textEditingController.dispose();
+                      },
+                      icon: const Icon(
+                        Icons.edit,
+                        color: MyColors.textTintBlue,
+                      )),
+                  const Text('Rename',
+                      style: TextStyle(
+                        color: MyColors.textTintBlue,
+                      ))
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                      tooltip: 'Delete',
+                      onPressed: () async {
+                        ChatData chatData = widget.chatDataList.dataList[index];
+                        if (await Utils.showDialogYesNo(
+                            context: context,
+                            title: const Text('Delete Chat?'),
+                            content: Text("'${chatData.title}'"))) {
+                          widget.chatDataList.remove(chatData);
+                          setState(() {
+                            idxExpandedCardWidget = -1;
+                          });
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.delete,
+                        color: MyColors.textTintBlue,
+                      )),
+                  const Text('Delete',
+                      style: TextStyle(
+                        color: MyColors.textTintBlue,
+                      ))
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

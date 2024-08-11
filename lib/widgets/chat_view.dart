@@ -246,126 +246,11 @@ class _ChatViewState extends State<ChatView> {
                           messageList[index].role == MessageRole.user
                               ? MyColors.bgTintPink
                               : MyColors.bgTintBlue,
-                      showContext: (messageList[index]
-                                  .textData['context1']
-                                  ?.isEmpty ??
-                              true)
-                          ? null
-                          : () {
-                              showDialog(
-                                context: context,
-                                builder: (context) => AlertDialog(
-                                  content: SizedBox(
-                                    width: MediaQuery.sizeOf(context).width *
-                                        3 /
-                                        4,
-                                    child: SingleChildScrollView(
-                                      child: Wrap(
-                                        children: [
-                                          ...List.generate(
-                                            messageList[index]
-                                                .textData['context1']
-                                                .length,
-                                            (indexj) {
-                                              Map<String, dynamic> data =
-                                                  messageList[index]
-                                                          .textData['context1']
-                                                      [indexj];
-                                              String filename =
-                                                  data['filename'];
-                                              int pageNumber =
-                                                  data['page_number'];
-                                              double score = data['score'];
-
-                                              String contextData =
-                                                  data['context'];
-                                              return ChatConfigCard(
-                                                title:
-                                                    '[$pageNumber] $filename',
-                                                strIcon: SvgIcons.knowledge,
-                                                expandedCrossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 8.0),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            Text(
-                                                              'File Name: $filename',
-                                                              style: const TextStyle(
-                                                                  fontSize: 14,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w700),
-                                                            ),
-                                                            const Padding(
-                                                                padding: EdgeInsets
-                                                                    .symmetric(
-                                                                        horizontal:
-                                                                            1.0)),
-                                                            IconButton(
-                                                              onPressed: () {
-                                                                var knowledge = chatDataList
-                                                                    .currentData
-                                                                    .knowledges
-                                                                    .where((element) =>
-                                                                        element[
-                                                                            'title'] ==
-                                                                        filename)
-                                                                    .toList()
-                                                                    .first;
-                                                                var value = kIsWeb
-                                                                    ? knowledge[
-                                                                        'web_data']
-                                                                    : knowledge[
-                                                                        'path'];
-                                                                Utils.openPdf(
-                                                                    value,
-                                                                    context:
-                                                                        context,
-                                                                    title:
-                                                                        filename,
-                                                                    pageAt:
-                                                                        pageNumber);
-                                                              },
-                                                              icon: const Icon(Icons
-                                                                  .open_in_new),
-                                                            )
-                                                          ],
-                                                        ),
-                                                        Text(
-                                                          'Page: $pageNumber\nScore: $score\nContext:',
-                                                          style: const TextStyle(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700),
-                                                        ),
-                                                        Text(contextData)
-                                                      ],
-                                                    ),
-                                                  )
-                                                ],
-                                              );
-                                            },
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
+                      showContext:
+                          (messageList[index].textData['context1']?.isEmpty ??
+                                  true)
+                              ? null
+                              : () => showContextDialog(index),
                       regenerate: () => regenerateText(index),
                       deleteFunc: () async {
                         if (await Utils.showDialogYesNo(
@@ -428,7 +313,47 @@ class _ChatViewState extends State<ChatView> {
 
   bool isExpandTopSection = false;
   late TextEditingController _expandedEditingController;
+  late List<PopupMenuItem> popupMenuItems;
+
   ChatListCardWidget topSection() {
+    popupMenuItems = [
+      PopupMenuItem(
+        onTap: () => chatDataList.importFromJson(context),
+        child: Row(
+          children: [
+            SvgPicture.string(
+              SvgIcons.uliImport,
+              width: 30,
+              height: 30,
+              colorFilter: ColorFilter.mode(
+                Utils.getDefaultTextColor(context)!,
+                BlendMode.srcIn,
+              ),
+            ),
+            const Padding(padding: EdgeInsets.all(4)),
+            const Text('Import')
+          ],
+        ),
+      ),
+      PopupMenuItem(
+        onTap: () => chatDataList.exportToJson(context),
+        child: Row(
+          children: [
+            SvgPicture.string(
+              SvgIcons.uliExport,
+              width: 30,
+              height: 30,
+              colorFilter: ColorFilter.mode(
+                Utils.getDefaultTextColor(context)!,
+                BlendMode.srcIn,
+              ),
+            ),
+            const Padding(padding: EdgeInsets.all(4)),
+            const Text('Export')
+          ],
+        ),
+      )
+    ];
     return ChatListCardWidget(
       splashColor: Colors.transparent,
       isShowExpandedChild: isExpandTopSection && messageList.isNotEmpty,
@@ -478,6 +403,9 @@ class _ChatViewState extends State<ChatView> {
           if (!widget.mobileUI) const Padding(padding: EdgeInsets.all(10.0)),
           PopupMenuButton(
             offset: widget.mobileUI ? const Offset(0, 60) : const Offset(0, 40),
+            constraints: const BoxConstraints(minWidth: 200),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             color: Theme.of(context).colorScheme.surface,
             icon: SvgPicture.string(
               SvgIcons.dotsVertical,
@@ -490,6 +418,7 @@ class _ChatViewState extends State<ChatView> {
             ),
             itemBuilder: (context) => widget.mobileUI
                 ? [
+                    ...popupMenuItems,
                     PopupMenuItem(
                       onTap: widget.chatConfigFunc,
                       child: Row(
@@ -503,16 +432,14 @@ class _ChatViewState extends State<ChatView> {
                               BlendMode.srcIn,
                             ),
                           ),
-                          const Padding(padding: EdgeInsets.all(1)),
+                          const Padding(padding: EdgeInsets.all(4)),
                           const Text('Chat Settings')
                         ],
                       ),
                     )
                   ]
                 : [
-                    const PopupMenuItem(
-                      child: Text('Not Implemented'),
-                    ),
+                    ...popupMenuItems,
                   ],
           )
         ],
@@ -592,7 +519,10 @@ class _ChatViewState extends State<ChatView> {
                               WidgetStatePropertyAll(MyColors.bgTintBlue),
                         ),
                         onPressed: renameChat,
-                        child: const Text('Save'),
+                        child: const Text(
+                          'Save',
+                          style: TextStyle(color: MyColors.textTintPink),
+                        ),
                       ),
                     ),
                   ],
@@ -608,6 +538,7 @@ class _ChatViewState extends State<ChatView> {
   void renameChat() {
     chatDataList.currentData.title = _expandedEditingController.text;
     isExpandTopSection = false;
+    chatDataList.renameChat(_expandedEditingController.text);
     chatDataList.notifyChatDataListner();
   }
 
@@ -634,6 +565,88 @@ class _ChatViewState extends State<ChatView> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             )
           ],
+        ),
+      ),
+    );
+  }
+
+  void showContextDialog(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: SizedBox(
+          width: MediaQuery.sizeOf(context).width * 3 / 4,
+          child: SingleChildScrollView(
+            child: Wrap(
+              children: [
+                ...List.generate(
+                  messageList[index].textData['context1'].length,
+                  (indexj) {
+                    Map<String, dynamic> data =
+                        messageList[index].textData['context1'][indexj];
+                    String filename = data['filename'];
+                    int pageNumber = data['page_number'];
+                    double score = data['score'];
+
+                    String contextData = data['context'];
+                    return ChatConfigCard(
+                      title: '[$pageNumber] $filename',
+                      strIcon: SvgIcons.knowledge,
+                      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'File Name: $filename',
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                  const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 1.0)),
+                                  IconButton(
+                                    onPressed: () {
+                                      var knowledge = chatDataList
+                                          .currentData.knowledges
+                                          .where((element) =>
+                                              element['title'] == filename)
+                                          .toList()
+                                          .first;
+                                      var value = kIsWeb
+                                          ? knowledge['web_data']
+                                          : knowledge['path'];
+                                      Utils.openPdf(value,
+                                          context: context,
+                                          title: filename,
+                                          pageAt: pageNumber);
+                                    },
+                                    icon: const Icon(Icons.open_in_new),
+                                  )
+                                ],
+                              ),
+                              Text(
+                                'Page: $pageNumber\nScore: $score\nContext:',
+                                style: const TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w700),
+                              ),
+                              Text(contextData)
+                            ],
+                          ),
+                        )
+                      ],
+                    );
+                  },
+                )
+              ],
+            ),
+          ),
         ),
       ),
     );

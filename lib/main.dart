@@ -117,15 +117,20 @@ class _MyAppState extends State<MyApp> {
       ],
       initialLocation: "/",
     );
+    prefs = widget.llmModel.prefs;
+    themeMode =
+        ThemeMode.values.byName(prefs.getString('theme_mode') ?? 'light');
     super.initState();
   }
 
-  ThemeMode themeMode = ThemeMode.light;
+  late final SharedPreferences prefs;
+  late ThemeMode themeMode;
   void toggleDarkMode() {
     setState(() {
       themeMode =
           themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     });
+    prefs.setString('theme_mode', themeMode.name);
   }
 
   // This widget is the root of your application.

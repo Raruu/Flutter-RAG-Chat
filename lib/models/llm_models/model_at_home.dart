@@ -74,6 +74,7 @@ class ModelAtHome<T> extends BaseModel {
   Function(List<Map<String, dynamic>>)? get setKnowledge => _setKnowledge;
   void _setKnowledge(List<Map<String, dynamic>> knowledges) async {
     if (knowledges.isEmpty) {
+      _resetKnowledge();
       return;
     }
     try {

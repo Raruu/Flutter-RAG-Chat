@@ -36,23 +36,34 @@ class ChatData {
     knowledges = [];
   }
 
-  ChatData.fromJson(
-      Map<String, Object?> jsonChat, List<Map<String, Object?>> jsonMessages) {
-    id = jsonChat[ChatDatabase.chatId] as String;
-    title = jsonChat[ChatDatabase.chatTitle] as String;
+  ChatData.fromMap(
+      Map<String, Object?> mapChat, List<Map<String, Object?>> mapMessages,
+      {bool newId = false}) {
+    if (newId) {
+      String dateTimeNow = DateTime.now().toUtc().toString();
+      id = dateTimeNow
+          .substring(0, dateTimeNow.length - 1)
+          .replaceAll('-', '')
+          .replaceAll(':', '')
+          .replaceAll('.', '')
+          .replaceAll(' ', '');
+    } else {
+      id = mapChat[ChatDatabase.chatId] as String;
+    }
+    title = mapChat[ChatDatabase.chatTitle] as String;
     knowledges =
-        List.from(jsonDecode(jsonChat[ChatDatabase.knowledges] as String));
-    parameters = jsonDecode(jsonChat[ChatDatabase.parameters] as String);
-    usePreprompt = [(jsonChat[ChatDatabase.usePreprompt] as int) == 1];
-    prePrompt = jsonChat[ChatDatabase.preprompt] as String;
+        List.from(jsonDecode(mapChat[ChatDatabase.knowledges] as String));
+    parameters = jsonDecode(mapChat[ChatDatabase.parameters] as String);
+    usePreprompt = [(mapChat[ChatDatabase.usePreprompt] as int) == 1];
+    prePrompt = mapChat[ChatDatabase.preprompt] as String;
     useChatConversationContext = [
-      (jsonChat[ChatDatabase.useChatContext] as int) == 1
+      (mapChat[ChatDatabase.useChatContext] as int) == 1
     ];
-    dateCreated = jsonChat[ChatDatabase.lastMessageTimestamp] as String;
+    dateCreated = mapChat[ChatDatabase.lastMessageTimestamp] as String;
 
     totalToken = 0;
     messageList = [];
-    for (var item in jsonMessages) {
+    for (var item in mapMessages) {
       int token = item[ChatDatabase.messageToken] as int;
       totalToken += token;
       messageList.add(
@@ -67,4 +78,30 @@ class ChatData {
       );
     }
   }
+
+  Map<String, Object> toMap() => {
+        ChatDatabase.chatId: id,
+        ChatDatabase.chatTitle: title,
+        ChatDatabase.knowledges: jsonEncode(knowledges),
+        ChatDatabase.parameters: jsonEncode(parameters),
+        ChatDatabase.usePreprompt: usePreprompt.first ? 1 : 0,
+        ChatDatabase.preprompt: prePrompt ?? '',
+        ChatDatabase.useChatContext: useChatConversationContext.first ? 1 : 0,
+        ChatDatabase.lastMessageTimestamp: dateCreated,
+      };
+
+  Map<String, Object> toMapAll() => {
+        ...toMap(),
+        ChatDatabase.tableChatMessages: List.generate(
+          messageList.length,
+          (index) => {
+            ChatDatabase.chatId: id,
+            ChatDatabase.role: messageList[index].role.index,
+            ChatDatabase.message: messageList[index].message,
+            ChatDatabase.messageTextData:
+                jsonEncode(messageList[index].textData),
+            ChatDatabase.messageToken: messageList[index].token
+          },
+        ),
+      };
 }

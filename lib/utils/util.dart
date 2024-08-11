@@ -18,6 +18,9 @@ import 'my_colors.dart';
 import '../widgets/knowledge_widget.dart';
 
 class Utils<T> {
+  static String sanitizeFilename(String filename) =>
+      filename.replaceAll(RegExp(r'[\\/:\*\?"<>\|]'), '_');
+
   static bool isLightMode(BuildContext context) =>
       Theme.of(context).colorScheme.brightness == Brightness.light;
 
