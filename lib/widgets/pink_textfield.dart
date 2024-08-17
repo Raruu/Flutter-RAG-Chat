@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import "package:flutter/material.dart";
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 
 import '../utils/my_colors.dart';
 
 class PinkTextField extends StatefulWidget {
   final String hintText;
   final String? labelText;
+  final Color labelColor;
   final Color floatingLabelColor;
   final String? strIconLeft;
   final String? tooltipIconLeft;
@@ -26,6 +30,9 @@ class PinkTextField extends StatefulWidget {
   final TextInputType? textInputType;
   final TextAlign textAlign;
   final FocusNode? focusNode;
+  final bool showBorderWhenFocus;
+  final Color? typeAheadTileColor;
+
   const PinkTextField({
     super.key,
     this.hintText = 'Fill Me',
@@ -49,7 +56,45 @@ class PinkTextField extends StatefulWidget {
     this.textAlign = TextAlign.start,
     this.focusNode,
     this.floatingLabelColor = MyColors.bgTintBlue,
-  });
+    this.showBorderWhenFocus = false,
+    this.labelColor = MyColors.textTintBlue,
+  })  : typeAhead = false,
+        onSelected = null,
+        suggestionsCallback = null,
+        typeAheadTileColor = null;
+
+  final bool typeAhead;
+  final Function(Object? value)? onSelected;
+  final FutureOr<List<Object?>?> Function(String search)? suggestionsCallback;
+  const PinkTextField.typeAhead({
+    super.key,
+    this.hintText = 'Fill Me',
+    this.strIconLeft,
+    this.strIconRight,
+    this.leftButtonFunc,
+    this.rightButtonFunc,
+    this.onChanged,
+    this.textEditingController,
+    this.iconSizeLeft,
+    this.iconSizeRight,
+    this.borderRadiusCircular = 12.0,
+    this.onEditingComplete,
+    this.multiLine = false,
+    this.labelText,
+    this.backgroundColor = MyColors.bgTintPink,
+    this.newLineOnEnter = true,
+    this.tooltipIconLeft,
+    this.tooltipIconRight,
+    this.textInputType,
+    this.textAlign = TextAlign.start,
+    this.focusNode,
+    this.floatingLabelColor = MyColors.bgTintBlue,
+    this.showBorderWhenFocus = false,
+    required this.onSelected,
+    required this.suggestionsCallback,
+    this.labelColor = MyColors.textTintBlue,
+    this.typeAheadTileColor,
+  }) : typeAhead = true;
 
   @override
   State<PinkTextField> createState() => _PinkTextFieldState();
@@ -91,6 +136,37 @@ class _PinkTextFieldState extends State<PinkTextField> {
 
   @override
   Widget build(BuildContext context) {
+    return widget.typeAhead
+        ? TypeAheadField(
+            controller: widget.textEditingController,
+            focusNode: _focus,
+            builder: (context, controller, focusNode) =>
+                pinkTextfield(controller, focusNode),
+            itemBuilder: (context, value) => ListTile(
+              title: Text(
+                value.toString(),
+                style: const TextStyle(color: Colors.black),
+              ),
+              tileColor: widget.typeAheadTileColor,
+            ),
+            onSelected: (value) {
+              widget.textEditingController?.text = value.toString();
+              widget.onSelected?.call(value);
+            },
+            suggestionsCallback: widget.suggestionsCallback!,
+            decorationBuilder: (context, child) => Material(
+              type: MaterialType.card,
+              clipBehavior: Clip.antiAlias,
+              elevation: 4,
+              borderRadius: BorderRadius.circular(10),
+              child: child,
+            ),
+          )
+        : pinkTextfield(widget.textEditingController, _focus);
+  }
+
+  TextField pinkTextfield(
+      TextEditingController? textEditingController, FocusNode focusNode) {
     return TextField(
       textAlign: widget.textAlign,
       keyboardType: widget.textInputType ??
@@ -98,14 +174,26 @@ class _PinkTextFieldState extends State<PinkTextField> {
       maxLines: widget.multiLine ? null : 1,
       onEditingComplete: widget.onEditingComplete,
       onChanged: widget.onChanged,
-      controller: widget.textEditingController,
-      focusNode: _focus,
+      controller: textEditingController,
+      focusNode: focusNode,
       style: const TextStyle(fontWeight: FontWeight.w700, color: Colors.black),
       decoration: InputDecoration(
+        focusedBorder: OutlineInputBorder(
+          borderRadius:
+              BorderRadius.all(Radius.circular(widget.borderRadiusCircular)),
+          borderSide: widget.showBorderWhenFocus
+              ? const BorderSide(
+                  color: MyColors.textTintPink,
+                  width: 3,
+                  strokeAlign: BorderSide.strokeAlignInside)
+              : BorderSide.none,
+        ),
         labelText: widget.labelText,
+        labelStyle: TextStyle(color: widget.labelColor),
         floatingLabelStyle: TextStyle(
             color: widget.floatingLabelColor,
-            fontSize: 18,fontWeight: FontWeight.w700,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
             shadows: const [Shadow(color: Colors.black, blurRadius: 3)]),
         prefixIcon: widget.strIconLeft == null
             ? null

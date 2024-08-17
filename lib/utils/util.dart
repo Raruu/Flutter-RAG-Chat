@@ -155,14 +155,22 @@ class Utils<T> {
         }
         return;
       } else {
-        var sendKnowledge = kIsWeb
-            ? await llmModel.addKnowledge!(result['web_data'],
-                webFileName: result['title'])
-            : await llmModel.addKnowledge!(result['path']);
+        try {
+          kIsWeb
+              ? await llmModel.addKnowledge!(result['web_data'],
+                  webFileName: result['title'])
+              : await llmModel.addKnowledge!(result['path']);
 
-        if (sendKnowledge) {
           chatDataList.currentData.knowledges.add(result);
           setState(() {});
+        } catch (e) {
+          if (context.mounted) {
+            showSnackBar(context,
+                title: "Add Context Failed", subTitle: e.toString());
+          }
+          if (kDebugMode) {
+            print(e);
+          }
         }
       }
     }

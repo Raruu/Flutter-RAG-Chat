@@ -51,6 +51,7 @@ dependencies:
   path: ^1.9.0
   sqflite_common_ffi: ^2.3.3
   sqflite_common_ffi_web: ^0.4.4
+  flutter_typeahead: ^5.2.0
 
 dev_dependencies:
   flutter_test:

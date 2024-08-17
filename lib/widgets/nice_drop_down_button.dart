@@ -7,12 +7,14 @@ class NiceDropDownButton extends StatelessWidget {
   final dynamic items;
   final void Function(dynamic value)? onChanged;
   final Color color;
+  final String hintText;
   const NiceDropDownButton({
     super.key,
     required this.value,
     required this.items,
     required this.onChanged,
     this.color = MyColors.bgTintBlue,
+    this.hintText = 'Provider',
   });
 
   @override
@@ -35,7 +37,10 @@ class NiceDropDownButton extends StatelessWidget {
             value: value,
             dropdownColor: color,
             borderRadius: BorderRadius.circular(10),
-            hint: const Text('Provider'),
+            hint: Text(
+              hintText,
+              style: const TextStyle(color: Colors.black),
+            ),
             items: items,
             onChanged: onChanged,
           ),

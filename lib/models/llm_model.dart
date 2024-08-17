@@ -23,30 +23,36 @@ class LLMModel extends ChangeNotifier {
 
   Function()? get resetKnowledge => _llmModel?.resetKnowledge;
   Function(String filename)? get deleteKnowledge => _llmModel?.deleteKnowledge;
-  Function(List<Map<String, dynamic>> knowledges)? get setKnowledge =>
-      _llmModel?.setKnowledge;
+  Function(List<Map<String, dynamic>> knowledges)? get setKnowledge {
+    return _llmModel?.setKnowledge;
+  }
+
   Function(dynamic value, {String? webFileName})? get addKnowledge =>
       _llmModel?.addKnowledge;
   Map<String, dynamic>? get defaultParameters => _llmModel?.defaultParameters;
   String get defaultPrePrompt => df_preprompt.defaultPrePrompt;
-  Widget get settingsWidget =>
-      _llmModel?.settingsWidget ?? const LinearProgressIndicator();
+
+  Widget get settingLlmodelWidget =>
+      _llmModel?.settingLlmodelWidget ?? const LinearProgressIndicator();
+  Widget get settingEmbeddingModelWidget =>
+      _embeddingModel?.settingEmbeddingModelWidget ??
+      const LinearProgressIndicator();
   Widget get informationWidget =>
       _llmModel?.informationWidget ?? const SizedBox();
 
   Map<String, dynamic>? _parameters;
   Map<String, dynamic>? get parameters => _parameters;
 
-  final List<String> providersList = [
+  final List<String> llmProvidersList = const [
     'OpenAI',
     // 'Google',
     // 'Text-Generation-Webui',
     'Model at home',
   ];
 
-  String? _provider;
-  String? get provider => _provider;
-  set provider(String? value) {
+  String? _llmProvider;
+  String? get llmProvider => _llmProvider;
+  set llmProvider(String? value) {
     switch (value?.toLowerCase()) {
       case 'model at home':
         _llmModel = ModelAtHome(
@@ -66,18 +72,44 @@ class LLMModel extends ChangeNotifier {
             }
           },
         );
-        prefs.setString('provider', value!);
+        prefs.setString('llm_provider', value!);
         break;
       default:
         _llmModel = null;
     }
-    _provider = value;
+    _llmProvider = value;
+  }
+
+  BaseModel? _embeddingModel;
+  final List<String> embeddingProvidersList = const [
+    'OpenAI',
+    'Model at home',
+  ];
+  String? _embeddingProvider;
+  String? get embeddingProvider => _embeddingProvider;
+  set embeddingProvider(String? value) {
+    switch (value?.toLowerCase()) {
+      case 'model at home':
+        _embeddingModel = ModelAtHome(
+          notifyListeners,
+          prefs,
+          context: context,
+          chatDataList: chatDataList,
+        );
+        prefs.setString('embedding_provider', value!);
+        break;
+      default:
+        _embeddingModel = null;
+    }
+    _embeddingProvider = value;
   }
 
   LLMModel(this.chatDataList, {this.context, required this.prefs});
 
   void loadSavedData() {
-    provider = prefs.getString('provider') ?? 'Model at home';
+    llmProvider = prefs.getString('llm_provider') ?? 'Model at home';
+    embeddingProvider =
+        prefs.getString('embedding_provider') ?? 'Model at home';
   }
 
   // TODO ?

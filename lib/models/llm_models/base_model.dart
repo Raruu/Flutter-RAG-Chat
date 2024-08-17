@@ -3,7 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class BaseModel {
   late Map<String, dynamic> defaultParameters;
-  late Widget settingsWidget;
+  late Widget settingLlmodelWidget;
+  late Widget settingEmbeddingModelWidget;
   late Widget informationWidget;
   Function()? onChatSettingsChanged;
   Function()? resetKnowledge;

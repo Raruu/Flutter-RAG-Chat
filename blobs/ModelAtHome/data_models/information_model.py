@@ -1,20 +1,31 @@
 import psutil, GPUtil
 from torch.cuda import mem_get_info
-from llm_model import Model
+from model import Model
 from pydantic import BaseModel
 
 
 class InfomationData(BaseModel):
+    embedding_model_id: str
     llmmodel_id: str
     llmmodel_in_mem: float
+    embedding_model_in_mem: float
     gpu_name: str
     vram: list[float]
     ram: list[float]
     len_context_knowledge: int
     list_context_knowledge: list[str]
 
-    def __init__(self, llm_model: Model, llmmodel_id):
-        llmmodel_in_mem = self.get_model_mem_size(llm_model.llm_model)
+    def __init__(self, llm_model: Model):
+        llm_model_in_mem = (
+            self.get_model_mem_size(llm_model.llm_model)
+            if llm_model.llm_model is not None
+            else 0
+        )
+        embedding_model_in_mem = (
+            self.get_model_mem_size(llm_model.embedding_model)
+            if llm_model.embedding_model is not None
+            else 0
+        )
         gpus = GPUtil.getGPUs()
         gpu_name = gpus[0].name
         vram = self.get_vram()
@@ -28,11 +39,21 @@ class InfomationData(BaseModel):
         else:
             list_context_knowledge = []
         super().__init__(
-            llmmodel_in_mem=llmmodel_in_mem,
+            llmmodel_in_mem=llm_model_in_mem,
+            embedding_model_in_mem=embedding_model_in_mem,
             gpu_name=gpu_name,
             vram=vram,
             ram=ram,
-            llmmodel_id=llmmodel_id,
+            embedding_model_id=(
+                "Not Loaded"
+                if llm_model.embedding_model_id == ""
+                else llm_model.embedding_model_id
+            ),
+            llmmodel_id=(
+                "Not Loaded"
+                if llm_model.llm_model_id == ""
+                else llm_model.llm_model_id
+            ),
             len_context_knowledge=len_context_knowledge,
             list_context_knowledge=list_context_knowledge,
         )

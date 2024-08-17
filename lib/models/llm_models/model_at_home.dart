@@ -5,13 +5,25 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter_rag_chat/models/message.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'base_model.dart';
 import './model_at_home/settings_widget.dart';
 import './model_at_home/data.dart';
 import './model_at_home/information_widget.dart';
 import '../chat_data_list.dart';
 
-class ModelAtHome<T> extends BaseModel {
+enum ModelType { llm, embedding }
+
+class ModelAtHome extends BaseModel {
+  static ModelAtHome? _instance;
+  factory ModelAtHome(
+      dynamic Function() notifyListeners, SharedPreferences prefs,
+      {BuildContext? context, required ChatDataList chatDataList}) {
+    _instance ??= ModelAtHome._internal(notifyListeners, prefs,
+        context: context, chatDataList: chatDataList);
+    return _instance!;
+  }
+
   Map<String, String> justHeader = const {
     'Content-Type': 'application/json; charset=UTF-8'
   };
@@ -30,23 +42,67 @@ class ModelAtHome<T> extends BaseModel {
 
   final ChatDataList chatDataList;
   late final Data _data;
-  late final Widget _settingsWidget;
-  @override
-  Widget get settingsWidget => _settingsWidget;
 
   late final Widget _informationWidget;
   @override
   Widget get informationWidget => _informationWidget;
 
-  ModelAtHome(super.notifyListeners, super.prefs,
+  ModelAtHome._internal(super.notifyListeners, super.prefs,
       {BuildContext? context, required this.chatDataList}) {
     _data = Data(super.notifyListener, super.prefs, context: context);
-    _settingsWidget = SettingsWidget(
-      data: _data,
-    );
+
     _informationWidget = InformationWidget(
       data: _data,
     );
+  }
+
+  @override
+  Widget get settingLlmodelWidget => SettingsWidget(
+        data: _data,
+        intialURL: _data.baseURL,
+        onSetURL: (value) => _data.baseURL = value,
+        intialValue: '',
+        valueLabel: 'AutoModelForCausalLM',
+        onUnsetValue: () => unloadModel(ModelType.llm),
+        onSetValue: (value) => loadModel(ModelType.llm, value),
+        suggestionsCallback: (search) => _data.llmModelOnServer,
+        availabValueRefresh: _data.getModelOnServer,
+        modelName: _data.modelId,
+      );
+
+  @override
+  Widget get settingEmbeddingModelWidget => SettingsWidget(
+        data: _data,
+        intialURL: _data.baseURL,
+        onSetURL: (value) => _data.baseURL = value,
+        intialValue: '',
+        valueLabel: 'SentenceTransformer',
+        onUnsetValue: () => unloadModel(ModelType.embedding),
+        onSetValue: (value) => loadModel(ModelType.embedding, value),
+        suggestionsCallback: (search) => _data.embeddingModelOnServer,
+        availabValueRefresh: _data.getModelOnServer,
+        modelName: _data.embeddingModelId,
+      );
+
+  void loadModel(ModelType modelType, String modelId) async {
+    Uri uri = Uri.parse(
+        '${_data.baseURL}/load_model/${modelType.name.toUpperCase()}?model_id=$modelId');
+    var httpPost = http.post(uri);
+    _data.startgetInformationPeriodic(tryCancle: true);
+    _data.getInformation();
+    await httpPost;
+    _data.startgetInformationPeriodic(tryCancle: true);
+    _data.getInformation();
+    notifyListener();
+  }
+
+  void unloadModel(ModelType modelType) async {
+    Uri uri = Uri.parse(
+        '${_data.baseURL}/unload_model/${modelType.name.toUpperCase()}');
+    await http.delete(uri);
+    _data.startgetInformationPeriodic(tryCancle: true);
+    _data.getInformation();
+    notifyListener();
   }
 
   @override
@@ -246,8 +302,7 @@ class ModelAtHome<T> extends BaseModel {
     if (text.isEmpty) {
       return text;
     }
-    String formattedString =
-        text.substring(1, text.length - 1).replaceAll('\\n', '\n');
+    String formattedString = text.replaceAll('\\n', '\n');
     return formattedString;
   }
 }

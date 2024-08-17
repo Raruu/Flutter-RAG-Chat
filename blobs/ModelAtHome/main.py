@@ -1,14 +1,11 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from llm_model import Model
-import os
+import model, os
 
 from data_models.generate_text_model import PostGenerateText, ReturnGeneratedText
 from data_models.information_model import InfomationData
 from data_models.post_set_chatroom_model import PostSetChatRoomModel
 
-# Put Your Model Here
-MODEL_ID = "./models/gemma-7b-it/"
 
 app = FastAPI()
 app.add_middleware(
@@ -23,7 +20,7 @@ app.add_middleware(
     ],
     allow_headers=["Origin", "X-Requested-With", "Content-Type", "Accept"],
 )
-llm_model = Model(model_id=MODEL_ID)
+llm_model = model.Model()
 chat_room = llm_model.chat_room
 
 
@@ -32,14 +29,30 @@ async def root():
     return {"message": "Hello World"}
 
 
+@app.post("/load_model/{model_type}")
+async def load_model(model_type: str, model_id: str):
+    for item in model.ModelType:
+        if item.name == model_type:
+            return await llm_model.load_model(model_type=item, model_id=model_id)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+
+
+@app.delete("/unload_model/{model_type}")
+async def unload_model(model_type: str):
+    for item in model.ModelType:
+        if item.name == model_type:
+            return llm_model.unload_model(item)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+
+
 @app.get("/get_information", response_model=InfomationData)
 async def get_information():
-    return InfomationData(llm_model, MODEL_ID.replace("./models/", "").replace("/", ""))
+    return InfomationData(llm_model)
 
 
-@app.get("/model_list")
-async def model_list():
-    return os.listdir("models")
+@app.get("/get_model_list")
+async def get_model_list():
+    return model.Model.get_model_list()
 
 
 @app.get("/get_chatroom_id")
@@ -94,6 +107,10 @@ async def generate_text(data: PostGenerateText):
     output = await llm_model.generate_text(data)
     print(f"[generate_text] Generate Text: {output}")
     return output
+
+@app.post("/generate_context", response_model=ReturnGeneratedText)
+async def generate_context(data: PostGenerateText):
+    llm_model.build_context(data)
 
 
 if __name__ == "__main__":

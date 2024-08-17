@@ -16,14 +16,41 @@ class Data {
   set baseURL(String value) {
     _baseURL = value;
     prefs.setString('providerUrl', value);
+    getModelOnServer();
     getInformation();
+  }
+
+  final List<String> _llmModelOnServer = [];
+  List<String>? get llmModelOnServer =>
+      _llmModelOnServer.isEmpty ? null : _llmModelOnServer;
+
+  final List<String> _embeddingModelOnServer = [];
+  List<String>? get embeddingModelOnServer =>
+      _embeddingModelOnServer.isEmpty ? null : _embeddingModelOnServer;
+
+  void getModelOnServer() async {
+    _llmModelOnServer.clear();
+    _embeddingModelOnServer.clear();
+    Uri uri = Uri.parse('$baseURL/get_model_list');
+    http.Response response = await http.get(uri);
+    if (response.statusCode == 200) {
+      Map<String, dynamic> responseJson = jsonDecode(response.body);
+      for (String item in responseJson['LLM']) {
+        _llmModelOnServer.add(item);
+      }
+      for (String item in responseJson['EMBEDDING']) {
+        _embeddingModelOnServer.add(item);
+      }
+    }
   }
 
   String? gpuName;
   List<double>? ram;
   List<double>? vram;
   String? modelId;
+  String? embeddingModelId;
   double? llmModelMemoryUsage;
+  double? embeddingModelMemoryUsage;
   int? lenContextKnowledge;
   List<String>? listContextKnowledge;
   void setNull() {
@@ -43,6 +70,18 @@ class Data {
   }
 
   Timer? getInformationPeriodic;
+  void startgetInformationPeriodic({bool tryCancle = false}) {
+    if (tryCancle) {
+      getInformationPeriodic?.cancel();
+      getInformationPeriodic = null;
+    }
+    getInformationTryReconnect = false;
+    getInformationPeriodic ??= Timer.periodic(
+      const Duration(seconds: 3),
+      (timer) => getInformation(),
+    );
+  }
+
   bool getInformationTryReconnect = true;
   void getInformation() async {
     try {
@@ -57,17 +96,15 @@ class Data {
         ram = List<double>.from(responseJson['ram']);
         vram = List<double>.from(responseJson['vram']);
         modelId = responseJson['llmmodel_id'];
+        embeddingModelId = responseJson['embedding_model_id'];
         llmModelMemoryUsage = responseJson['llmmodel_in_mem'];
+        embeddingModelMemoryUsage = responseJson['embedding_model_in_mem'];
         lenContextKnowledge = responseJson['len_context_knowledge'];
         listContextKnowledge =
             List.from(responseJson['list_context_knowledge']);
         notifyListener();
 
-        getInformationTryReconnect = false;
-        getInformationPeriodic ??= Timer.periodic(
-          const Duration(seconds: 3),
-          (timer) => getInformation(),
-        );
+        startgetInformationPeriodic();
       }
     } on SocketException catch (e) {
       if (getInformationTryReconnect) {
@@ -84,10 +121,13 @@ class Data {
         }
         return;
       }
-      Utils.showSnackBar(context!,
-          title: 'Get Information:',
-          duration: const Duration(milliseconds: 600),
-          subTitle: 'Reconnecting');
+      if (context != null) {
+        Utils.showSnackBar(context!,
+            title: 'Get Information:',
+            duration: const Duration(milliseconds: 600),
+            subTitle: 'Reconnecting');
+      }
+
       getInformationTryReconnect = true;
     } catch (e) {
       getInformationPeriodic?.cancel();

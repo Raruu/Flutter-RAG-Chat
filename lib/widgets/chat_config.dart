@@ -255,6 +255,7 @@ class _ChatConfigState extends State<ChatConfig> {
                   constraints: BoxConstraints(
                       maxHeight: MediaQuery.sizeOf(context).height * 2 / 3),
                   child: PinkTextField(
+                    showBorderWhenFocus: true,
                     textEditingController: _prePromptTextController,
                     hintText: '',
                     labelText: 'PRE-PROMPT',

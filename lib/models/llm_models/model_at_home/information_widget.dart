@@ -91,7 +91,11 @@ class _InformationWidgetState extends State<InformationWidget> {
                                 Text('GPU: ${widget.data.gpuName}'),
                                 Text('Model ID: ${widget.data.modelId}'),
                                 Text(
+                                    'Embedding ID: ${widget.data.embeddingModelId}'),
+                                Text(
                                     'LLM Model in Memory: ${widget.data.llmModelMemoryUsage?.toStringAsFixed(2)} MB'),
+                                Text(
+                                    'Embedding Model in Memory: ${widget.data.embeddingModelMemoryUsage?.toStringAsFixed(2)} MB'),
                                 Theme(
                                   data: Theme.of(context).copyWith(
                                       dividerColor: Colors.transparent),
