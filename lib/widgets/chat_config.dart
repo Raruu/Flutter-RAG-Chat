@@ -162,8 +162,8 @@ class _ChatConfigState extends State<ChatConfig> {
                             child: IconButton(
                               icon: const Icon(Icons.restore_page_outlined),
                               tooltip: 'Re-Apply Knowledge',
-                              onPressed: () => widget.llmModel.setKnowledge
-                                  ?.call(widget
+                              onPressed: () async => widget.llmModel
+                                  .setKnowledge(widget
                                       .chatDataList.currentData.knowledges),
                             ),
                           ),
@@ -212,8 +212,7 @@ class _ChatConfigState extends State<ChatConfig> {
   }
 
   void onChatSettingsChanged(String from) async {
-    bool rsSettings =
-        await widget.llmModel.onChatSettingsChanged?.call() ?? true;
+    bool rsSettings = await widget.llmModel.onChatSettingsChanged() ?? true;
     String msgTitle = "[$from]: ${rsSettings ? 'Success' : 'Failed!!!'}";
     String msgSubtitle = rsSettings ? 'Task Complete Onii-chan~' : ':I';
     if (mounted) {

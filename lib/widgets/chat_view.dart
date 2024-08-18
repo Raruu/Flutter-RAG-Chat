@@ -118,11 +118,16 @@ class _ChatViewState extends State<ChatView> {
 
   void regenerateText(int index, {String? query}) async {
     query ??= messageList[index].textData['query'];
-    chatDataList.removeToMessageList(index);
-    widget.llmModel.onChatSettingsChanged?.call();
+    // print(index);
+    // print(messageList.length);
+    if (index <= messageList.length - 1 ||
+        (index < messageList.length &&
+            messageList[index].role == MessageRole.model)) {
+      chatDataList.removeToMessageList(index);
+    }
     ChatData currentData = chatDataList.currentData;
     List<Message> currentMessageList = messageList;
-    await widget.llmModel.onChatSettingsChanged?.call();
+    await widget.llmModel.onChatSettingsChanged();
     generateText(
         // ignore: use_build_context_synchronously
         context,
@@ -261,10 +266,10 @@ class _ChatViewState extends State<ChatView> {
                             chatDataList.currentData,
                             removeIdx: index,
                           );
-                          widget.llmModel.onChatSettingsChanged?.call();
+                          widget.llmModel.onChatSettingsChanged();
                         }
                       },
-                      userEditFunc: index == messageList.length - 2
+                      userEditFunc: index >= messageList.length - 2
                           ? () async {
                               TextEditingController textEditingController =
                                   TextEditingController()
@@ -295,7 +300,8 @@ class _ChatViewState extends State<ChatView> {
                               if (result) {
                                 messageList[index].message =
                                     textEditingController.text;
-                                if (messageList.length - 1 == index + 1) {
+                                widget.llmModel.onChatSettingsChanged();
+                                if (messageList.length - 1 <= index) {
                                   regenerateText(index + 1,
                                       query: textEditingController.text);
                                 }

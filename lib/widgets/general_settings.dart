@@ -79,7 +79,7 @@ class _GeneralSettingsState extends State<GeneralSettings> {
                   const Padding(padding: EdgeInsets.all(4)),
                   Consumer<LLMModel>(
                     builder: (context, value, child) => Column(
-                      children: [widget.llmModel.settingLlmodelWidget],
+                      children: [widget.llmModel.widgetLlmodelSetting],
                     ),
                   )
                 ],
@@ -116,7 +116,7 @@ class _GeneralSettingsState extends State<GeneralSettings> {
                   const Padding(padding: EdgeInsets.all(4)),
                   Consumer<LLMModel>(
                     builder: (context, value, child) => Column(
-                      children: [widget.llmModel.settingEmbeddingModelWidget],
+                      children: [widget.llmModel.widgetEmbeddingmodelSetting],
                     ),
                   )
                 ],

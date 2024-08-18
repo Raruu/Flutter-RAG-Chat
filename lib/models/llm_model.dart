@@ -14,28 +14,37 @@ class LLMModel extends ChangeNotifier {
   final ChatDataList chatDataList;
   BuildContext? context;
   late final SharedPreferences prefs;
-
   BaseModel? _llmModel;
-  Function()? get onChatSettingsChanged {
+
+  Future? onChatSettingsChanged() {
     chatDataList.updateConfigToDatabase();
-    return _llmModel?.onChatSettingsChanged;
+    return _llmModel?.onChatSettingsChanged()?.catchError(
+        (e) => printcatchError(e: e, from: 'onChatSettingsChanged'));
   }
 
-  Function()? get resetKnowledge => _llmModel?.resetKnowledge;
-  Function(String filename)? get deleteKnowledge => _llmModel?.deleteKnowledge;
-  Function(List<Map<String, dynamic>> knowledges)? get setKnowledge {
-    return _llmModel?.setKnowledge;
-  }
+  Future? resetKnowledge() => _llmModel
+      ?.resetKnowledge()
+      ?.catchError((e) => printcatchError(e: e, from: 'resetKnowledge'));
 
-  Function(dynamic value, {String? webFileName})? get addKnowledge =>
-      _llmModel?.addKnowledge;
+  Future? deleteKnowledge(String filename) => _llmModel
+      ?.deleteKnowledge(filename)
+      ?.catchError((e) => printcatchError(e: e, from: 'DeleteKnowledge'));
+
+  Future? setKnowledge(List<Map<String, dynamic>> knowledges) => _llmModel
+      ?.setKnowledge(knowledges)
+      ?.catchError((e) => printcatchError(e: e, from: 'setKnowledge'));
+
+  Future? addKnowledge(dynamic value, {String? webFileName}) => _llmModel
+      ?.addKnowledge(value, webFileName: webFileName)
+      ?.catchError((e) => printcatchError(e: e, from: 'addKnowledge'));
+
   Map<String, dynamic>? get defaultParameters => _llmModel?.defaultParameters;
   String get defaultPrePrompt => df_preprompt.defaultPrePrompt;
 
-  Widget get settingLlmodelWidget =>
-      _llmModel?.settingLlmodelWidget ?? const LinearProgressIndicator();
-  Widget get settingEmbeddingModelWidget =>
-      _embeddingModel?.settingEmbeddingModelWidget ??
+  Widget get widgetLlmodelSetting =>
+      _llmModel?.widgetLlmodelSetting ?? const LinearProgressIndicator();
+  Widget get widgetEmbeddingmodelSetting =>
+      _embeddingModel?.widgetEmbeddingmodelSetting ??
       const LinearProgressIndicator();
   Widget get informationWidget =>
       _llmModel?.informationWidget ?? const SizedBox();
@@ -112,7 +121,7 @@ class LLMModel extends ChangeNotifier {
         prefs.getString('embedding_provider') ?? 'Model at home';
   }
 
-  // TODO ?
+  // TODO Save for later ?
   String buildPrompt(ChatData chatData, String query) {
     String prompt = chatData.usePreprompt[0] ? chatData.prePrompt ?? '' : '';
     String chatContext = '';
@@ -143,24 +152,28 @@ class LLMModel extends ChangeNotifier {
     } else {
       prompt += query;
     }
-    // print(query);
     return prompt;
   }
 
   Future<Map<String, dynamic>?> generateText(
       BuildContext context, String prompt) {
     return _llmModel!.generateText(prompt, parameters!).catchError((e) {
-      if (kDebugMode) {
-        print(e);
-      }
-      if (context.mounted) {
-        Utils.showSnackBar(
-          context,
-          title: '[GenerateText] Master! Something Went Wrong:',
-          subTitle: e.toString(),
-        );
-      }
+      printcatchError(e: e, from: 'GenerateText');
       return null;
     });
+  }
+
+  dynamic printcatchError({required dynamic e, required String from}) {
+    if (kDebugMode) {
+      print('[$from]: ${e.toString()}');
+    }
+    if (context != null && context!.mounted) {
+      Utils.showSnackBar(
+        context!,
+        title: '[$from] Master! Something Went Wrong:',
+        subTitle: e.toString(),
+      );
+    }
+    return null;
   }
 }

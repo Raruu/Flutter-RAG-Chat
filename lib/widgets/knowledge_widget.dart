@@ -54,8 +54,8 @@ class _KnowledgeWidgetState extends State<KnowledgeWidget> {
                         context: context, title: const Text('Delete'))
                     .then((value) async {
                   if (value) {
-                    await widget.llmModel.deleteKnowledge
-                        ?.call(widget.knowledge['title']);
+                    await widget.llmModel
+                        .deleteKnowledge(widget.knowledge['title']);
                     if (widget.knowledges.remove(widget.knowledge) &&
                         context.mounted) {
                       Navigator.pop(context, null);

@@ -155,23 +155,13 @@ class Utils<T> {
         }
         return;
       } else {
-        try {
-          kIsWeb
-              ? await llmModel.addKnowledge!(result['web_data'],
-                  webFileName: result['title'])
-              : await llmModel.addKnowledge!(result['path']);
+        kIsWeb
+            ? await llmModel.addKnowledge(result['web_data'],
+                webFileName: result['title'])
+            : await llmModel.addKnowledge(result['path']);
 
-          chatDataList.currentData.knowledges.add(result);
-          setState(() {});
-        } catch (e) {
-          if (context.mounted) {
-            showSnackBar(context,
-                title: "Add Context Failed", subTitle: e.toString());
-          }
-          if (kDebugMode) {
-            print(e);
-          }
-        }
+        chatDataList.currentData.knowledges.add(result);
+        setState(() {});
       }
     }
   }

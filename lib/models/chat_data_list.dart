@@ -58,13 +58,13 @@ class ChatDataList extends ChangeNotifier {
   void newChat({
     LLMModel? llmModel,
     BuildContext? context,
-  }) {
+  }) async {
     currentData = ChatData(messageList: List<Message>.empty(growable: true));
     currentSelected = -1;
     if (context != null) {
       Utils.navigateWithNewQueryParams(context, {'chat': '0'});
     }
-    llmModel?.resetKnowledge?.call();
+    await llmModel?.resetKnowledge();
   }
 
   void add(ChatData value,
@@ -102,7 +102,7 @@ class ChatDataList extends ChangeNotifier {
     }
   }
 
-  void loadData(int index, {LLMModel? llmModel, BuildContext? context}) {
+  void loadData(int index, {LLMModel? llmModel, BuildContext? context}) async {
     if (index > dataList.length - 1 || index < 0) {
       newChat();
       return;
@@ -113,7 +113,7 @@ class ChatDataList extends ChangeNotifier {
       Utils.navigateWithNewQueryParams(context, {'chat': currentData.id});
     }
 
-    llmModel?.setKnowledge?.call(currentData.knowledges);
+    await llmModel?.setKnowledge(currentData.knowledges);
   }
 
   void addToMessageList(Message messageWidget, ChatData chatData,

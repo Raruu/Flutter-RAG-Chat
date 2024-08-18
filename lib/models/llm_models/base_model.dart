@@ -3,14 +3,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class BaseModel {
   late Map<String, dynamic> defaultParameters;
-  late Widget settingLlmodelWidget;
-  late Widget settingEmbeddingModelWidget;
+  late Widget widgetLlmodelSetting;
+  late Widget widgetEmbeddingmodelSetting;
   late Widget informationWidget;
-  Function()? onChatSettingsChanged;
-  Function()? resetKnowledge;
-  Function(String filename)? deleteKnowledge;
-  Function(List<Map<String, dynamic>> knowledges)? setKnowledge;
-  Function(dynamic value, {String? webFileName})? addKnowledge;
+
+  Future? onChatSettingsChanged();
+  Future? resetKnowledge();
+  Future? deleteKnowledge(String filename);
+  Future? setKnowledge(List<Map<String, dynamic>> knowledges);
+  Future? addKnowledge(dynamic value, {String? webFileName});
 
   late Function() notifyListener;
   late SharedPreferences prefs;

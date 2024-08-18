@@ -57,7 +57,7 @@ class ModelAtHome extends BaseModel {
   }
 
   @override
-  Widget get settingLlmodelWidget => SettingsWidget(
+  Widget get widgetLlmodelSetting => SettingsWidget(
         data: _data,
         intialURL: _data.baseURL,
         onSetURL: (value) => _data.baseURL = value,
@@ -71,7 +71,7 @@ class ModelAtHome extends BaseModel {
       );
 
   @override
-  Widget get settingEmbeddingModelWidget => SettingsWidget(
+  Widget get widgetEmbeddingmodelSetting => SettingsWidget(
         data: _data,
         intialURL: _data.baseURL,
         onSetURL: (value) => _data.baseURL = value,
@@ -106,8 +106,7 @@ class ModelAtHome extends BaseModel {
   }
 
   @override
-  Function()? get resetKnowledge => _resetKnowledge;
-  void _resetKnowledge() async {
+  Future? resetKnowledge() async {
     Uri uri = Uri.parse('${_data.baseURL}/reset_chatroom_knowledge');
     http.Response response = await http.delete(uri);
     if (response.statusCode == 200) {
@@ -118,8 +117,7 @@ class ModelAtHome extends BaseModel {
   }
 
   @override
-  Function(String filename)? get deleteKnowledge => _deleteKnowledge;
-  Future<bool> _deleteKnowledge(String filename) async {
+  Future<bool> deleteKnowledge(String filename) async {
     Uri uri = Uri.parse('${_data.baseURL}/delete_chatroom_knowledge');
     http.Response response = await http.delete(uri,
         headers: justHeader, body: jsonEncode({'filename': filename}));
@@ -127,10 +125,9 @@ class ModelAtHome extends BaseModel {
   }
 
   @override
-  Function(List<Map<String, dynamic>>)? get setKnowledge => _setKnowledge;
-  void _setKnowledge(List<Map<String, dynamic>> knowledges) async {
+  Future<void> setKnowledge(List<Map<String, dynamic>> knowledges) async {
     if (knowledges.isEmpty) {
-      _resetKnowledge();
+      resetKnowledge();
       return;
     }
     try {
@@ -156,10 +153,10 @@ class ModelAtHome extends BaseModel {
       http.StreamedResponse response = await request.send();
       if (response.statusCode == 200) {
         if (kDebugMode) {
-          print('[setKnowledge]: ${response.toString()}');
+          print('[setKnowledge]: ${response.reasonPhrase}');
         }
       } else {
-        throw ('[setKnowledge] ${response.reasonPhrase}');
+        throw (response.reasonPhrase ?? 'Fail');
       }
     } catch (e) {
       rethrow;
@@ -167,9 +164,7 @@ class ModelAtHome extends BaseModel {
   }
 
   @override
-  Future<bool> Function(dynamic value, {String? webFileName})
-      get addKnowledge => _addKnowledge;
-  Future<bool> _addKnowledge(dynamic value, {String? webFileName}) async {
+  Future<bool> addKnowledge(dynamic value, {String? webFileName}) async {
     try {
       Uri uri = Uri.parse('${_data.baseURL}/add_context_knowledge');
       var request = http.MultipartRequest('POST', uri);
@@ -191,7 +186,7 @@ class ModelAtHome extends BaseModel {
       http.StreamedResponse response = await request.send();
       if (response.statusCode == 200) {
         if (kDebugMode) {
-          print('[addKnowledge]: ${response.toString()}');
+          print('[addKnowledge]: ${response.reasonPhrase}');
           return true;
         }
       } else {
@@ -205,8 +200,7 @@ class ModelAtHome extends BaseModel {
   }
 
   @override
-  Function()? get onChatSettingsChanged => setServerChatRoom;
-  Future<bool> setServerChatRoom({bool? throwOnError}) async {
+  Future<bool>? onChatSettingsChanged({dynamic throwOnError}) async {
     try {
       Uri uri = Uri.parse('${_data.baseURL}/set_chatroom');
       var currentData = chatDataList.currentData;
@@ -264,7 +258,7 @@ class ModelAtHome extends BaseModel {
   ) async {
     try {
       if (await checkServerChatRoomIsNotRoom()) {
-        await setServerChatRoom(throwOnError: true);
+        await onChatSettingsChanged(throwOnError: true);
       }
       String url = '${_data.baseURL}/generate_text';
       Uri uri = Uri.parse(url);
@@ -291,7 +285,7 @@ class ModelAtHome extends BaseModel {
           'generated_text': formatOutputText(responseJson['generated_text']),
         };
       } else {
-        throw (response.statusCode);
+        throw (response.reasonPhrase ?? 'Fail');
       }
     } catch (e) {
       rethrow;
