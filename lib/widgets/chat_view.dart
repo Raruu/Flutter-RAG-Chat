@@ -328,7 +328,9 @@ class _ChatViewState extends State<ChatView> {
                                   true)
                               ? null
                               : () => showContextDialog(index),
-                      regenerate: () => regenerateText(index),
+                      regenerate: messageList.length - 1 <= index
+                          ? () => regenerateText(index)
+                          : null,
                       deleteFunc: () async {
                         if (await Utils.showDialogYesNo(
                             context: context,
@@ -656,15 +658,16 @@ class _ChatViewState extends State<ChatView> {
           width: MediaQuery.sizeOf(context).width * 3 / 4,
           child: SingleChildScrollView(
             child: Wrap(
-              alignment: WrapAlignment.center,
               children: [
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: DefaultTextStyle.merge(
                     style: const TextStyle(fontSize: 18),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        Wrap(
+                          direction: Axis.horizontal,
                           children: [
                             const Text(
                               'Query: ',
@@ -673,7 +676,8 @@ class _ChatViewState extends State<ChatView> {
                             Text(messageList[index].textData['query']),
                           ],
                         ),
-                        Row(
+                        Wrap(
+                          direction: Axis.horizontal,
                           children: [
                             const Text(
                               'Seed: ',

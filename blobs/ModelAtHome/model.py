@@ -18,6 +18,7 @@ class ModelType(Enum):
 
 class Model:
     loading_text = "Loading/Downloading Model"
+    went_wrong = "Something went wrong"
     def __init__(self):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.llm_model: AutoModelForCausalLM = None
@@ -46,41 +47,47 @@ class Model:
         
 
         if model_type is ModelType.EMBEDDING:
-            self.embedding_model_id=Model.loading_text
-            if self.embedding_model is not None:
-                self.unload_model(ModelType.EMBEDDING)
-                
-            model_path =  self.get_model(model_type, model_id)
-            self.embedding_model = SentenceTransformer(
-                model_name_or_path=model_path, device=self.device
-            )
-            self.chat_room.set_embedding_model(self.embedding_model)
-            self.embedding_model_id = model_id
+            try:
+                self.embedding_model_id=Model.loading_text
+                if self.embedding_model is not None:
+                    self.unload_model(ModelType.EMBEDDING)
+
+                model_path =  self.get_model(model_type, model_id)
+                self.embedding_model = SentenceTransformer(
+                    model_name_or_path=model_path, device=self.device
+                )
+                self.chat_room.set_embedding_model(self.embedding_model)
+                self.embedding_model_id = model_id
+            except:
+                self.embedding_model_id=Model.went_wrong
         elif model_type is ModelType.LLM:
-            self.llm_model_id=Model.loading_text
-            if self.llm_model is not None:
-                self.unload_model(ModelType.LLM)
-                
-            model_path =  self.get_model(model_type, model_id)
-            quantization_config = BitsAndBytesConfig(
-                load_in_4bit=True,
-                bnb_4bit_compute_dtype=torch.float16,
-                llm_int8_enable_fp32_cpu_offload=True,
-            )
+            try:
+                self.llm_model_id=Model.loading_text
+                if self.llm_model is not None:
+                    self.unload_model(ModelType.LLM)
 
-            if is_flash_attn_2_available():
-                self.attn_implementation = "flash_attention_2"
-            else:
-                self.attn_implementation = "sdpa"
+                model_path =  self.get_model(model_type, model_id)
+                quantization_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_compute_dtype=torch.float16,
+                    llm_int8_enable_fp32_cpu_offload=True,
+                )
 
-            self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-            self.llm_model = AutoModelForCausalLM.from_pretrained(
-                model_path,
-                torch_dtype=torch.float16,
-                quantization_config=quantization_config,
-                attn_implementation=self.attn_implementation,
-            )
-            self.llm_model_id = model_id
+                if is_flash_attn_2_available():
+                    self.attn_implementation = "flash_attention_2"
+                else:
+                    self.attn_implementation = "sdpa"
+
+                self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+                self.llm_model = AutoModelForCausalLM.from_pretrained(
+                    model_path,
+                    torch_dtype=torch.float16,
+                    quantization_config=quantization_config,
+                    attn_implementation=self.attn_implementation,
+                )
+                self.llm_model_id = model_id
+            except:
+                self.llm_model_id=Model.went_wrong
         return True
     
     async def load_model(self, model_type: ModelType, model_id: str):
