@@ -222,6 +222,8 @@ class _ChatViewState extends State<ChatView> {
               button.localToGlobal(Offset.zero, ancestor: overlay);
           showMenu(
             color: Theme.of(context).colorScheme.surface,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 10,
             constraints: const BoxConstraints(minWidth: 225, maxWidth: 225),
             context: context,
