@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class Data {
-  Function() notifyListener;
+  Function() notifyListenerLLM;
   late final SharedPreferences prefs;
   String _baseURL = '';
   String get baseURL => _baseURL;
@@ -29,11 +29,11 @@ class Data {
       _embeddingModelOnServer.isEmpty ? null : _embeddingModelOnServer;
 
   void getModelOnServer() async {
-    _llmModelOnServer.clear();
-    _embeddingModelOnServer.clear();
     Uri uri = Uri.parse('$baseURL/get_model_list');
     http.Response response = await http.get(uri);
     if (response.statusCode == 200) {
+      _llmModelOnServer.clear();
+      _embeddingModelOnServer.clear();
       Map<String, dynamic> responseJson = jsonDecode(response.body);
       for (String item in responseJson['LLM']) {
         _llmModelOnServer.add(item);
@@ -60,11 +60,11 @@ class Data {
     modelId = null;
     llmModelMemoryUsage = null;
     getInformationPeriodic = null;
-    notifyListener();
+    notifyListenerLLM();
   }
 
   BuildContext? context;
-  Data(this.notifyListener, this.prefs, {this.context}) {
+  Data(this.notifyListenerLLM, this.prefs, {this.context}) {
     _baseURL = prefs.getString('providerUrl') ?? '';
     getInformation();
   }
@@ -102,7 +102,7 @@ class Data {
         lenContextKnowledge = responseJson['len_context_knowledge'];
         listContextKnowledge =
             List.from(responseJson['list_context_knowledge']);
-        notifyListener();
+        notifyListenerLLM();
 
         startgetInformationPeriodic();
       }

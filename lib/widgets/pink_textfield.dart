@@ -32,6 +32,7 @@ class PinkTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final bool showBorderWhenFocus;
   final Color? typeAheadTileColor;
+  final int? maxLength;
 
   const PinkTextField({
     super.key,
@@ -58,6 +59,7 @@ class PinkTextField extends StatefulWidget {
     this.floatingLabelColor = MyColors.bgTintBlue,
     this.showBorderWhenFocus = false,
     this.labelColor = MyColors.textTintBlue,
+    this.maxLength,
   })  : typeAhead = false,
         onSelected = null,
         suggestionsCallback = null,
@@ -94,6 +96,7 @@ class PinkTextField extends StatefulWidget {
     required this.suggestionsCallback,
     this.labelColor = MyColors.textTintBlue,
     this.typeAheadTileColor,
+    this.maxLength,
   }) : typeAhead = true;
 
   @override
@@ -171,6 +174,10 @@ class _PinkTextFieldState extends State<PinkTextField> {
       textAlign: widget.textAlign,
       keyboardType: widget.textInputType ??
           (widget.multiLine ? TextInputType.multiline : TextInputType.text),
+      inputFormatters: widget.textInputType == TextInputType.number
+          ? [FilteringTextInputFormatter.allow(RegExp('[0-9.,-]'))]
+          : null,
+      maxLength: widget.maxLength,
       maxLines: widget.multiLine ? null : 1,
       onEditingComplete: widget.onEditingComplete,
       onChanged: widget.onChanged,

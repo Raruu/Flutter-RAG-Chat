@@ -156,12 +156,13 @@ class LLMModel extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>?> generateText(
-      BuildContext context, String prompt) {
-    return _llmModel!.generateText(prompt, parameters!).catchError((e) {
-      printcatchError(e: e, from: 'GenerateText');
-      return null;
-    });
-  }
+          {required String prompt, required int seed}) =>
+      _llmModel!
+          .generateText(prompt: prompt, seed: seed, parameters: parameters!)
+          .catchError((e) {
+        printcatchError(e: e, from: 'GenerateText');
+        return null;
+      });
 
   dynamic printcatchError({required dynamic e, required String from}) {
     if (kDebugMode) {

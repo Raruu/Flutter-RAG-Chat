@@ -1,5 +1,5 @@
 import torch, gc, asyncio, os
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, set_seed
 from transformers.utils import (
     is_flash_attn_2_available,
 )  # https://github.com/Dao-AILab/flash-attention
@@ -43,21 +43,25 @@ class Model:
         return True
 
     def load_model_executor(self, model_type: ModelType, model_id: str):        
-        model_path =  self.get_model(model_type, model_id)
+        
 
         if model_type is ModelType.EMBEDDING:
+            self.embedding_model_id=Model.loading_text
             if self.embedding_model is not None:
                 self.unload_model(ModelType.EMBEDDING)
-            self.embedding_model_id=Model.loading_text
+                
+            model_path =  self.get_model(model_type, model_id)
             self.embedding_model = SentenceTransformer(
                 model_name_or_path=model_path, device=self.device
             )
             self.chat_room.set_embedding_model(self.embedding_model)
             self.embedding_model_id = model_id
         elif model_type is ModelType.LLM:
+            self.llm_model_id=Model.loading_text
             if self.llm_model is not None:
                 self.unload_model(ModelType.LLM)
-            self.llm_model_id=Model.loading_text
+                
+            model_path =  self.get_model(model_type, model_id)
             quantization_config = BitsAndBytesConfig(
                 load_in_4bit=True,
                 bnb_4bit_compute_dtype=torch.float16,
@@ -101,6 +105,9 @@ class Model:
             self.device
         )
 
+        torch.manual_seed(data.seed)
+        set_seed(data.seed)
+        return_generated_text.seed = data.seed
         output = self.llm_model.generate(
             input_ids,
             max_new_tokens=data.max_new_tokens,

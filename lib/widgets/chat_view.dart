@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_rag_chat/utils/util.dart';
@@ -39,6 +41,7 @@ class _ChatViewState extends State<ChatView> {
   late final TextEditingController _messageTextEditingController;
   late ChatDataList chatDataList;
   late List<Message> messageList;
+  late final TextEditingController _seedEditingController;
   late final ScrollController _listViewMessageController;
 
   @override
@@ -46,6 +49,7 @@ class _ChatViewState extends State<ChatView> {
     _messageTextEditingController = TextEditingController();
     _listViewMessageController = ScrollController();
     _expandedEditingController = TextEditingController();
+    _seedEditingController = TextEditingController();
     super.initState();
   }
 
@@ -54,6 +58,7 @@ class _ChatViewState extends State<ChatView> {
     _messageTextEditingController.dispose();
     _listViewMessageController.dispose();
     _expandedEditingController.dispose();
+    _seedEditingController.dispose();
     super.dispose();
   }
 
@@ -102,8 +107,15 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void generateText(BuildContext context, String prompt, ChatData currentData,
-      List<Message> currentMessageList) {
-    widget.llmModel.generateText(context, prompt).then(
+      List<Message> currentMessageList,
+      {bool randomSeed = false}) {
+    widget.llmModel
+        .generateText(
+            prompt: prompt,
+            seed: randomSeed
+                ? getRandomInt()
+                : int.tryParse(_seedEditingController.text) ?? getRandomInt())
+        .then(
       (value) {
         if (value == null) {
           removeMessage(currentData);
@@ -118,12 +130,10 @@ class _ChatViewState extends State<ChatView> {
 
   void regenerateText(int index, {String? query}) async {
     query ??= messageList[index].textData['query'];
-    // print(index);
-    // print(messageList.length);
-    if (index <= messageList.length - 1 ||
-        (index < messageList.length &&
-            messageList[index].role == MessageRole.model)) {
-      chatDataList.removeToMessageList(index);
+
+    if (index <= messageList.length - 1 &&
+        messageList[index].role == MessageRole.model) {
+      chatDataList.removeToMessageList(index).then((value) => setState(() {}));
     }
     ChatData currentData = chatDataList.currentData;
     List<Message> currentMessageList = messageList;
@@ -133,8 +143,8 @@ class _ChatViewState extends State<ChatView> {
         context,
         query!,
         currentData,
-        currentMessageList);
-    setState(() {});
+        currentMessageList,
+        randomSeed: true);
   }
 
   void sendMessage() {
@@ -188,6 +198,8 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
+  int getRandomInt() => Random().nextInt(2147483648);
+
   Container bottomSection(BuildContext context) {
     return Container(
       constraints:
@@ -203,11 +215,71 @@ class _ChatViewState extends State<ChatView> {
         iconSizeRight: 28,
         borderRadiusCircular: 32.0,
         leftButtonFunc: () {
-          Utils.dialogAddContext(
-              context: context,
-              chatDataList: chatDataList,
-              llmModel: widget.llmModel,
-              setState: setState);
+          final RenderBox button = context.findRenderObject() as RenderBox;
+          final RenderBox overlay =
+              Overlay.of(context).context.findRenderObject() as RenderBox;
+          final Offset position =
+              button.localToGlobal(Offset.zero, ancestor: overlay);
+          showMenu(
+            color: Theme.of(context).colorScheme.surface,
+            elevation: 10,
+            constraints: const BoxConstraints(minWidth: 225, maxWidth: 225),
+            context: context,
+            position: RelativeRect.fromLTRB(
+              position.dx + 15,
+              position.dy + button.size.height - 225,
+              position.dx + button.size.width,
+              position.dy,
+            ),
+            items: [
+              PopupMenuItem(
+                onTap: () {
+                  Utils.dialogAddContext(
+                      context: context,
+                      chatDataList: chatDataList,
+                      llmModel: widget.llmModel,
+                      setState: setState);
+                },
+                child: Row(
+                  children: [
+                    SvgPicture.string(
+                      SvgIcons.tablerFile,
+                      width: 30,
+                      height: 30,
+                      colorFilter: ColorFilter.mode(
+                        Utils.getDefaultTextColor(context)!,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    const Padding(padding: EdgeInsets.all(4)),
+                    const Text('Add Knowledge')
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                  enabled: false,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Seed',
+                        style: TextStyle(
+                            color: Utils.getDefaultTextColor(context)),
+                      ),
+                      PinkTextField(
+                        maxLength: 10,
+                        textEditingController: _seedEditingController,
+                        textInputType: TextInputType.number,
+                        hintText: 'Random',
+                        strIconRight: SvgIcons.fluentSync,
+                        tooltipIconRight: 'Get Random Seed Now',
+                        rightButtonFunc: () => _seedEditingController.text =
+                            getRandomInt().toString(),
+                      )
+                    ],
+                  ))
+            ],
+          );
         },
         tooltipIconLeft: 'Add Context',
         rightButtonFunc: sendMessage,
@@ -252,7 +324,7 @@ class _ChatViewState extends State<ChatView> {
                               ? MyColors.bgTintPink
                               : MyColors.bgTintBlue,
                       showContext:
-                          (messageList[index].textData['context1']?.isEmpty ??
+                          (messageList[index].textData['query']?.isEmpty ??
                                   true)
                               ? null
                               : () => showContextDialog(index),
@@ -584,7 +656,36 @@ class _ChatViewState extends State<ChatView> {
           width: MediaQuery.sizeOf(context).width * 3 / 4,
           child: SingleChildScrollView(
             child: Wrap(
+              alignment: WrapAlignment.center,
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: DefaultTextStyle.merge(
+                    style: const TextStyle(fontSize: 18),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            const Text(
+                              'Query: ',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            Text(messageList[index].textData['query']),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            const Text(
+                              'Seed: ',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            Text(messageList[index].textData['seed'] ?? '-'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 ...List.generate(
                   messageList[index].textData['context1'].length,
                   (indexj) {

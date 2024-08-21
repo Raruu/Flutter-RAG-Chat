@@ -17,9 +17,9 @@ enum ModelType { llm, embedding }
 class ModelAtHome extends BaseModel {
   static ModelAtHome? _instance;
   factory ModelAtHome(
-      dynamic Function() notifyListeners, SharedPreferences prefs,
+      dynamic Function() notifyListenersLLM, SharedPreferences prefs,
       {BuildContext? context, required ChatDataList chatDataList}) {
-    _instance ??= ModelAtHome._internal(notifyListeners, prefs,
+    _instance ??= ModelAtHome._internal(notifyListenersLLM, prefs,
         context: context, chatDataList: chatDataList);
     return _instance!;
   }
@@ -47,9 +47,9 @@ class ModelAtHome extends BaseModel {
   @override
   Widget get informationWidget => _informationWidget;
 
-  ModelAtHome._internal(super.notifyListeners, super.prefs,
+  ModelAtHome._internal(super.notifyListenerLLM, super.prefs,
       {BuildContext? context, required this.chatDataList}) {
-    _data = Data(super.notifyListener, super.prefs, context: context);
+    _data = Data(super.notifyListenerLLM, super.prefs, context: context);
 
     _informationWidget = InformationWidget(
       data: _data,
@@ -93,7 +93,7 @@ class ModelAtHome extends BaseModel {
     await httpPost;
     _data.startgetInformationPeriodic(tryCancle: true);
     _data.getInformation();
-    notifyListener();
+    notifyListenerLLM();
   }
 
   void unloadModel(ModelType modelType) async {
@@ -102,7 +102,7 @@ class ModelAtHome extends BaseModel {
     await http.delete(uri);
     _data.startgetInformationPeriodic(tryCancle: true);
     _data.getInformation();
-    notifyListener();
+    notifyListenerLLM();
   }
 
   @override
@@ -252,10 +252,11 @@ class ModelAtHome extends BaseModel {
   }
 
   @override
-  Future<Map<String, dynamic>?> generateText(
-    String prompt,
-    Map<String, dynamic> parameters,
-  ) async {
+  Future<Map<String, dynamic>?> generateText({
+    required String prompt,
+    required int seed,
+    required Map<String, dynamic> parameters,
+  }) async {
     try {
       if (await checkServerChatRoomIsNotRoom()) {
         await onChatSettingsChanged(throwOnError: true);
@@ -272,6 +273,7 @@ class ModelAtHome extends BaseModel {
         headers: justHeader,
         body: jsonEncode({
           "query": prompt,
+          "seed": seed,
           ...parameters,
         }),
       );
@@ -282,6 +284,7 @@ class ModelAtHome extends BaseModel {
           'context1': responseJson['context1'],
           'context2': responseJson['context2'],
           'query': responseJson['query'],
+          'seed': responseJson['seed'].toString(),
           'generated_text': formatOutputText(responseJson['generated_text']),
         };
       } else {

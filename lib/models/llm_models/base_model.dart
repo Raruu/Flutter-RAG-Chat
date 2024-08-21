@@ -13,10 +13,13 @@ abstract class BaseModel {
   Future? setKnowledge(List<Map<String, dynamic>> knowledges);
   Future? addKnowledge(dynamic value, {String? webFileName});
 
-  late Function() notifyListener;
+  late Function() notifyListenerLLM;
   late SharedPreferences prefs;
-  BaseModel(this.notifyListener, this.prefs);
+  BaseModel(this.notifyListenerLLM, this.prefs);
 
-  Future<Map<String, dynamic>?> generateText(
-      String prompt, Map<String, dynamic> parameters);
+  Future<Map<String, dynamic>?> generateText({
+    required String prompt,
+    required int seed,
+    required Map<String, dynamic> parameters,
+  });
 }
