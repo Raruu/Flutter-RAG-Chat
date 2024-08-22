@@ -5,10 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_rag_chat/models/chat_data.dart';
 import 'package:flutter_rag_chat/models/chat_data_list.dart';
 import 'package:flutter_rag_chat/models/message.dart';
-import 'llm_models/model_at_home.dart';
-import 'llm_models/base_model.dart';
-import '../utils/util.dart';
-import './llm_models/default_preprompt.dart' as df_preprompt;
+import 'model_at_home/model_at_home.dart';
+import 'base_model.dart';
+import '../../utils/util.dart';
+import 'default_preprompt.dart' as df_preprompt;
 
 class LLMModel extends ChangeNotifier {
   final ChatDataList chatDataList;

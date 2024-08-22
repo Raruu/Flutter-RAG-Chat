@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/utils/my_colors.dart';
 import 'package:flutter_rag_chat/utils/util.dart';
 
-import 'chat_config/chat_config_card.dart';
-import '../models/llm_model.dart';
-import '../utils/svg_icons.dart';
-import 'chat_config/parameter_slider.dart';
-import 'chat_config/parameter_bool.dart';
-import '../models/chat_data_list.dart';
-import 'nice_button.dart';
-import 'pink_textfield.dart';
-import 'knowledge_widget.dart';
+import 'chat_config_card.dart';
+import '../../models/llm_models/llm_model.dart';
+import '../../utils/svg_icons.dart';
+import 'parameter_slider.dart';
+import 'parameter_bool.dart';
+import '../../models/chat_data_list.dart';
+import '../nice_button.dart';
+import '../pink_textfield.dart';
+import '../knowledge_widget.dart';
 
 class ChatConfig extends StatefulWidget {
   final LLMModel llmModel;

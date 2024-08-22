@@ -12,9 +12,9 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import 'screens/home_page.dart';
-import 'models/llm_model.dart';
+import 'models/llm_models/llm_model.dart';
 import './models/chat_data_list.dart';
-import 'widgets/chat_config.dart';
+import 'widgets/chat_config/chat_config.dart';
 import './utils/my_colors.dart';
 
 void main() async {

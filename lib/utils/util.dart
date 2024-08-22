@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/models/chat_data_list.dart';
-import 'package:flutter_rag_chat/models/llm_model.dart';
+import 'package:flutter_rag_chat/models/llm_models/llm_model.dart';
 import 'package:flutter_rag_chat/utils/svg_icons.dart';
 import 'package:flutter_rag_chat/widgets/pink_textfield.dart';
 import 'package:flutter_svg/flutter_svg.dart';

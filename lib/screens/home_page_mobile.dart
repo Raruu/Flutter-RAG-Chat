@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 
 import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
-import '../widgets/chat_list.dart';
-import '../models/llm_model.dart';
+import '../widgets/chat_list/chat_list.dart';
+import '../models/llm_models/llm_model.dart';
 import '../models/chat_data_list.dart';
 
 class HomePageMobile extends StatefulWidget {

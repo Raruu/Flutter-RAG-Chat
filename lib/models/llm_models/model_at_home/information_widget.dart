@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/models/llm_model.dart';
+import 'package:flutter_rag_chat/models/llm_models/llm_model.dart';
 import 'package:flutter_rag_chat/utils/svg_icons.dart';
 import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:pie_chart/pie_chart.dart';

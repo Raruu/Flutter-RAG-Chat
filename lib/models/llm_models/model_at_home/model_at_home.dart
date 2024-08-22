@@ -6,11 +6,11 @@ import 'package:http/http.dart' as http;
 
 import 'package:flutter_rag_chat/models/message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'base_model.dart';
-import './model_at_home/settings_widget.dart';
-import './model_at_home/data.dart';
-import './model_at_home/information_widget.dart';
-import '../chat_data_list.dart';
+import '../base_model.dart';
+import 'settings_widget.dart';
+import 'data.dart';
+import 'information_widget.dart';
+import '../../chat_data_list.dart';
 
 enum ModelType { llm, embedding }
 

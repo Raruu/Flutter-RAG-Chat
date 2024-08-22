@@ -8,7 +8,7 @@ import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
 import '../utils/util.dart';
 import './pink_textfield.dart';
-import '../models/llm_model.dart';
+import '../models/llm_models/llm_model.dart';
 
 class KnowledgeWidget extends StatefulWidget {
   final Map<String, dynamic> knowledge;

@@ -5,11 +5,11 @@ import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
 import '../utils/util.dart';
 import '../widgets/desktop_menu_button.dart';
-import '../widgets/chat_list.dart';
+import '../widgets/chat_list/chat_list.dart';
 import '../widgets/chat_view.dart';
-import '../models/llm_model.dart';
+import '../models/llm_models/llm_model.dart';
 import '../models/chat_data_list.dart';
-import '../widgets/chat_config.dart';
+import '../widgets/chat_config/chat_config.dart';
 import '../widgets/general_settings.dart';
 
 class HomePageDesktop extends StatefulWidget {

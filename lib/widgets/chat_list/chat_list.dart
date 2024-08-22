@@ -2,14 +2,14 @@ import "package:flutter/material.dart";
 import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../models/chat_data.dart';
-import '../models/llm_model.dart';
-import 'chat_list/chat_list_card_widget.dart';
-import 'nice_button.dart';
-import 'pink_textfield.dart';
-import '../utils/svg_icons.dart';
-import '../utils/my_colors.dart';
-import '../models/chat_data_list.dart';
+import '../../models/chat_data.dart';
+import '../../models/llm_models/llm_model.dart';
+import 'chat_list_card_widget.dart';
+import '../nice_button.dart';
+import '../pink_textfield.dart';
+import '../../utils/svg_icons.dart';
+import '../../utils/my_colors.dart';
+import '../../models/chat_data_list.dart';
 
 class ChatList extends StatefulWidget {
   final TextEditingController searchEditingController;
