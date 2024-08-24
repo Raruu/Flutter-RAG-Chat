@@ -7,12 +7,15 @@ class ParameterSlider extends StatefulWidget {
   final String textKey;
   final List<num> values;
   final Function(num value) onChanged;
-  const ParameterSlider({
+  late final bool isInt;
+  ParameterSlider({
     super.key,
     required this.textKey,
     required this.values,
     required this.onChanged,
-  });
+  }) {
+    isInt = values.runtimeType == List<int>;
+  }
 
   @override
   State<ParameterSlider> createState() => _ParameterSliderState();
@@ -21,7 +24,7 @@ class ParameterSlider extends StatefulWidget {
 class _ParameterSliderState extends State<ParameterSlider> {
   double get parameterValue => widget.values[1].toDouble();
   set parameterValue(dynamic value) {
-    if (isInt) {
+    if (widget.isInt) {
       value = value.toInt();
     }
     widget.onChanged(value);
@@ -30,15 +33,12 @@ class _ParameterSliderState extends State<ParameterSlider> {
   }
 
   late final TextEditingController textValueController;
-  bool isInt = false;
 
   @override
   void initState() {
     textValueController = TextEditingController();
     textValueController.text = parameterValue.toStringAsPrecision(4);
-    if (widget.values.runtimeType == List<int>) {
-      isInt = true;
-    }
+
     super.initState();
   }
 
@@ -50,7 +50,7 @@ class _ParameterSliderState extends State<ParameterSlider> {
 
   @override
   Widget build(BuildContext context) {
-    if (isInt) {
+    if (widget.isInt) {
       textValueController.text = parameterValue.toInt().toStringAsFixed(0);
     } else {
       textValueController.text = parameterValue.toStringAsFixed(3);

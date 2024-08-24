@@ -18,6 +18,22 @@ import 'my_colors.dart';
 import '../widgets/knowledge_widget.dart';
 
 class Utils<T> {
+  static Map<String, dynamic> loadParametersWithDefaultParameters(
+      Map<String, dynamic>? defaultParameters) {
+    Map<String, dynamic> parameters = {};
+    defaultParameters!.forEach(
+      (key, value) {
+        Type runTimeType = value.runtimeType;
+        if ((runTimeType == List<double>) || (runTimeType == List<int>)) {
+          parameters[key] = value[1];
+        } else if (runTimeType == List<bool>) {
+          parameters[key] = value.first;
+        }
+      },
+    );
+    return parameters;
+  }
+
   static String sanitizeFilename(String filename) =>
       filename.replaceAll(RegExp(r'[\\/:\*\?"<>\|]'), '_');
 

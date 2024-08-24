@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../chat_data_list.dart';
+
 abstract class BaseModel {
-  late Map<String, dynamic> defaultParameters;
-  late Widget widgetLlmodelSetting;
-  late Widget widgetEmbeddingmodelSetting;
-  late Widget informationWidget;
+  Map<String, dynamic>? defaultParameters;
+  Widget? widgetLlmodelSetting;
+  Widget? widgetEmbeddingmodelSetting;
+  Widget? informationWidget;
 
   Future? onChatSettingsChanged();
   Future? resetKnowledge();
@@ -13,9 +15,10 @@ abstract class BaseModel {
   Future? setKnowledge(List<Map<String, dynamic>> knowledges);
   Future? addKnowledge(dynamic value, {String? webFileName});
 
-  late Function() notifyListenerLLM;
-  late SharedPreferences prefs;
-  BaseModel(this.notifyListenerLLM, this.prefs);
+  final Function() notifyListenerLLM;
+  final SharedPreferences prefs;
+  final ChatDataList chatDataList;
+  BaseModel(this.notifyListenerLLM, this.prefs, this.chatDataList);
 
   Future<Map<String, dynamic>?> generateText({
     required String prompt,

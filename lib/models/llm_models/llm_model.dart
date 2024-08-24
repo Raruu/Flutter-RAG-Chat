@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rag_chat/models/llm_models/dart_openai/dart_openai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter_rag_chat/models/chat_data.dart';
@@ -54,8 +55,6 @@ class LLMModel extends ChangeNotifier {
 
   final List<String> llmProvidersList = const [
     'OpenAI',
-    // 'Google',
-    // 'Text-Generation-Webui',
     'Model at home',
   ];
 
@@ -67,31 +66,23 @@ class LLMModel extends ChangeNotifier {
         _llmModel = ModelAtHome(
           notifyListeners,
           prefs,
+          chatDataList,
           context: context,
-          chatDataList: chatDataList,
         );
-        _parameters = {};
-        defaultParameters!.forEach(
-          (key, value) {
-            Type runTimeType = value.runtimeType;
-            if ((runTimeType == List<double>) || (runTimeType == List<int>)) {
-              parameters![key] = value[1];
-            } else if (runTimeType == List<bool>) {
-              parameters![key] = value.first;
-            }
-          },
-        );
-        prefs.setString('llm_provider', value!);
+        break;
+      case 'openai':
+        _llmModel = DartOpenai(notifyListeners, prefs, chatDataList);
         break;
       default:
         _llmModel = null;
     }
+    _parameters = Utils.loadParametersWithDefaultParameters(defaultParameters);
+    prefs.setString('llm_provider', value!);
     _llmProvider = value;
   }
 
   BaseModel? _embeddingModel;
   final List<String> embeddingProvidersList = const [
-    'OpenAI',
     'Model at home',
   ];
   String? _embeddingProvider;
@@ -102,8 +93,8 @@ class LLMModel extends ChangeNotifier {
         _embeddingModel = ModelAtHome(
           notifyListeners,
           prefs,
+          chatDataList,
           context: context,
-          chatDataList: chatDataList,
         );
         prefs.setString('embedding_provider', value!);
         break;
@@ -155,18 +146,25 @@ class LLMModel extends ChangeNotifier {
     return prompt;
   }
 
+  // TODO Retrieval
+  String retrieval() {
+    return '';
+  }
+
   Future<Map<String, dynamic>?> generateText(
-          {required String prompt, required int seed}) =>
-      _llmModel!
-          .generateText(prompt: prompt, seed: seed, parameters: parameters!)
-          .catchError((e) {
-        printcatchError(e: e, from: 'GenerateText');
-        return null;
-      });
+      {required String prompt, required int seed}) {
+    if (_llmModel != _embeddingModel) {}
+    return _llmModel!
+        .generateText(prompt: prompt, seed: seed, parameters: parameters!)
+        .catchError((e) {
+      printcatchError(e: e, from: 'GenerateText');
+      return null;
+    });
+  }
 
   dynamic printcatchError({required dynamic e, required String from}) {
     if (kDebugMode) {
-      print('[$from]: ${e.toString()}');
+      print('[$from]: $e');
     }
     if (context != null && context!.mounted) {
       Utils.showSnackBar(

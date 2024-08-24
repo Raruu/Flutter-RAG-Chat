@@ -17,10 +17,17 @@ enum ModelType { llm, embedding }
 class ModelAtHome extends BaseModel {
   static ModelAtHome? _instance;
   factory ModelAtHome(
-      dynamic Function() notifyListenersLLM, SharedPreferences prefs,
-      {BuildContext? context, required ChatDataList chatDataList}) {
-    _instance ??= ModelAtHome._internal(notifyListenersLLM, prefs,
-        context: context, chatDataList: chatDataList);
+    dynamic Function() notifyListenersLLM,
+    SharedPreferences prefs,
+    ChatDataList chatDataList, {
+    BuildContext? context,
+  }) {
+    _instance ??= ModelAtHome._internal(
+      notifyListenersLLM,
+      prefs,
+      chatDataList,
+      context: context,
+    );
     return _instance!;
   }
 
@@ -40,15 +47,15 @@ class ModelAtHome extends BaseModel {
         "do_sample": [false],
       };
 
-  final ChatDataList chatDataList;
   late final Data _data;
 
   late final Widget _informationWidget;
   @override
   Widget get informationWidget => _informationWidget;
 
-  ModelAtHome._internal(super.notifyListenerLLM, super.prefs,
-      {BuildContext? context, required this.chatDataList}) {
+  ModelAtHome._internal(
+      super.notifyListenerLLM, super.prefs, super.chatDataList,
+      {BuildContext? context}) {
     _data = Data(super.notifyListenerLLM, super.prefs, context: context);
 
     _informationWidget = InformationWidget(

@@ -692,71 +692,74 @@ class _ChatViewState extends State<ChatView> {
                     ),
                   ),
                 ),
-                ...List.generate(
-                  messageList[index].textData['context1'].length,
-                  (indexj) {
-                    Map<String, dynamic> data =
-                        messageList[index].textData['context1'][indexj];
-                    String filename = data['filename'];
-                    int pageNumber = data['page_number'];
-                    double score = data['score'];
+                if (messageList[index].textData['context1'] != null)
+                  ...List.generate(
+                    messageList[index].textData['context1'].length,
+                    (indexj) {
+                      Map<String, dynamic> data =
+                          messageList[index].textData['context1'][indexj];
+                      String filename = data['filename'];
+                      int pageNumber = data['page_number'];
+                      double score = data['score'];
 
-                    String contextData = data['context'];
-                    return ChatConfigCard(
-                      title: '[$pageNumber] $filename',
-                      strIcon: SvgIcons.knowledge,
-                      expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    'File Name: $filename',
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700),
-                                  ),
-                                  const Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 1.0)),
-                                  IconButton(
-                                    onPressed: () {
-                                      var knowledge = chatDataList
-                                          .currentData.knowledges
-                                          .where((element) =>
-                                              element['title'] == filename)
-                                          .toList()
-                                          .first;
-                                      var value = kIsWeb
-                                          ? knowledge['web_data']
-                                          : knowledge['path'];
-                                      Utils.openPdf(value,
-                                          context: context,
-                                          title: filename,
-                                          pageAt: pageNumber);
-                                    },
-                                    icon: const Icon(Icons.open_in_new),
-                                  )
-                                ],
-                              ),
-                              Text(
-                                'Page: $pageNumber\nScore: $score\nContext:',
-                                style: const TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w700),
-                              ),
-                              Text(contextData)
-                            ],
-                          ),
-                        )
-                      ],
-                    );
-                  },
-                )
+                      String contextData = data['context'];
+                      return ChatConfigCard(
+                        title: '[$pageNumber] $filename',
+                        strIcon: SvgIcons.knowledge,
+                        expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      'File Name: $filename',
+                                      style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700),
+                                    ),
+                                    const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 1.0)),
+                                    IconButton(
+                                      onPressed: () {
+                                        var knowledge = chatDataList
+                                            .currentData.knowledges
+                                            .where((element) =>
+                                                element['title'] == filename)
+                                            .toList()
+                                            .first;
+                                        var value = kIsWeb
+                                            ? knowledge['web_data']
+                                            : knowledge['path'];
+                                        Utils.openPdf(value,
+                                            context: context,
+                                            title: filename,
+                                            pageAt: pageNumber);
+                                      },
+                                      icon: const Icon(Icons.open_in_new),
+                                    )
+                                  ],
+                                ),
+                                Text(
+                                  'Page: $pageNumber\nScore: $score\nContext:',
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700),
+                                ),
+                                Text(contextData)
+                              ],
+                            ),
+                          )
+                        ],
+                      );
+                    },
+                  )
               ],
             ),
           ),

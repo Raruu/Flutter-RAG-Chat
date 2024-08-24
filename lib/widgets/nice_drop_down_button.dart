@@ -4,7 +4,7 @@ import '../utils/my_colors.dart';
 
 class NiceDropDownButton extends StatelessWidget {
   final String? value;
-  final dynamic items;
+  final List<DropdownMenuItem<String>>? items;
   final void Function(dynamic value)? onChanged;
   final Color color;
   final String hintText;
@@ -29,11 +29,11 @@ class NiceDropDownButton extends StatelessWidget {
         child: ButtonTheme(
           alignedDropdown: true,
           child: DropdownButton(
+            isExpanded: true,
             iconEnabledColor: Colors.black,
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge!
-                .copyWith(color: Colors.black),
+            style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  color: Colors.black,
+                ),
             value: value,
             dropdownColor: color,
             borderRadius: BorderRadius.circular(10),
