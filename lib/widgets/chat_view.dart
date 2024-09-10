@@ -10,7 +10,7 @@ import '../utils/svg_icons.dart';
 import '../widgets/pink_textfield.dart';
 import 'chat_list/chat_list_card_widget.dart';
 import '../models/message.dart';
-import '../models/llm_models/llm_model.dart';
+import '../services/llm_model.dart';
 import './chat_bubble.dart';
 import '../utils/my_colors.dart';
 import '../models/chat_data_list.dart';

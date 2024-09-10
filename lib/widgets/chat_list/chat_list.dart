@@ -3,7 +3,7 @@ import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../models/chat_data.dart';
-import '../../models/llm_models/llm_model.dart';
+import '../../services/llm_model.dart';
 import 'chat_list_card_widget.dart';
 import '../nice_button.dart';
 import '../pink_textfield.dart';

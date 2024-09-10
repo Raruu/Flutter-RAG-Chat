@@ -3,7 +3,7 @@ import 'package:flutter_rag_chat/utils/my_colors.dart';
 import 'package:flutter_rag_chat/utils/util.dart';
 
 import 'chat_config_card.dart';
-import '../../models/llm_models/llm_model.dart';
+import '../../services/llm_model.dart';
 import '../../utils/svg_icons.dart';
 import 'parameter_slider.dart';
 import 'parameter_bool.dart';

@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_rag_chat/widgets/nice_button.dart';
 
-import '../../../widgets/pink_textfield.dart';
-import '../../../utils/my_colors.dart';
-import '../../../utils/svg_icons.dart';
+import '../../widgets/pink_textfield.dart';
+import '../../utils/my_colors.dart';
+import '../../utils/svg_icons.dart';
 import 'data.dart';
 
 class SettingsWidget extends StatefulWidget {

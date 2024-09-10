@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../chat_data_list.dart';
+import '../models/chat_data_list.dart';
 
 abstract class BaseModel {
   Map<String, dynamic>? defaultParameters;

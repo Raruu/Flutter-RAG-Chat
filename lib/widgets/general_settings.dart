@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/models/llm_models/llm_model.dart';
+import 'package:flutter_rag_chat/services/llm_model.dart';
 import 'package:flutter_rag_chat/widgets/chat_config/parameter_bool.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';

@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
 
-import '../models/llm_models/llm_model.dart';
+import '../services/llm_model.dart';
 import '../models/chat_data_list.dart';
 import './home_page_desktop.dart';
 import './home_page_mobile.dart';

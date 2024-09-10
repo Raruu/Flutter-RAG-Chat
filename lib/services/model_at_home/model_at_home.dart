@@ -10,7 +10,7 @@ import '../base_model.dart';
 import 'settings_widget.dart';
 import 'data.dart';
 import 'information_widget.dart';
-import '../../chat_data_list.dart';
+import '../../models/chat_data_list.dart';
 
 enum ModelType { llm, embedding }
 
