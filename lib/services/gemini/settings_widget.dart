@@ -55,21 +55,6 @@ class _SettingsWidgetState extends State<SettingsWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'THIS IS ABANDONED',
-          style: TextStyle(fontSize: 20),
-        ),
-        PinkTextField(
-          showBorderWhenFocus: true,
-          textEditingController: urlTextEditingController,
-          tooltipIconRight: 'Set',
-          hintText: '',
-          labelText: 'URL',
-          backgroundColor: MyColors.bgTintBlue,
-          strIconRight: SvgIcons.fluentSaveSync,
-          rightButtonFunc: () => widget.onSetURL(urlTextEditingController.text),
-        ),
-        const Padding(padding: EdgeInsets.all(4.0)),
         PinkTextField(
           showBorderWhenFocus: true,
           textEditingController: apiTextEditingController,
@@ -87,7 +72,7 @@ class _SettingsWidgetState extends State<SettingsWidget> {
               fit: FlexFit.tight,
               child: NiceDropDownButton(
                 value: widget.modelValue,
-                hintText: 'Model',
+                hintText: 'Model that can be accessed',
                 items: widget.modelList == null
                     ? null
                     : List.generate(

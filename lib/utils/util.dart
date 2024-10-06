@@ -21,7 +21,7 @@ class Utils<T> {
   static Map<String, dynamic> loadParametersWithDefaultParameters(
       Map<String, dynamic>? defaultParameters) {
     Map<String, dynamic> parameters = {};
-    defaultParameters!.forEach(
+    defaultParameters?.forEach(
       (key, value) {
         Type runTimeType = value.runtimeType;
         if ((runTimeType == List<double>) || (runTimeType == List<int>)) {

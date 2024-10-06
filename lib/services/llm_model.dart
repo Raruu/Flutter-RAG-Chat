@@ -10,6 +10,7 @@ import 'model_at_home/model_at_home.dart';
 import 'base_model.dart';
 import '../utils/util.dart';
 import 'default_preprompt.dart' as df_preprompt;
+import 'gemini/google_gemini.dart';
 
 class LLMModel extends ChangeNotifier {
   final ChatDataList chatDataList;
@@ -55,6 +56,7 @@ class LLMModel extends ChangeNotifier {
 
   final List<String> llmProvidersList = const [
     'OpenAI',
+    'Gemini',
     'Model at home',
   ];
 
@@ -72,6 +74,9 @@ class LLMModel extends ChangeNotifier {
         break;
       case 'openai':
         _llmModel = DartOpenai(notifyListeners, prefs, chatDataList);
+        break;
+      case 'gemini':
+        _llmModel = GoogleGemini(notifyListeners, prefs, chatDataList);
         break;
       default:
         _llmModel = null;

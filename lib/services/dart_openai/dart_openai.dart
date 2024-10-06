@@ -135,25 +135,25 @@ class DartOpenai extends BaseModel {
       topP: parameters['top_p'],
     );
 
-    print('ChatCompletion: $chatCompletion');
-    print(chatCompletion.choices.first.message); // ...
-    print(chatCompletion.systemFingerprint); // ...
-    print(chatCompletion.usage.promptTokens); // ...
-    print(chatCompletion.id);
+    // print('ChatCompletion: $chatCompletion');
+    // print(chatCompletion.choices.first.message); // ...
+    // print(chatCompletion.systemFingerprint); // ...
+    // print(chatCompletion.usage.promptTokens); // ...
+    // print(chatCompletion.id);
 
     return {
       'context1': null,
       'context2': null,
       'query': prompt,
       'seed': seed.toString(),
-      'generated_text': 'chatCompletion.choices.first.message',
+      'generated_text': chatCompletion.choices.first.message,
     };
   }
 
   @override
   Future? onChatSettingsChanged() {
     // TODO: implement onChatSettingsChanged
-    // throw UnimplementedError();
+    throw UnimplementedError();
   }
 
   @override
