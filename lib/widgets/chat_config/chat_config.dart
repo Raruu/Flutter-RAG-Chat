@@ -132,82 +132,100 @@ class _ChatConfigState extends State<ChatConfig> {
               children: parameters,
             ),
             prePrompt(context),
-            ChatConfigCard(
-              title: 'KNOWLEDGE',
-              strIcon: SvgIcons.knowledge,
-              expandedCrossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ParameterBool(
-                    textKey: 'Chat Conversation Context',
-                    onChanged: (value) {
-                      setState(() {
-                        widget.chatDataList.currentData
-                            .useChatConversationContext[0] = value;
-                      });
-                      onChatSettingsChanged('Use Chat Conversation Context');
-                    },
-                    value: widget
-                        .chatDataList.currentData.useChatConversationContext),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('PDF Knowledge'),
-                      Row(
-                        children: [
-                          Visibility(
-                            visible: widget
-                                .chatDataList.currentData.knowledges.isNotEmpty,
-                            child: IconButton(
-                              icon: const Icon(Icons.restore_page_outlined),
-                              tooltip: 'Re-Apply Knowledge',
-                              onPressed: () async => widget.llmModel
-                                  .setKnowledge(widget
-                                      .chatDataList.currentData.knowledges),
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.add),
-                            tooltip: 'Add PDF',
-                            onPressed: () {
-                              Utils.dialogAddContext(
-                                  context: context,
-                                  chatDataList: widget.chatDataList,
-                                  llmModel: widget.llmModel,
-                                  setState: setState);
-                            },
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                const Padding(padding: EdgeInsets.only(top: 4.0)),
-                Wrap(
-                  spacing: 5,
-                  runSpacing: 7,
-                  children: [
-                    ...List.generate(
-                      widget.chatDataList.currentData.knowledges.length,
-                      (index) {
-                        return KnowledgeWidget(
-                          knowledge:
-                              widget.chatDataList.currentData.knowledges[index],
-                          knowledges:
-                              widget.chatDataList.currentData.knowledges,
-                          llmModel: widget.llmModel,
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
-              ],
-            ),
+            knowledge(context),
           ],
         ),
       ),
+    );
+  }
+
+  ChatConfigCard knowledge(BuildContext context) {
+    return ChatConfigCard(
+      title: 'KNOWLEDGE',
+      strIcon: SvgIcons.knowledge,
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ParameterBool(
+            textKey: 'Chat Conversation Context',
+            onChanged: (value) {
+              widget.chatDataList.currentData.useChatConversationContext[0] =
+                  value;
+              onChatSettingsChanged('Use Chat Conversation Context');
+            },
+            value: widget.chatDataList.currentData.useChatConversationContext),
+        ParameterSlider(
+          textKey: "Min Score",
+          values: [
+            0.0,
+            widget.chatDataList.currentData.minKnowledgeScore[0],
+            1.0
+          ],
+          onChanged: (value) => widget
+              .chatDataList.currentData.minKnowledgeScore[0] = value.toDouble(),
+        ),
+        ParameterSlider(
+          textKey: "Max Knowledge Count",
+          values: <int>[
+            0,
+            widget.chatDataList.currentData.maxKnowledgeCount[0],
+            100
+          ],
+          onChanged: (value) => widget
+              .chatDataList.currentData.maxKnowledgeCount[0] = value.toInt(),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('PDF Knowledge'),
+              Row(
+                children: [
+                  Visibility(
+                    visible:
+                        widget.chatDataList.currentData.knowledges.isNotEmpty,
+                    child: IconButton(
+                      icon: const Icon(Icons.restore_page_outlined),
+                      tooltip: 'Re-Apply Knowledge',
+                      onPressed: () async => widget.llmModel.setKnowledge(
+                          widget.chatDataList.currentData.knowledges),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    tooltip: 'Add PDF',
+                    onPressed: () {
+                      Utils.dialogAddContext(
+                          context: context,
+                          chatDataList: widget.chatDataList,
+                          llmModel: widget.llmModel,
+                          setState: setState);
+                    },
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+        const Padding(padding: EdgeInsets.only(top: 4.0)),
+        Wrap(
+          spacing: 5,
+          runSpacing: 7,
+          children: [
+            ...List.generate(
+              widget.chatDataList.currentData.knowledges.length,
+              (index) {
+                return KnowledgeWidget(
+                  knowledge: widget.chatDataList.currentData.knowledges[index],
+                  knowledges: widget.chatDataList.currentData.knowledges,
+                  llmModel: widget.llmModel,
+                );
+              },
+            ),
+          ],
+        ),
+        const Padding(padding: EdgeInsets.symmetric(vertical: 2.0)),
+      ],
     );
   }
 

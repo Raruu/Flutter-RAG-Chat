@@ -108,9 +108,9 @@ async def generate_text(data: PostGenerateText):
     print(f"[generate_text] Generate Text: {output}")
     return output
 
-@app.post("/generate_context", response_model=ReturnGeneratedText)
-async def generate_context(data: PostGenerateText):
-    llm_model.build_context(data)
+@app.post("/retrieval_context", response_model=ReturnGeneratedText)
+async def retrieval_context(data: PostGenerateText):
+    return llm_model.build_context(data)
 
 
 if __name__ == "__main__":

@@ -155,8 +155,8 @@ class Model:
         return_generated_text = ReturnGeneratedText()
         return_generated_text.query = query
         value = self.chat_room.build_context(query, return_generated_text)
-        print(f"Builded context: {value}")
-        return value
+        print(f"Builded context: {return_generated_text}")
+        return return_generated_text
 
     def get_model(self, model_type: ModelType, model_id: str) -> str:
         model_path = f"./models/{model_type.name.lower()}/{model_id}/"

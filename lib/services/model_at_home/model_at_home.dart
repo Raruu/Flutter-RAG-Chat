@@ -263,6 +263,7 @@ class ModelAtHome extends BaseModel {
     required String prompt,
     required int seed,
     required Map<String, dynamic> parameters,
+    dynamic retrievalContext,
   }) async {
     try {
       if (await checkServerChatRoomIsNotRoom()) {
@@ -293,6 +294,49 @@ class ModelAtHome extends BaseModel {
           'query': responseJson['query'],
           'seed': responseJson['seed'].toString(),
           'generated_text': formatOutputText(responseJson['generated_text']),
+        };
+      } else {
+        throw (response.reasonPhrase ?? 'Fail');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> retrievalContext({
+    required String prompt,
+    required int seed,
+    required Map<String, dynamic> parameters,
+  }) async {
+    try {
+      if (await checkServerChatRoomIsNotRoom()) {
+        await onChatSettingsChanged(throwOnError: true);
+      }
+      String url = '${_data.baseURL}/retrieval_context';
+      Uri uri = Uri.parse(url);
+
+      if (kDebugMode) {
+        print('JsonEncode: ${jsonEncode({"query": prompt, ...parameters})}');
+      }
+
+      http.Response response = await http.post(
+        uri,
+        headers: justHeader,
+        body: jsonEncode({
+          "query": prompt,
+          "seed": seed,
+          ...parameters,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        var responseJson = jsonDecode(response.body);
+        return {
+          'context1': responseJson['context1'],
+          'context2': responseJson['context2'],
+          'query': responseJson['query'],
+          'seed': responseJson['seed'].toString(),
         };
       } else {
         throw (response.reasonPhrase ?? 'Fail');

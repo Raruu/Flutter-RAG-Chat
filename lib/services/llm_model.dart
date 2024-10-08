@@ -24,19 +24,19 @@ class LLMModel extends ChangeNotifier {
         (e) => printcatchError(e: e, from: 'onChatSettingsChanged'));
   }
 
-  Future? resetKnowledge() => _llmModel
+  Future? resetKnowledge() => _embeddingModel
       ?.resetKnowledge()
       ?.catchError((e) => printcatchError(e: e, from: 'resetKnowledge'));
 
-  Future? deleteKnowledge(String filename) => _llmModel
+  Future? deleteKnowledge(String filename) => _embeddingModel
       ?.deleteKnowledge(filename)
       ?.catchError((e) => printcatchError(e: e, from: 'DeleteKnowledge'));
 
-  Future? setKnowledge(List<Map<String, dynamic>> knowledges) => _llmModel
+  Future? setKnowledge(List<Map<String, dynamic>> knowledges) => _embeddingModel
       ?.setKnowledge(knowledges)
       ?.catchError((e) => printcatchError(e: e, from: 'setKnowledge'));
 
-  Future? addKnowledge(dynamic value, {String? webFileName}) => _llmModel
+  Future? addKnowledge(dynamic value, {String? webFileName}) => _embeddingModel
       ?.addKnowledge(value, webFileName: webFileName)
       ?.catchError((e) => printcatchError(e: e, from: 'addKnowledge'));
 
@@ -48,8 +48,14 @@ class LLMModel extends ChangeNotifier {
   Widget get widgetEmbeddingmodelSetting =>
       _embeddingModel?.widgetEmbeddingmodelSetting ??
       const LinearProgressIndicator();
-  Widget get informationWidget =>
-      _llmModel?.informationWidget ?? const SizedBox();
+  Widget get informationWidget => _llmModel == _embeddingModel
+      ? _llmModel?.informationWidget ?? const SizedBox()
+      : Row(
+          children: [
+            _llmModel?.informationWidget ?? const SizedBox(),
+            _embeddingModel?.informationWidget ?? const SizedBox()
+          ],
+        );
 
   Map<String, dynamic>? _parameters;
   Map<String, dynamic>? get parameters => _parameters;
@@ -152,19 +158,33 @@ class LLMModel extends ChangeNotifier {
   }
 
   // TODO Retrieval
-  String retrieval() {
-    return '';
+  Future<Map<String, dynamic>?> retrievalContext(
+      {required String prompt, required int seed}) {
+    if (_llmModel != _embeddingModel) {}
+    return _embeddingModel!
+        .retrievalContext(prompt: prompt, seed: seed, parameters: parameters!)
+        .catchError((e) {
+      printcatchError(e: e, from: 'retrievalContext');
+      return null;
+    });
   }
 
   Future<Map<String, dynamic>?> generateText(
-      {required String prompt, required int seed}) {
-    if (_llmModel != _embeddingModel) {}
-    return _llmModel!
-        .generateText(prompt: prompt, seed: seed, parameters: parameters!)
-        .catchError((e) {
-      printcatchError(e: e, from: 'GenerateText');
-      return null;
-    });
+      {required String prompt, required int seed}) async {
+    Map<String, dynamic>? retrieval;
+    if (_llmModel != _embeddingModel) {
+      retrieval = await retrievalContext(prompt: prompt, seed: seed);
+    }
+    return _llmModel!.generateText(
+            prompt: prompt,
+            seed: seed,
+            parameters: parameters!,
+            retrievalContext: retrieval)
+        //     .catchError((e) {
+        //   printcatchError(e: e, from: 'GenerateText');
+        //   return null;
+        // });
+        ;
   }
 
   dynamic printcatchError({required dynamic e, required String from}) {

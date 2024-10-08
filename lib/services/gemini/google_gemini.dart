@@ -56,12 +56,29 @@ class GoogleGemini extends BaseModel {
   }
 
   @override
-  Future<Map<String, dynamic>?> generateText(
-      {required String prompt,
-      required int seed,
-      required Map<String, dynamic> parameters}) async {
+  Future<Map<String, dynamic>?> generateText({
+    required String prompt,
+    required int seed,
+    required Map<String, dynamic> parameters,
+    Map<String, dynamic>? retrievalContext,
+  }) async {
     final gemini = Gemini.instance;
     final currentData = chatDataList.currentData;
+
+    List<String>? knowledgeContext;
+    List<dynamic>? takeKnowledge;
+    if (retrievalContext != null && retrievalContext['context1'] != "") {
+      takeKnowledge = retrievalContext['context1']
+          .take(currentData.maxKnowledgeCount[0])
+          .toList();
+
+      for (var knowledgeData in takeKnowledge!) {
+        if (knowledgeData['score'] >= currentData.minKnowledgeScore[0]) {
+          knowledgeContext ??= List.empty(growable: true);
+          knowledgeContext.add(knowledgeData['context']);
+        }
+      }
+    }
 
     var geminiCandidate = await gemini.chat([
       if (currentData.usePreprompt[0])
@@ -75,7 +92,12 @@ class GoogleGemini extends BaseModel {
                   ? 'model'
                   : 'user'),
         ),
-      Content(parts: [Parts(text: prompt)], role: 'user'),
+      if (knowledgeContext != null)
+        Content(parts: [
+          Parts(text: "context:\n${knowledgeContext.join(" ")}\n\n $prompt")
+        ], role: 'user')
+      else
+        Content(parts: [Parts(text: prompt)], role: 'user'),
     ],
         generationConfig: GenerationConfig(
           temperature: parameters['temperature'],
@@ -85,7 +107,7 @@ class GoogleGemini extends BaseModel {
         ));
 
     return {
-      'context1': null,
+      'context1': takeKnowledge,
       'context2': null,
       'query': prompt,
       'seed': seed.toString(),
@@ -106,5 +128,14 @@ class GoogleGemini extends BaseModel {
   @override
   Future? setKnowledge(List<Map<String, dynamic>> knowledges) {
     return null;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> retrievalContext(
+      {required String prompt,
+      required int seed,
+      required Map<String, dynamic> parameters}) {
+    // TODO: implement retrievalContext
+    throw UnimplementedError();
   }
 }

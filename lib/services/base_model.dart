@@ -24,5 +24,12 @@ abstract class BaseModel {
     required String prompt,
     required int seed,
     required Map<String, dynamic> parameters,
+    Map<String, dynamic>? retrievalContext,
+  });
+
+  Future<Map<String, dynamic>?> retrievalContext({
+    required String prompt,
+    required int seed,
+    required Map<String, dynamic> parameters,
   });
 }

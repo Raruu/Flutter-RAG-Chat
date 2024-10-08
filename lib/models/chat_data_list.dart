@@ -36,6 +36,7 @@ class ChatDataList extends ChangeNotifier {
 
   void _loadDatabase() async {
     db = await ChatDatabase().database;
+    // ChatDatabase.updateHeader(db);
     List<Map<String, Object?>> chatListData = await db.query(
       ChatDatabase.tableChatList,
       orderBy: '${ChatDatabase.chatId} DESC',
@@ -156,20 +157,13 @@ class ChatDataList extends ChangeNotifier {
   }
 
   void updateConfigToDatabase() {
+    var values = currentData.toMap();
+    values.remove(ChatDatabase.chatId);
     ChatDatabase().updateValue(
       table: ChatDatabase.tableChatList,
       where: ChatDatabase.chatId,
       whereArgs: currentData.id,
-      values: {
-        ChatDatabase.chatTitle: currentData.title,
-        ChatDatabase.knowledges: jsonEncode(currentData.knowledges),
-        ChatDatabase.parameters: jsonEncode(currentData.parameters),
-        ChatDatabase.usePreprompt: currentData.usePreprompt.first ? 1 : 0,
-        ChatDatabase.preprompt: 'currentData.prePrompt',
-        ChatDatabase.useChatContext:
-            currentData.useChatConversationContext.first ? 1 : 0,
-        ChatDatabase.lastMessageTimestamp: currentData.dateCreated,
-      },
+      values: values,
     );
   }
 

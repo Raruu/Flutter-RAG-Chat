@@ -32,7 +32,9 @@ class ChatDatabase {
         $knowledges TEXT,
         $usePreprompt INTEGER NOT NULL,
         $preprompt TEXT,
-        $useChatContext INTEGER NOT NULL       
+        $useChatContext INTEGER NOT NULL,
+        $maxKnowledgeCount INTEGER,
+        $minKnowledgeScore REAL  
         )
       ''');
 
@@ -59,6 +61,14 @@ class ChatDatabase {
     await db.update(table, values, where: '$where = ?', whereArgs: [whereArgs]);
   }
 
+  static Future<void> updateHeader(Database db) async {
+    await db.execute(
+        'ALTER TABLE $tableChatList ADD COLUMN $maxKnowledgeCount INTEGER');
+
+    await db.execute(
+        'ALTER TABLE $tableChatList ADD COLUMN $minKnowledgeScore REAL');
+  }
+
   static const String tableChatList = 'chat_list';
   static const String tableChatMessages = 'chat_messages';
   static const String chatId = 'chat_id';
@@ -69,6 +79,8 @@ class ChatDatabase {
   static const String usePreprompt = 'use_preprompt';
   static const String preprompt = 'preprompt';
   static const String useChatContext = 'use_chat_context';
+  static const String maxKnowledgeCount = 'max_knowledge_count';
+  static const String minKnowledgeScore = 'min_knowledge_score';
 
   static const String role = 'role';
   static const String message = 'message';

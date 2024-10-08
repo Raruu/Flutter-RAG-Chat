@@ -160,9 +160,10 @@ class ChatRoom:
     def build_context(self, query: str, return_generate_text: ReturnGeneratedText):
         self.embedd_query(query)
         return_generate_text.context1 = self.get_context_knowledge()
-        return_generate_text.context2 = self.preprocess_chat_history(
-            self.get_context_chat_history()
-        )
+        # return_generate_text.context2 = self.preprocess_chat_history(
+        #     self.get_context_chat_history()
+        # )
+        return return_generate_text.context1
 
     def build_prompt(self, query: str, return_generate_text: ReturnGeneratedText):
         if self.embedding_model is not None:

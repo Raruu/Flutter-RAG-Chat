@@ -12,6 +12,8 @@ class ChatData {
   List<bool> usePreprompt = [false];
   String? prePrompt;
   List<bool> useChatConversationContext = [true];
+  List<int> maxKnowledgeCount = [2];
+  List<double> minKnowledgeScore = [0.1];
   late final List<Message> messageList;
   late final String dateCreated;
   late final List<Map<String, dynamic>> knowledges;
@@ -59,6 +61,13 @@ class ChatData {
     useChatConversationContext = [
       (mapChat[ChatDatabase.useChatContext] as int) == 1
     ];
+    maxKnowledgeCount = [
+      (mapChat[ChatDatabase.maxKnowledgeCount] ?? maxKnowledgeCount[0]) as int
+    ];
+    minKnowledgeScore = [
+      (mapChat[ChatDatabase.minKnowledgeScore] ?? minKnowledgeScore[0])
+          as double
+    ];
     dateCreated = mapChat[ChatDatabase.lastMessageTimestamp] as String;
 
     totalToken = 0;
@@ -87,6 +96,8 @@ class ChatData {
         ChatDatabase.usePreprompt: usePreprompt.first ? 1 : 0,
         ChatDatabase.preprompt: prePrompt ?? '',
         ChatDatabase.useChatContext: useChatConversationContext.first ? 1 : 0,
+        ChatDatabase.maxKnowledgeCount: maxKnowledgeCount.first,
+        ChatDatabase.minKnowledgeScore: minKnowledgeScore.first,
         ChatDatabase.lastMessageTimestamp: dateCreated,
       };
 

@@ -79,10 +79,12 @@ class DartOpenai extends BaseModel {
   }
 
   @override
-  Future<Map<String, dynamic>?> generateText(
-      {required String prompt,
-      required int seed,
-      required Map<String, dynamic> parameters}) async {
+  Future<Map<String, dynamic>?> generateText({
+    required String prompt,
+    required int seed,
+    required Map<String, dynamic> parameters,
+    dynamic retrievalContext,
+  }) async {
     final currentData = chatDataList.currentData;
 
     final requestMessages = [
@@ -165,6 +167,15 @@ class DartOpenai extends BaseModel {
   @override
   Future? setKnowledge(List<Map<String, dynamic>> knowledges) {
     // TODO: implement setKnowledge
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>?> retrievalContext(
+      {required String prompt,
+      required int seed,
+      required Map<String, dynamic> parameters}) {
+    // TODO: implement retrievalContext
     throw UnimplementedError();
   }
 }
