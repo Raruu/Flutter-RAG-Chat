@@ -27,8 +27,8 @@ class InfomationData(BaseModel):
             else 0
         )
         gpus = GPUtil.getGPUs()
-        gpu_name = gpus[0].name
-        vram = self.get_vram()
+        gpu_name =  gpus[0].name if len(gpus) > 0 else "None"
+        vram = self.get_vram() if len(gpus) > 0 else [0, 0]
         ram = self.get_ram()
         len_context_knowledge = len(llm_model.chat_room.context_knowledges)
         if len_context_knowledge > 0:

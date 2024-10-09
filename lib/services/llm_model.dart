@@ -157,7 +157,6 @@ class LLMModel extends ChangeNotifier {
     return prompt;
   }
 
-  // TODO Retrieval
   Future<Map<String, dynamic>?> retrievalContext(
       {required String prompt, required int seed}) {
     if (_llmModel != _embeddingModel) {}
@@ -172,7 +171,8 @@ class LLMModel extends ChangeNotifier {
   Future<Map<String, dynamic>?> generateText(
       {required String prompt, required int seed}) async {
     Map<String, dynamic>? retrieval;
-    if (_llmModel != _embeddingModel) {
+    if (_llmModel != _embeddingModel &&
+        chatDataList.currentData.knowledges.isNotEmpty) {
       retrieval = await retrievalContext(prompt: prompt, seed: seed);
     }
     return _llmModel!.generateText(

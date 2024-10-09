@@ -377,7 +377,10 @@ class _ChatViewState extends State<ChatView> {
                                 messageList[index].message =
                                     textEditingController.text;
                                 widget.llmModel.onChatSettingsChanged();
-                                if (messageList.length - 1 <= index) {
+                                if (messageList.length - 1 <= index ||
+                                    (messageList.length - 2 <= index &&
+                                        messageList[index].role ==
+                                            MessageRole.user)) {
                                   regenerateText(index + 1,
                                       query: textEditingController.text);
                                 }
