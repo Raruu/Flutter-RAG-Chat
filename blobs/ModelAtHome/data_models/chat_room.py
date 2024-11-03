@@ -7,8 +7,10 @@ from PIL import Image
 
 from data_models.generate_text_model import ReturnGeneratedText
 
-if(os.name == "nt"):
-    pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+if os.name == "nt":
+    pytesseract.pytesseract.tesseract_cmd = (
+        "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+    )
 
 
 class ChatRoom:
@@ -24,7 +26,7 @@ class ChatRoom:
         self.use_preprompt = False
         self.chat_context_embedding = None
         self.context_knowledges = []
-        
+
     def set_embedding_model(self, embedding_model: SentenceTransformer):
         if self.embedding_model is not None:
             del self.embedding_model
@@ -49,41 +51,50 @@ class ChatRoom:
 
     async def add_context_knowledge(self, data: UploadFile):
         new_dict = {"filename": data.filename}
-        contents = await data.read()
-        doc = fitz.open(stream=contents, filetype="pdf")
         pages_and_texts = []
-        for page_number, page in enumerate(doc):
-            text = page.get_text().replace("\n", " ").strip()
-            
-            for img_index, img in enumerate(page.get_images(full=True)):
-                xref = img[0]
-                base_image = doc.extract_image(xref)
-                image_bytes = base_image["image"]
+        if data.filename.endswith(".pdf"):
+            contents = await data.read()
+            doc = fitz.open(stream=contents, filetype="pdf")
+            for page_number, page in enumerate(doc):
+                text = page.get_text().replace("\n", " ").strip()
 
-                image = Image.open(io.BytesIO(image_bytes))
-                image_text = pytesseract.image_to_string(image)
-                text += " " + image_text.strip()
-            
-            sentences = [str(sentence) for sentence in list(self.nlp(text).sents)]
-            sentences_chunks = split_list(sentences, 10)
-            for sentences_chunk in sentences_chunks:
-                joined_sentence_chunk = join_sentences_chunk_to_paragraph(
-                    sentences_chunk
-                )
-            embeddings = self.embedding_model.encode(
-                joined_sentence_chunk, convert_to_tensor=True
-            ).to(self.device)
-            pages_and_texts.append(
-                {
-                    "page_number": page_number + 1,
-                    "text": text,
-                    "sentences_chunks": sentences_chunks,
-                    "joined_sentence_chunk": joined_sentence_chunk,
-                    "embeddings": embeddings,
-                }
-            )
+                for img_index, img in enumerate(page.get_images(full=True)):
+                    xref = img[0]
+                    base_image = doc.extract_image(xref)
+                    image_bytes = base_image["image"]
+
+                    image = Image.open(io.BytesIO(image_bytes))
+                    image_text = pytesseract.image_to_string(image)
+                    text += " " + image_text.strip()
+
+                self.add_context_knowledge_process_text(pages_and_texts, text, page_number)
+
+        elif data.filename.endswith((".png", ".jpg", ".jpeg", ".webp")):
+            image = Image.open(io.BytesIO(await data.read()))
+            text = pytesseract.image_to_string(image).strip()
+            self.add_context_knowledge_process_text(pages_and_texts, text, 1)
+
         new_dict["pages_and_texts"] = pages_and_texts
         self.context_knowledges.append(new_dict)
+
+    def add_context_knowledge_process_text(self, pages_and_texts: dict, text: str, page_number: int):
+        sentences = [str(sentence) for sentence in list(self.nlp(text).sents)]
+        sentences_chunks = split_list(sentences, 10)
+        for sentences_chunk in sentences_chunks:
+            joined_sentence_chunk = join_sentences_chunk_to_paragraph(sentences_chunk)
+        embeddings = self.embedding_model.encode(
+            joined_sentence_chunk, convert_to_tensor=True
+        ).to(self.device)
+        pages_and_texts.append(
+            {
+                "page_number": page_number + 1,
+                "text": text,
+                "sentences_chunks": sentences_chunks,
+                "joined_sentence_chunk": joined_sentence_chunk,
+                "embeddings": embeddings,
+            }
+        )
+        return pages_and_texts
 
     def get_context_knowledge(self):
         top_products_avg = torch.zeros(1).to(self.device)
@@ -194,7 +205,9 @@ class ChatRoom:
             )
 
             if "{context_knowledge}" in generated_text:
-                generated_text = generated_text.replace("{context_knowledge}", get_knowledge_context)
+                generated_text = generated_text.replace(
+                    "{context_knowledge}", get_knowledge_context
+                )
             else:
                 generated_text = generated_text + f"Context1:\n {get_knowledge_context}"
 
@@ -210,7 +223,9 @@ class ChatRoom:
             return_generate_text.context2 = get_chat_context
             print(f"[chat_room/build_prompt] chat_history_context : {get_chat_context}")
             if "{chat_history}" in generated_text:
-                generated_text = generated_text.replace("{chat_history}", get_chat_context)
+                generated_text = generated_text.replace(
+                    "{chat_history}", get_chat_context
+                )
             else:
                 generated_text = generated_text + f"Context2:\n {get_chat_context}"
 

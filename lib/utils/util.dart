@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'dart:math' as math;
 import 'package:open_filex/open_filex.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:universal_html/html.dart' as html;
+import 'package:path/path.dart' as path_dart;
 
 import 'kafuu_chino.dart';
 import 'my_colors.dart';
@@ -59,7 +61,7 @@ class Utils<T> {
     return GoRouterState.of(context).uri.queryParametersAll;
   }
 
-  static void openPdf(
+  static void viewKnowledge(
     dynamic value, {
     int pageAt = 0,
     BuildContext? context,
@@ -74,6 +76,7 @@ class Utils<T> {
       if (context != null) {
         PdfViewerController pdfViewerController = PdfViewerController();
         TextEditingController textEditingController = TextEditingController();
+        bool isPdf = path_dart.extension(title!).toLowerCase() == '.pdf';
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -88,60 +91,65 @@ class Utils<T> {
                         },
                         icon: const Icon(Icons.arrow_back_ios_rounded)),
                     const Padding(padding: EdgeInsets.all(1.0)),
-                    Text(title ?? ''),
+                    Text(title),
                   ],
                 ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => pdfViewerController.zoomDown(),
-                      icon: const Icon(Icons.zoom_out_rounded),
-                    ),
-                    IconButton(
-                      onPressed: () => pdfViewerController.zoomUp(),
-                      icon: const Icon(Icons.zoom_in_rounded),
-                    ),
-                    SizedBox(
-                        width: 180,
-                        child: PinkTextField(
-                          textEditingController: textEditingController,
-                          strIconLeft: SvgIcons.iconamoonPlayerPreviousFill,
-                          textInputType: TextInputType.number,
-                          hintText: '',
-                          labelText: 'Page',
-                          textAlign: TextAlign.center,
-                          onChanged: (value) {
-                            int goPage = int.tryParse(value) ??
-                                pdfViewerController.pageNumber!;
+                if (isPdf)
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => pdfViewerController.zoomDown(),
+                        icon: const Icon(Icons.zoom_out_rounded),
+                      ),
+                      IconButton(
+                        onPressed: () => pdfViewerController.zoomUp(),
+                        icon: const Icon(Icons.zoom_in_rounded),
+                      ),
+                      SizedBox(
+                          width: 180,
+                          child: PinkTextField(
+                            textEditingController: textEditingController,
+                            strIconLeft: SvgIcons.iconamoonPlayerPreviousFill,
+                            textInputType: TextInputType.number,
+                            hintText: '',
+                            labelText: 'Page',
+                            textAlign: TextAlign.center,
+                            onChanged: (value) {
+                              int goPage = int.tryParse(value) ??
+                                  pdfViewerController.pageNumber!;
 
-                            pdfViewerController.goToPage(
-                                pageNumber: goPage,
-                                duration: const Duration(microseconds: 0));
-                          },
-                          tooltipIconLeft: 'Previous',
-                          leftButtonFunc: () => pdfViewerController.goToPage(
-                              pageNumber: pdfViewerController.pageNumber! - 1),
-                          strIconRight: SvgIcons.iconamoonPlayerNextFill,
-                          tooltipIconRight: 'Next',
-                          rightButtonFunc: () => pdfViewerController.goToPage(
-                              pageNumber: pdfViewerController.pageNumber! + 1),
-                        )),
-                  ],
-                )
+                              pdfViewerController.goToPage(
+                                  pageNumber: goPage,
+                                  duration: const Duration(microseconds: 0));
+                            },
+                            tooltipIconLeft: 'Previous',
+                            leftButtonFunc: () => pdfViewerController.goToPage(
+                                pageNumber:
+                                    pdfViewerController.pageNumber! - 1),
+                            strIconRight: SvgIcons.iconamoonPlayerNextFill,
+                            tooltipIconRight: 'Next',
+                            rightButtonFunc: () => pdfViewerController.goToPage(
+                                pageNumber:
+                                    pdfViewerController.pageNumber! + 1),
+                          )),
+                    ],
+                  )
               ],
             ),
             content: SizedBox(
               width: MediaQuery.sizeOf(context).width,
               height: MediaQuery.sizeOf(context).height,
-              child: PdfViewer.file(
-                value,
-                controller: pdfViewerController,
-                initialPageNumber: pageAt,
-                params: PdfViewerParams(
-                  onPageChanged: (pageNumber) =>
-                      textEditingController.text = pageNumber.toString(),
-                ),
-              ),
+              child: isPdf
+                  ? PdfViewer.file(
+                      value,
+                      controller: pdfViewerController,
+                      initialPageNumber: pageAt,
+                      params: PdfViewerParams(
+                        onPageChanged: (pageNumber) =>
+                            textEditingController.text = pageNumber.toString(),
+                      ),
+                    )
+                  : Image.file(File(value)),
             ),
           ),
         );
@@ -157,7 +165,7 @@ class Utils<T> {
       required ChatDataList chatDataList,
       required LLMModel llmModel,
       required Function(Function()) setState}) async {
-    var result = await knowledgeDialog(
+    var result = await addKnowledgeDialog(
       context: context,
       knowledge: {},
     );

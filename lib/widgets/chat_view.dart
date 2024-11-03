@@ -283,7 +283,7 @@ class _ChatViewState extends State<ChatView> {
             ],
           );
         },
-        tooltipIconLeft: 'Add Context',
+        tooltipIconLeft: 'Context',
         rightButtonFunc: sendMessage,
         tooltipIconRight: 'Send Message',
         onEditingComplete: sendMessage,
@@ -740,7 +740,7 @@ class _ChatViewState extends State<ChatView> {
                                         var value = kIsWeb
                                             ? knowledge['web_data']
                                             : knowledge['path'];
-                                        Utils.openPdf(value,
+                                        Utils.viewKnowledge(value,
                                             context: context,
                                             title: filename,
                                             pageAt: pageNumber);

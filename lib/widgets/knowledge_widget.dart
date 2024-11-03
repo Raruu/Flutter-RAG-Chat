@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:path/path.dart' as path_dart;
 
 import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
@@ -46,7 +47,7 @@ class _KnowledgeWidgetState extends State<KnowledgeWidget> {
             borderRadius: BorderRadius.circular(5.0)),
         child: InkWell(
           onTap: () {
-            knowledgeDialog(
+            addKnowledgeDialog(
               context: context,
               knowledge: widget.knowledge,
               deleteFunc: () {
@@ -81,7 +82,7 @@ class _KnowledgeWidgetState extends State<KnowledgeWidget> {
   }
 }
 
-Future<Map<String, dynamic>> knowledgeDialog({
+Future<Map<String, dynamic>> addKnowledgeDialog({
   required BuildContext context,
   required Map<String, dynamic> knowledge,
   Function()? deleteFunc,
@@ -90,11 +91,12 @@ Future<Map<String, dynamic>> knowledgeDialog({
     ..text = knowledge.isNotEmpty ? knowledge['path']! : '';
   String path = pathEditingController.text;
   bool isFileExists = kIsWeb ? false : await File(path).exists();
+  bool isPdf =
+      isFileExists ? path_dart.extension(path).toLowerCase() == '.pdf' : false;
   Uint8List? fileUint8 = knowledge['web_data'];
 
   PdfViewerController pdfViewerController = PdfViewerController();
   TextEditingController pageNumberEditingController = TextEditingController();
-  bool isHoverPageController = false;
 
   var result = await showDialog(
     // ignore: use_build_context_synchronously
@@ -123,7 +125,13 @@ Future<Map<String, dynamic>> knowledgeDialog({
                                 await FilePicker.platform.pickFiles(
                               allowMultiple: false,
                               type: FileType.custom,
-                              allowedExtensions: ['pdf'],
+                              allowedExtensions: [
+                                'pdf',
+                                'jpg',
+                                'jpeg',
+                                'png',
+                                'webp'
+                              ],
                             );
 
                             if (result != null) {
@@ -137,6 +145,10 @@ Future<Map<String, dynamic>> knowledgeDialog({
                               if (kIsWeb) {
                                 fileUint8 = result.files.first.bytes;
                               }
+                              isPdf = path_dart
+                                      .extension(result.files.first.name)
+                                      .toLowerCase() ==
+                                  '.pdf';
                               setState(() {});
                             }
                           },
@@ -158,8 +170,8 @@ Future<Map<String, dynamic>> knowledgeDialog({
                             IconButton(
                               tooltip: 'Open With',
                               icon: const Icon(Icons.open_in_new_rounded),
-                              onPressed: () =>
-                                  Utils.openPdf(kIsWeb ? fileUint8 : path),
+                              onPressed: () => Utils.viewKnowledge(
+                                  kIsWeb ? fileUint8 : path),
                             ),
                           ],
                         ),
@@ -171,117 +183,19 @@ Future<Map<String, dynamic>> knowledgeDialog({
                     child: SizedBox(
                       width: MediaQuery.sizeOf(context).width * 2 / 3,
                       height: MediaQuery.sizeOf(context).height * 2 / 3,
-                      child: Stack(
-                        children: [
-                          isFileExists || fileUint8 != null
+                      child: isPdf
+                          ? _pdfViewer(
+                              isFileExists,
+                              fileUint8,
+                              path,
+                              pdfViewerController,
+                              pageNumberEditingController,
+                              setState)
+                          : isFileExists
                               ? kIsWeb
-                                  ? PdfViewer.data(
-                                      Uint8List.fromList(fileUint8!),
-                                      sourceName: path,
-                                      controller: pdfViewerController,
-                                      params: PdfViewerParams(
-                                        enableTextSelection: true,
-                                        backgroundColor: Colors.transparent,
-                                        onPageChanged: (pageNumber) =>
-                                            pageNumberEditingController.text =
-                                                pageNumber.toString(),
-                                      ),
-                                    )
-                                  : PdfViewer.file(
-                                      path,
-                                      controller: pdfViewerController,
-                                      params: PdfViewerParams(
-                                        enableTextSelection: true,
-                                        backgroundColor: Colors.transparent,
-                                        onPageChanged: (pageNumber) =>
-                                            pageNumberEditingController.text =
-                                                pageNumber.toString(),
-                                      ),
-                                    )
+                                  ? Image.memory(fileUint8!)
+                                  : Image.file(File(path))
                               : const SizedBox(),
-                          Align(
-                            alignment: Alignment.bottomCenter,
-                            child: AnimatedOpacity(
-                              duration: const Duration(milliseconds: 200),
-                              opacity: isHoverPageController ? 1 : 0.5,
-                              child: MouseRegion(
-                                onEnter: (event) => setState(
-                                    () => isHoverPageController = true),
-                                onExit: (event) => setState(
-                                    () => isHoverPageController = false),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color:
-                                          MyColors.bgTintBlue.withOpacity(0.5),
-                                      borderRadius: BorderRadius.circular(20)),
-                                  child: Wrap(
-                                    direction: Axis.horizontal,
-                                    crossAxisAlignment:
-                                        WrapCrossAlignment.center,
-                                    children: [
-                                      IconButton(
-                                        onPressed: () =>
-                                            pdfViewerController.zoomDown(),
-                                        icon: const Icon(
-                                          Icons.zoom_out_rounded,
-                                          color: MyColors.textTintBlue,
-                                        ),
-                                      ),
-                                      IconButton(
-                                        onPressed: () =>
-                                            pdfViewerController.zoomUp(),
-                                        icon: const Icon(
-                                          Icons.zoom_in_rounded,
-                                          color: MyColors.textTintBlue,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                          width: 180,
-                                          child: PinkTextField(
-                                            textEditingController:
-                                                pageNumberEditingController,
-                                            strIconLeft: SvgIcons
-                                                .iconamoonPlayerPreviousFill,
-                                            textInputType: TextInputType.number,
-                                            hintText: '',
-                                            labelText: 'Page',
-                                            textAlign: TextAlign.center,
-                                            onChanged: (value) {
-                                              int goPage =
-                                                  int.tryParse(value) ??
-                                                      pdfViewerController
-                                                          .pageNumber!;
-
-                                              pdfViewerController.goToPage(
-                                                  pageNumber: goPage,
-                                                  duration: const Duration(
-                                                      microseconds: 0));
-                                            },
-                                            tooltipIconLeft: 'Previous',
-                                            leftButtonFunc: () =>
-                                                pdfViewerController.goToPage(
-                                                    pageNumber:
-                                                        pdfViewerController
-                                                                .pageNumber! -
-                                                            1),
-                                            strIconRight: SvgIcons
-                                                .iconamoonPlayerNextFill,
-                                            tooltipIconRight: 'Next',
-                                            rightButtonFunc: () =>
-                                                pdfViewerController.goToPage(
-                                                    pageNumber:
-                                                        pdfViewerController
-                                                                .pageNumber! +
-                                                            1),
-                                          )),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
                     ),
                   ),
                 ],
@@ -325,4 +239,105 @@ Future<Map<String, dynamic>> knowledgeDialog({
   pathEditingController.dispose();
   pageNumberEditingController.dispose();
   return result ?? {}.cast<String, String>();
+}
+
+Stack _pdfViewer(
+    bool isFileExists,
+    Uint8List? fileUint8,
+    String path,
+    PdfViewerController pdfViewerController,
+    TextEditingController pageNumberEditingController,
+    StateSetter setState) {
+  bool? isHoverPageController;
+  return Stack(
+    children: [
+      isFileExists || fileUint8 != null
+          ? kIsWeb
+              ? PdfViewer.data(
+                  Uint8List.fromList(fileUint8!),
+                  sourceName: path,
+                  controller: pdfViewerController,
+                  params: PdfViewerParams(
+                    enableTextSelection: true,
+                    backgroundColor: Colors.transparent,
+                    onPageChanged: (pageNumber) => pageNumberEditingController
+                        .text = pageNumber.toString(),
+                  ),
+                )
+              : PdfViewer.file(
+                  path,
+                  controller: pdfViewerController,
+                  params: PdfViewerParams(
+                    enableTextSelection: true,
+                    backgroundColor: Colors.transparent,
+                    onPageChanged: (pageNumber) => pageNumberEditingController
+                        .text = pageNumber.toString(),
+                  ),
+                )
+          : const SizedBox(),
+      Align(
+        alignment: Alignment.bottomCenter,
+        child: StatefulBuilder(
+          builder: (context, setState) => AnimatedOpacity(
+            duration: const Duration(milliseconds: 200),
+            opacity: (isHoverPageController ?? false) ? 1 : 0.5,
+            child: MouseRegion(
+              onEnter: (event) => setState(() => isHoverPageController = true),
+              onExit: (event) => setState(() => isHoverPageController = false),
+              child: Container(
+                decoration: BoxDecoration(
+                    color: MyColors.bgTintBlue.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(20)),
+                child: Wrap(
+                  direction: Axis.horizontal,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () => pdfViewerController.zoomDown(),
+                      icon: const Icon(
+                        Icons.zoom_out_rounded,
+                        color: MyColors.textTintBlue,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => pdfViewerController.zoomUp(),
+                      icon: const Icon(
+                        Icons.zoom_in_rounded,
+                        color: MyColors.textTintBlue,
+                      ),
+                    ),
+                    SizedBox(
+                        width: 180,
+                        child: PinkTextField(
+                          textEditingController: pageNumberEditingController,
+                          strIconLeft: SvgIcons.iconamoonPlayerPreviousFill,
+                          textInputType: TextInputType.number,
+                          hintText: '',
+                          labelText: 'Page',
+                          textAlign: TextAlign.center,
+                          onChanged: (value) {
+                            int goPage = int.tryParse(value) ??
+                                pdfViewerController.pageNumber!;
+
+                            pdfViewerController.goToPage(
+                                pageNumber: goPage,
+                                duration: const Duration(microseconds: 0));
+                          },
+                          tooltipIconLeft: 'Previous',
+                          leftButtonFunc: () => pdfViewerController.goToPage(
+                              pageNumber: pdfViewerController.pageNumber! - 1),
+                          strIconRight: SvgIcons.iconamoonPlayerNextFill,
+                          tooltipIconRight: 'Next',
+                          rightButtonFunc: () => pdfViewerController.goToPage(
+                              pageNumber: pdfViewerController.pageNumber! + 1),
+                        )),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      )
+    ],
+  );
 }

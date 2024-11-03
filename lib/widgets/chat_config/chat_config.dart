@@ -178,7 +178,7 @@ class _ChatConfigState extends State<ChatConfig> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('PDF Knowledge'),
+              const Text('Knowledge'),
               Row(
                 children: [
                   Visibility(
@@ -193,7 +193,7 @@ class _ChatConfigState extends State<ChatConfig> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.add),
-                    tooltip: 'Add PDF',
+                    tooltip: 'Add Knowledge',
                     onPressed: () {
                       Utils.dialogAddContext(
                           context: context,
