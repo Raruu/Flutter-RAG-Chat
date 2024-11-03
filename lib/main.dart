@@ -38,13 +38,15 @@ void main() async {
     ],
     child: MyApp(
       llmModel: llmModel,
+      chatDataList: chatDataList,
     ),
   ));
 }
 
 class MyApp extends StatefulWidget {
   final LLMModel llmModel;
-  const MyApp({super.key, required this.llmModel});
+  final ChatDataList chatDataList;
+  const MyApp({super.key, required this.llmModel, required this.chatDataList});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -64,7 +66,7 @@ class _MyAppState extends State<MyApp> {
               var querys = state.uri.queryParametersAll;
               return HomePage(
                 llmModel: widget.llmModel,
-                chatDataList: widget.llmModel.chatDataList,
+                chatDataList: widget.chatDataList,
                 initialCtnRightOpen: querys['isCtnRightOpen']?.first == 'true',
                 initialMenuSelected:
                     int.tryParse(querys['menuSelected']?.first ?? '-1')!,
@@ -78,7 +80,7 @@ class _MyAppState extends State<MyApp> {
                 name: 'mobile_chatview',
                 builder: (context, state) {
                   backFunc() {
-                    widget.llmModel.chatDataList.currentSelected = -1;
+                    widget.chatDataList.currentSelected = -1;
                     if (context.canPop()) {
                       context.pop();
                     } else {
@@ -103,7 +105,7 @@ class _MyAppState extends State<MyApp> {
                               height: MediaQuery.sizeOf(context).height * 3 / 4,
                               child: ChatConfig(
                                 llmModel: widget.llmModel,
-                                chatDataList: widget.llmModel.chatDataList,
+                                chatDataList: widget.chatDataList,
                               ),
                             ),
                           );

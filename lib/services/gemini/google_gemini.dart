@@ -46,16 +46,6 @@ class GoogleGemini extends BaseModel {
       );
 
   @override
-  Future? addKnowledge(value, {String? webFileName}) {
-    return null;
-  }
-
-  @override
-  Future? deleteKnowledge(String filename) {
-    return null;
-  }
-
-  @override
   Future<Map<String, dynamic>?> generateText({
     required String prompt,
     required int seed,
@@ -113,29 +103,5 @@ class GoogleGemini extends BaseModel {
       'seed': seed.toString(),
       'generated_text': geminiCandidate?.output ?? "NULL",
     };
-  }
-
-  @override
-  Future? onChatSettingsChanged() {
-    return null;
-  }
-
-  @override
-  Future? resetKnowledge() {
-    return null;
-  }
-
-  @override
-  Future? setKnowledge(List<Map<String, dynamic>> knowledges) {
-    return null;
-  }
-
-  @override
-  Future<Map<String, dynamic>?> retrievalContext(
-      {required String prompt,
-      required int seed,
-      required Map<String, dynamic> parameters}) {
-    // TODO: implement retrievalContext
-    throw UnimplementedError();
   }
 }

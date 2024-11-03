@@ -9,11 +9,7 @@ abstract class BaseModel {
   Widget? widgetEmbeddingmodelSetting;
   Widget? informationWidget;
 
-  Future? onChatSettingsChanged();
-  Future? resetKnowledge();
-  Future? deleteKnowledge(String filename);
-  Future? setKnowledge(List<Map<String, dynamic>> knowledges);
-  Future? addKnowledge(dynamic value, {String? webFileName});
+  Future? onChatSettingsChanged() => null;
 
   final Function() notifyListenerLLM;
   final SharedPreferences prefs;
@@ -27,9 +23,16 @@ abstract class BaseModel {
     Map<String, dynamic>? retrievalContext,
   });
 
+  Future? resetKnowledge() => null;
+  Future? deleteKnowledge(String filename) => null;
+  Future? setKnowledge(List<Map<String, dynamic>> knowledges) => null;
+  Future? addKnowledge(dynamic value, {String? webFileName}) => null;
+
   Future<Map<String, dynamic>?> retrievalContext({
     required String prompt,
     required int seed,
     required Map<String, dynamic> parameters,
-  });
+  }) {
+    throw UnimplementedError();
+  }
 }

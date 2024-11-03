@@ -137,7 +137,7 @@ class _ChatViewState extends State<ChatView> {
     }
     ChatData currentData = chatDataList.currentData;
     List<Message> currentMessageList = messageList;
-    await widget.llmModel.onChatSettingsChanged();
+    await widget.llmModel.chatSettingsChanged();
     generateText(
         // ignore: use_build_context_synchronously
         context,
@@ -342,7 +342,7 @@ class _ChatViewState extends State<ChatView> {
                             chatDataList.currentData,
                             removeIdx: index,
                           );
-                          widget.llmModel.onChatSettingsChanged();
+                          widget.llmModel.chatSettingsChanged();
                         }
                       },
                       userEditFunc: index >= messageList.length - 2
@@ -376,7 +376,7 @@ class _ChatViewState extends State<ChatView> {
                               if (result) {
                                 messageList[index].message =
                                     textEditingController.text;
-                                widget.llmModel.onChatSettingsChanged();
+                                widget.llmModel.chatSettingsChanged();
                                 if (messageList.length - 1 <= index ||
                                     (messageList.length - 2 <= index &&
                                         messageList[index].role ==

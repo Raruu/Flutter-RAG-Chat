@@ -67,18 +67,6 @@ class DartOpenai extends BaseModel {
   //     );
 
   @override
-  Future? addKnowledge(value, {String? webFileName}) {
-    // TODO: implement addKnowledge
-    throw UnimplementedError();
-  }
-
-  @override
-  Future? deleteKnowledge(String filename) {
-    // TODO: implement deleteKnowledge
-    throw UnimplementedError();
-  }
-
-  @override
   Future<Map<String, dynamic>?> generateText({
     required String prompt,
     required int seed,
@@ -150,32 +138,5 @@ class DartOpenai extends BaseModel {
       'seed': seed.toString(),
       'generated_text': chatCompletion.choices.first.message,
     };
-  }
-
-  @override
-  Future? onChatSettingsChanged() {
-    // TODO: implement onChatSettingsChanged
-    throw UnimplementedError();
-  }
-
-  @override
-  Future? resetKnowledge() {
-    // TODO: implement resetKnowledge
-    throw UnimplementedError();
-  }
-
-  @override
-  Future? setKnowledge(List<Map<String, dynamic>> knowledges) {
-    // TODO: implement setKnowledge
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<Map<String, dynamic>?> retrievalContext(
-      {required String prompt,
-      required int seed,
-      required Map<String, dynamic> parameters}) {
-    // TODO: implement retrievalContext
-    throw UnimplementedError();
   }
 }

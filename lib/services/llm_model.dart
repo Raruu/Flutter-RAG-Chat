@@ -13,13 +13,13 @@ import 'default_preprompt.dart' as df_preprompt;
 import 'gemini/google_gemini.dart';
 
 class LLMModel extends ChangeNotifier {
-  final ChatDataList chatDataList;
+  final ChatDataList _chatDataList;
   BuildContext? context;
   late final SharedPreferences prefs;
   BaseModel? _llmModel;
 
-  Future? onChatSettingsChanged() {
-    chatDataList.updateConfigToDatabase();
+  Future? chatSettingsChanged() {
+    _chatDataList.updateConfigToDatabase();
     return _llmModel?.onChatSettingsChanged()?.catchError(
         (e) => printcatchError(e: e, from: 'onChatSettingsChanged'));
   }
@@ -74,15 +74,15 @@ class LLMModel extends ChangeNotifier {
         _llmModel = ModelAtHome(
           notifyListeners,
           prefs,
-          chatDataList,
+          _chatDataList,
           context: context,
         );
         break;
       case 'openai':
-        _llmModel = DartOpenai(notifyListeners, prefs, chatDataList);
+        _llmModel = DartOpenai(notifyListeners, prefs, _chatDataList);
         break;
       case 'gemini':
-        _llmModel = GoogleGemini(notifyListeners, prefs, chatDataList);
+        _llmModel = GoogleGemini(notifyListeners, prefs, _chatDataList);
         break;
       default:
         _llmModel = null;
@@ -104,7 +104,7 @@ class LLMModel extends ChangeNotifier {
         _embeddingModel = ModelAtHome(
           notifyListeners,
           prefs,
-          chatDataList,
+          _chatDataList,
           context: context,
         );
         prefs.setString('embedding_provider', value!);
@@ -115,7 +115,7 @@ class LLMModel extends ChangeNotifier {
     _embeddingProvider = value;
   }
 
-  LLMModel(this.chatDataList, {this.context, required this.prefs});
+  LLMModel(this._chatDataList, {this.context, required this.prefs});
 
   void loadSavedData() {
     llmProvider = prefs.getString('llm_provider') ?? 'Model at home';
@@ -172,7 +172,7 @@ class LLMModel extends ChangeNotifier {
       {required String prompt, required int seed}) async {
     Map<String, dynamic>? retrieval;
     if (_llmModel != _embeddingModel &&
-        chatDataList.currentData.knowledges.isNotEmpty) {
+        _chatDataList.currentData.knowledges.isNotEmpty) {
       retrieval = await retrievalContext(prompt: prompt, seed: seed);
     }
     return _llmModel!.generateText(

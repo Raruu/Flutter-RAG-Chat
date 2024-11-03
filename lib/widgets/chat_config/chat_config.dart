@@ -230,7 +230,7 @@ class _ChatConfigState extends State<ChatConfig> {
   }
 
   void onChatSettingsChanged(String from) async {
-    bool rsSettings = await widget.llmModel.onChatSettingsChanged() ?? true;
+    bool rsSettings = await widget.llmModel.chatSettingsChanged() ?? true;
     String msgTitle = "[$from]: ${rsSettings ? 'Success' : 'Failed!!!'}";
     String msgSubtitle = rsSettings ? 'Task Complete Onii-chan~' : ':I';
     if (mounted) {
