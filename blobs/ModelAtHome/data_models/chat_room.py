@@ -1,11 +1,14 @@
-import gc
+import gc, pytesseract, io, os, torch, fitz
 from spacy.lang.en import English
 from helper import *
 from fastapi import UploadFile
-import torch, fitz
 from sentence_transformers import SentenceTransformer, util
+from PIL import Image
 
 from data_models.generate_text_model import ReturnGeneratedText
+
+if(os.name == "nt"):
+    pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
 
 class ChatRoom:
@@ -51,6 +54,16 @@ class ChatRoom:
         pages_and_texts = []
         for page_number, page in enumerate(doc):
             text = page.get_text().replace("\n", " ").strip()
+            
+            for img_index, img in enumerate(page.get_images(full=True)):
+                xref = img[0]
+                base_image = doc.extract_image(xref)
+                image_bytes = base_image["image"]
+
+                image = Image.open(io.BytesIO(image_bytes))
+                image_text = pytesseract.image_to_string(image)
+                text += " " + image_text.strip()
+            
             sentences = [str(sentence) for sentence in list(self.nlp(text).sents)]
             sentences_chunks = split_list(sentences, 10)
             for sentences_chunk in sentences_chunks:

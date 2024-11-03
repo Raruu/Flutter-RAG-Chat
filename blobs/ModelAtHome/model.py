@@ -154,7 +154,7 @@ class Model:
         query = data.query
         return_generated_text = ReturnGeneratedText()
         return_generated_text.query = query
-        value = self.chat_room.build_context(query, return_generated_text)
+        self.chat_room.build_context(query, return_generated_text)
         print(f"Builded context: {return_generated_text}")
         return return_generated_text
 

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-import model, os
+import model
 
 from data_models.generate_text_model import PostGenerateText, ReturnGeneratedText
 from data_models.information_model import InfomationData

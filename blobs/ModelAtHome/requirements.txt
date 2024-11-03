@@ -1,3 +1,5 @@
+# pip install if something not found
+
 fastapi
 pydantic
 torch
@@ -11,3 +13,6 @@ PyMuPDF
 psutil
 GPUtil
 python-multipart
+
+tesseract
+pytesseract
