@@ -1,4 +1,4 @@
-package com.example.flutter_rag_chat
+package com.raruukawaii.ragchat
 
 import io.flutter.embedding.android.FlutterActivity
 

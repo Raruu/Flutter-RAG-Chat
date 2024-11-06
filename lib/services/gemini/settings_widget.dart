@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/widgets/nice_drop_down_button.dart';
 
+import '../../widgets/nice_drop_down_button.dart';
 import '../../widgets/pink_textfield.dart';
 import '../../utils/my_colors.dart';
 import '../../utils/svg_icons.dart';

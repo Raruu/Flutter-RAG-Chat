@@ -1,7 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter_rag_chat/models/chat_database.dart';
-
+import 'chat_database.dart';
 import 'message.dart';
 
 class ChatData {

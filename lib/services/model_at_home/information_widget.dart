@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/services/llm_model.dart';
-import 'package:flutter_rag_chat/utils/svg_icons.dart';
-import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
 
 import '../../utils/my_colors.dart';
+import '../../utils/svg_icons.dart';
+import '../../utils/util.dart';
+import '../llm_model.dart';
 import 'data.dart';
 import '../../widgets/chat_config/chat_config_card.dart';
 

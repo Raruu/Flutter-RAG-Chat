@@ -3,10 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/models/chat_data_list.dart';
-import 'package:flutter_rag_chat/services/llm_model.dart';
-import 'package:flutter_rag_chat/utils/svg_icons.dart';
-import 'package:flutter_rag_chat/widgets/pink_textfield.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
@@ -15,9 +11,13 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:path/path.dart' as path_dart;
 
+import '../models/chat_data_list.dart';
+import '../services/llm_model.dart';
+import '../widgets/pink_textfield.dart';
 import 'kafuu_chino.dart';
 import 'my_colors.dart';
 import '../widgets/knowledge_widget.dart';
+import 'svg_icons.dart';
 
 class Utils<T> {
   static Map<String, dynamic> loadParametersWithDefaultParameters(

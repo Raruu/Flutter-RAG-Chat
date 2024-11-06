@@ -3,9 +3,9 @@ import 'package:http_parser/http_parser.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-import 'package:flutter_rag_chat/models/message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../models/message.dart';
 import '../base_model.dart';
 import 'settings_widget.dart';
 import 'data.dart';

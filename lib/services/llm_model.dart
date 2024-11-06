@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/services/dart_openai/dart_openai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:flutter_rag_chat/models/chat_data.dart';
-import 'package:flutter_rag_chat/models/chat_data_list.dart';
-import 'package:flutter_rag_chat/models/message.dart';
+import '../models/chat_data.dart';
+import '../models/chat_data_list.dart';
+import '../models/message.dart';
+import 'dart_openai/dart_openai.dart';
 import 'model_at_home/model_at_home.dart';
 import 'base_model.dart';
 import '../utils/util.dart';

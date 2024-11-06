@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/services/llm_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:universal_html/html.dart' as http;
 
@@ -12,6 +11,7 @@ import 'message.dart';
 import 'chat_data.dart';
 import '../utils/util.dart';
 import './chat_database.dart';
+import '../services/llm_model.dart';
 
 class ChatDataList extends ChangeNotifier {
   late final Database db;

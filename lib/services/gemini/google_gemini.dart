@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/models/chat_data_list.dart';
-import 'package:flutter_rag_chat/models/message.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../base_model.dart';
-import 'data.dart';
-import 'settings_widget.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
+
+import 'settings_widget.dart';
+import 'data.dart';
+import '../../models/chat_data_list.dart';
+import '../../models/message.dart';
+import '../base_model.dart';
 
 class GoogleGemini extends BaseModel {
   @override

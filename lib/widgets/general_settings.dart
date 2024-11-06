@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/services/llm_model.dart';
-import 'package:flutter_rag_chat/widgets/chat_config/parameter_bool.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
+import '../services/llm_model.dart';
 import '../utils/svg_icons.dart';
 import '../utils/util.dart';
+import 'chat_config/parameter_bool.dart';
 import 'nice_drop_down_button.dart';
 
 class GeneralSettings extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/utils/my_colors.dart';
-import 'package:flutter_rag_chat/utils/util.dart';
 
+import '../../utils/my_colors.dart';
+import '../../utils/util.dart';
 import 'chat_config_card.dart';
 import '../../services/llm_model.dart';
 import '../../utils/svg_icons.dart';

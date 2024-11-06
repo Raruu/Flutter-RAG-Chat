@@ -1,15 +1,15 @@
 import "package:flutter/material.dart";
-import 'package:flutter_rag_chat/utils/util.dart';
-import 'package:flutter_rag_chat/widgets/general_settings.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/my_colors.dart';
 import '../utils/svg_icons.dart';
+import '../utils/util.dart';
 import '../widgets/chat_list/chat_list.dart';
 import '../services/llm_model.dart';
 import '../models/chat_data_list.dart';
+import '../widgets/general_settings.dart';
 
 class HomePageMobile extends StatefulWidget {
   final ChatDataList chatDataList;

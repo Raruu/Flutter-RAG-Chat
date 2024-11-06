@@ -1,9 +1,9 @@
 import "package:flutter/material.dart";
-import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../models/chat_data.dart';
 import '../../services/llm_model.dart';
+import '../../utils/util.dart';
 import 'chat_list_card_widget.dart';
 import '../nice_button.dart';
 import '../pink_textfield.dart';

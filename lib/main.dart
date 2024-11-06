@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rag_chat/widgets/chat_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +15,7 @@ import 'services/llm_model.dart';
 import './models/chat_data_list.dart';
 import 'widgets/chat_config/chat_config.dart';
 import './utils/my_colors.dart';
+import './widgets/chat_view.dart';
 
 void main() async {
   if (kIsWeb) {

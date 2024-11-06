@@ -2,11 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import "package:flutter/material.dart";
-import 'package:flutter_rag_chat/utils/util.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../utils/svg_icons.dart';
+import '../utils/util.dart';
 import '../widgets/pink_textfield.dart';
 import 'chat_list/chat_list_card_widget.dart';
 import '../models/message.dart';
