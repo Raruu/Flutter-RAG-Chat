@@ -66,10 +66,6 @@ async def set_chatroom(data: PostSetChatRoomModel):
         f"[set_chatroom] Data: {data}",
     )
     chat_room.id = data.id
-    chat_room.use_preprompt = data.use_preprompt
-    chat_room.preprompt = data.preprompt
-    chat_room.use_chat_history = data.use_chat_history
-    chat_room.chat_history = data.chat_history
 
 
 @app.delete("/delete_chatroom_knowledge")
@@ -110,7 +106,10 @@ async def generate_text(data: PostGenerateText):
 
 @app.post("/retrieval_context", response_model=ReturnGeneratedText)
 async def retrieval_context(data: PostGenerateText):
-    return llm_model.build_context(data)
+    print(f"[retrieval_context] Data: {data}")
+    output = llm_model.build_context(data)
+    print(f"[retrieval_context] Output: {output}")
+    return output
 
 
 if __name__ == "__main__":

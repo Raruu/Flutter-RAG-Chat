@@ -47,7 +47,7 @@ class GoogleGemini extends BaseModel {
 
   @override
   Future<Map<String, dynamic>?> generateText({
-    required String prompt,
+    required String query,
     required int seed,
     required Map<String, dynamic> parameters,
     Map<String, dynamic>? retrievalContext,
@@ -55,18 +55,13 @@ class GoogleGemini extends BaseModel {
     final gemini = Gemini.instance;
     final currentData = chatDataList.currentData;
 
-    List<String>? knowledgeContext;
-    List<dynamic>? takeKnowledge;
+    List<dynamic>? context1;
+    List<String>? knowledges;
     if (retrievalContext != null && retrievalContext['context1'] != "") {
-      takeKnowledge = retrievalContext['context1']
-          .take(currentData.maxKnowledgeCount[0])
-          .toList();
-
-      for (var knowledgeData in takeKnowledge!) {
-        if (knowledgeData['score'] >= currentData.minKnowledgeScore[0]) {
-          knowledgeContext ??= List.empty(growable: true);
-          knowledgeContext.add(knowledgeData['context']);
-        }
+      context1 = retrievalContext['context1'];
+      for (var knowledgeData in context1!) {
+        knowledges ??= List.empty(growable: true);
+        knowledges.add(knowledgeData['context']);
       }
     }
 
@@ -82,12 +77,12 @@ class GoogleGemini extends BaseModel {
                   ? 'model'
                   : 'user'),
         ),
-      if (knowledgeContext != null)
+      if (knowledges != null)
         Content(parts: [
-          Parts(text: "context:\n${knowledgeContext.join(" ")}\n\n $prompt")
+          Parts(text: "context:\n${knowledges.join(" ")}\n\n $query")
         ], role: 'user')
       else
-        Content(parts: [Parts(text: prompt)], role: 'user'),
+        Content(parts: [Parts(text: query)], role: 'user'),
     ],
         generationConfig: GenerationConfig(
           temperature: parameters['temperature'],
@@ -97,9 +92,9 @@ class GoogleGemini extends BaseModel {
         ));
 
     return {
-      'context1': takeKnowledge,
+      'context1': context1,
       'context2': null,
-      'query': prompt,
+      'query': query,
       'seed': seed.toString(),
       'generated_text': geminiCandidate?.output ?? "NULL",
     };

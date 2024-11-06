@@ -106,12 +106,12 @@ class _ChatViewState extends State<ChatView> {
     chatDataList.notifyChatDataListner();
   }
 
-  void generateText(BuildContext context, String prompt, ChatData currentData,
+  void generateText(BuildContext context, String query, ChatData currentData,
       List<Message> currentMessageList,
       {bool randomSeed = false}) {
     widget.llmModel
         .generateText(
-            prompt: prompt,
+            query: query,
             seed: randomSeed
                 ? getRandomInt()
                 : int.tryParse(_seedEditingController.text) ?? getRandomInt())

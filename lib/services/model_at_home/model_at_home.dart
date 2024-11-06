@@ -210,31 +210,11 @@ class ModelAtHome extends BaseModel {
   Future<bool>? onChatSettingsChanged({dynamic throwOnError}) async {
     try {
       Uri uri = Uri.parse('${_data.baseURL}/set_chatroom');
-      var currentData = chatDataList.currentData;
-      List<String> chatHistory = [];
-      for (var i = 0; i < currentData.messageList.length - 2; i++) {
-        var message = currentData.messageList[i];
-        switch (message.role) {
-          case MessageRole.user:
-            chatHistory.add('User: ${message.message}\n');
-            break;
-          case MessageRole.model:
-            chatHistory.add('Model: ${message.message}\n');
-            break;
-          default:
-        }
-      }
+
       http.Response response = await http.post(
         uri,
         headers: justHeader,
-        body: jsonEncode({
-          'id': chatDataList.currentData.id,
-          'use_preprompt': currentData.usePreprompt[0],
-          'preprompt': currentData.usePreprompt[0] ? currentData.prePrompt : '',
-          'use_chat_history': currentData.useChatConversationContext[0],
-          'chat_history':
-              currentData.useChatConversationContext[0] ? chatHistory : []
-        }),
+        body: jsonEncode({'id': chatDataList.currentData.id}),
       );
       return response.statusCode == 200;
     } catch (e) {
@@ -260,10 +240,10 @@ class ModelAtHome extends BaseModel {
 
   @override
   Future<Map<String, dynamic>?> generateText({
-    required String prompt,
+    required String query,
     required int seed,
     required Map<String, dynamic> parameters,
-    dynamic retrievalContext,
+    Map<String, dynamic>? retrievalContext,
   }) async {
     try {
       if (await checkServerChatRoomIsNotRoom()) {
@@ -272,15 +252,25 @@ class ModelAtHome extends BaseModel {
       String url = '${_data.baseURL}/generate_text';
       Uri uri = Uri.parse(url);
 
-      if (kDebugMode) {
-        print('JsonEncode: ${jsonEncode({"query": prompt, ...parameters})}');
-      }
+      List<dynamic> context1 =
+          retrievalContext?['context1'] ?? List<String>.empty();
+      List<String> context2 =
+          chatDataList.currentData.useChatConversationContext[0]
+              ? (retrievalContext?['context2'] ?? List<String>.empty())
+                  .cast<String>()
+              : List<String>.empty();
 
+      String preprompt = chatDataList.currentData.usePreprompt[0]
+          ? (chatDataList.currentData.prePrompt ?? "")
+          : "";
       http.Response response = await http.post(
         uri,
         headers: justHeader,
         body: jsonEncode({
-          "query": prompt,
+          "query": query,
+          "preprompt": preprompt,
+          "context1": context1,
+          "context2": context2,
           "seed": seed,
           ...parameters,
         }),
@@ -305,7 +295,7 @@ class ModelAtHome extends BaseModel {
 
   @override
   Future<Map<String, dynamic>?> retrievalContext({
-    required String prompt,
+    required String query,
     required int seed,
     required Map<String, dynamic> parameters,
   }) async {
@@ -317,15 +307,25 @@ class ModelAtHome extends BaseModel {
       Uri uri = Uri.parse(url);
 
       if (kDebugMode) {
-        print('JsonEncode: ${jsonEncode({"query": prompt, ...parameters})}');
+        print('JsonEncode: ${jsonEncode({"query": query, ...parameters})}');
+      }
+
+      List<String> chatHistory = List.empty(growable: true);
+      for (var i = 0;
+          i < chatDataList.currentData.messageList.length - 2;
+          i++) {
+        Message message = chatDataList.currentData.messageList[i];
+        chatHistory.add(
+            "${message.role == MessageRole.user ? "User" : "Model"}: ${message.message}");
       }
 
       http.Response response = await http.post(
         uri,
         headers: justHeader,
         body: jsonEncode({
-          "query": prompt,
+          "query": query,
           "seed": seed,
+          "context2": chatHistory,
           ...parameters,
         }),
       );

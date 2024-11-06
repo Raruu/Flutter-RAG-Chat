@@ -5,7 +5,7 @@ from fastapi import UploadFile
 from sentence_transformers import SentenceTransformer, util
 from PIL import Image
 
-from data_models.generate_text_model import ReturnGeneratedText
+from data_models.generate_text_model import PostGenerateText, ReturnGeneratedText
 
 if os.name == "nt":
     pytesseract.pytesseract.tesseract_cmd = (
@@ -20,10 +20,6 @@ class ChatRoom:
         self.device = device
         self.embedding_model: SentenceTransformer = None
         self.id = ""
-        self.use_chat_history = False
-        self.chat_history = []
-        self.preprompt = ""
-        self.use_preprompt = False
         self.chat_context_embedding = None
         self.context_knowledges = []
 
@@ -67,7 +63,9 @@ class ChatRoom:
                     image_text = pytesseract.image_to_string(image)
                     text += " " + image_text.strip()
 
-                self.add_context_knowledge_process_text(pages_and_texts, text, page_number)
+                self.add_context_knowledge_process_text(
+                    pages_and_texts, text, page_number
+                )
 
         elif data.filename.endswith((".png", ".jpg", ".jpeg", ".webp")):
             image = Image.open(io.BytesIO(await data.read()))
@@ -77,9 +75,14 @@ class ChatRoom:
         new_dict["pages_and_texts"] = pages_and_texts
         self.context_knowledges.append(new_dict)
 
-    def add_context_knowledge_process_text(self, pages_and_texts: dict, text: str, page_number: int):
+    def add_context_knowledge_process_text(
+        self, pages_and_texts: dict, text: str, page_number: int
+    ):
+        if not text:
+            return
         sentences = [str(sentence) for sentence in list(self.nlp(text).sents)]
         sentences_chunks = split_list(sentences, 10)
+       
         for sentences_chunk in sentences_chunks:
             joined_sentence_chunk = join_sentences_chunk_to_paragraph(sentences_chunk)
         embeddings = self.embedding_model.encode(
@@ -127,25 +130,19 @@ class ChatRoom:
                     }
                 )
 
-        return possible_contexts
+        return sorted(possible_contexts, key=lambda x: x["score"], reverse=True)
 
-    def preprocess_context_knowledge(self, contexts: list[dict]) -> str:
+    def join_context_knowledge(self, contexts: list[dict]) -> str:
         knowledge_list = []
         for item in contexts:
             knowledge_list.append(item["context"])
-        str_of_knowledges = "\n".join(knowledge_list)
-        print(
-            f"[chat_room/build_prompt] preprocess_context_knowledge : {str_of_knowledges}"
-        )
-        return str_of_knowledges
+        return "\n".join(knowledge_list)
 
-    def update_chat_history(self, user_input, response):
-        self.chat_history.append(f"User: {user_input}")
-        self.chat_history.append(f"Model: {response}")
-
-    def update_chat_context(self):
+    def get_context_chat_history(self, chat_history: list[str]):
+        if not chat_history:
+            return
         self.joined_sentence_chunks = []
-        for text_chat in self.chat_history:
+        for text_chat in chat_history:
             sentences = [str(sentence) for sentence in list(self.nlp(text_chat).sents)]
             sentences_chunks = split_list(sentences, 7)
             for sentences_chunk in sentences_chunks:
@@ -157,17 +154,16 @@ class ChatRoom:
             self.joined_sentence_chunks, convert_to_tensor=True
         ).to(self.device)
 
-    def get_context_chat_history(self):
         dot_scores = util.dot_score(
             a=self.query_embedding, b=self.chat_context_embedding
         )[0]
-        k = clamp(len(dot_scores), 0, 3)
+        k = clamp(len(dot_scores), 0, 5)
         top_products = torch.topk(dot_scores, k=k)
-        print(f"[chat_room/get_context_chat_history] top_products: {top_products}")
+        # print(f"[chat_room/get_context_chat_history] top_products: {top_products}")
 
         return [self.joined_sentence_chunks[top_products[1][i]] for i in range(k)]
 
-    def preprocess_chat_history(self, chat_history: list[str]):
+    def join_chat_history(self, chat_history: list[str]):
         return "\n".join(chat_history)
 
     def embedd_query(self, query: str):
@@ -181,56 +177,41 @@ class ChatRoom:
             query, convert_to_tensor=True
         ).to(self.device)
 
-    def build_context(self, query: str, return_generate_text: ReturnGeneratedText):
-        self.embedd_query(query)
+    def build_context(
+        self, data: PostGenerateText, return_generate_text: ReturnGeneratedText
+    ):
+        self.embedd_query(data.query)
         return_generate_text.context1 = self.get_context_knowledge()
-        # return_generate_text.context2 = self.preprocess_chat_history(
-        #     self.get_context_chat_history()
-        # )
+        return_generate_text.context2 = self.get_context_chat_history(data.context2)
         return return_generate_text.context1
 
-    def build_prompt(self, query: str, return_generate_text: ReturnGeneratedText):
+    def build_prompt(
+        self, data: PostGenerateText, return_generate_text: ReturnGeneratedText
+    ):
+        query = data.query
         if self.embedding_model is not None:
             self.embedd_query(query)
-        generated_text = self.preprompt if self.use_preprompt else ""
+        prompt = data.preprompt if data.preprompt is not None else ""
 
-        if len(self.context_knowledges) > 0 and self.embedding_model is not None:
-            get_knowledge_context = self.get_context_knowledge()
-            print(
-                f"[chat_room/build_prompt] get_context_knowledge : {get_knowledge_context}"
-            )
-            return_generate_text.context1 = get_knowledge_context
-            get_knowledge_context = self.preprocess_context_knowledge(
-                get_knowledge_context
-            )
-
-            if "{context_knowledge}" in generated_text:
-                generated_text = generated_text.replace(
-                    "{context_knowledge}", get_knowledge_context
-                )
+        if data.context1:
+            return_generate_text.context1 = data.context1
+            get_knowledge_context = self.join_context_knowledge(data.context1)
+            if "{context_knowledge}" in prompt:
+                prompt = prompt.replace("{context_knowledge}", get_knowledge_context)
             else:
-                generated_text = generated_text + f"Context1:\n {get_knowledge_context}"
+                prompt = prompt + f"Context1:\n {get_knowledge_context}"
 
-        if (
-            self.use_chat_history
-            and len(self.chat_history) > 0
-            and self.embedding_model is not None
-        ):
-            self.update_chat_context()
-            get_chat_context = self.preprocess_chat_history(
-                self.get_context_chat_history()
-            )
+        if data.context2:
+            get_chat_context = self.join_chat_history(data.context2)
             return_generate_text.context2 = get_chat_context
             print(f"[chat_room/build_prompt] chat_history_context : {get_chat_context}")
-            if "{chat_history}" in generated_text:
-                generated_text = generated_text.replace(
-                    "{chat_history}", get_chat_context
-                )
+            if "{chat_history}" in prompt:
+                prompt = prompt.replace("{chat_history}", get_chat_context)
             else:
-                generated_text = generated_text + f"Context2:\n {get_chat_context}"
+                prompt = prompt + f"Context2:\n {get_chat_context}"
 
-        if "{query}" in generated_text:
-            generated_text = generated_text.replace("{query}", query)
+        if "{query}" in prompt:
+            prompt = prompt.replace("{query}", query)
         else:
-            generated_text = generated_text + f"\nUser Query: {query}"
-        return generated_text
+            prompt = prompt + f"\nUser Query: {query}"
+        return prompt

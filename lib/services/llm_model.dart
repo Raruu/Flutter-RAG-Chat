@@ -161,7 +161,7 @@ class LLMModel extends ChangeNotifier {
       {required String prompt, required int seed}) {
     if (_llmModel != _embeddingModel) {}
     return _embeddingModel!
-        .retrievalContext(prompt: prompt, seed: seed, parameters: parameters!)
+        .retrievalContext(query: prompt, seed: seed, parameters: parameters!)
         .catchError((e) {
       printcatchError(e: e, from: 'retrievalContext');
       return null;
@@ -169,22 +169,34 @@ class LLMModel extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>?> generateText(
-      {required String prompt, required int seed}) async {
-    Map<String, dynamic>? retrieval;
-    if (_llmModel != _embeddingModel &&
-        _chatDataList.currentData.knowledges.isNotEmpty) {
-      retrieval = await retrievalContext(prompt: prompt, seed: seed);
+      {required String query, required int seed}) async {
+    Map<String, dynamic>? retrieval =
+        await retrievalContext(prompt: query, seed: seed);
+    if (retrieval != null && retrieval['context1'] != "") {
+      List<dynamic>? context1 = retrieval['context1']
+          .take(_chatDataList.currentData.maxKnowledgeCount[0])
+          .toList();
+      retrieval['context1'] = List.empty(growable: true);
+
+      for (var context1Data in context1!) {
+        if (context1Data['score'] >=
+            _chatDataList.currentData.minKnowledgeScore[0]) {
+          retrieval['context1'].add(context1Data);
+        }
+      }
     }
-    return _llmModel!.generateText(
-            prompt: prompt,
+
+    return _llmModel!
+        .generateText(
+            query: query,
             seed: seed,
             parameters: parameters!,
             retrievalContext: retrieval)
-        //     .catchError((e) {
-        //   printcatchError(e: e, from: 'GenerateText');
-        //   return null;
-        // });
-        ;
+        .catchError((e) {
+      printcatchError(e: e, from: 'GenerateText');
+      return null;
+    });
+    // ;
   }
 
   dynamic printcatchError({required dynamic e, required String from}) {

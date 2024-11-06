@@ -102,11 +102,7 @@ class Model:
         return_generated_text: ReturnGeneratedText,
     ):
         return_generated_text.query = data.query
-        prompt = (
-            data.prompt
-            if data.prompt
-            else self.chat_room.build_prompt(data.query, return_generated_text)
-        )
+        prompt = self.chat_room.build_prompt(data, return_generated_text)
         print(f"Builded prompt: {prompt}")
         input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids.to(
             self.device
@@ -135,7 +131,6 @@ class Model:
             .replace(prompt, "")
             .strip()
         )
-        self.chat_room.update_chat_history(data.query, response)
         return_generated_text.generated_text = response
 
     async def generate_text(self, data: PostGenerateText) -> ReturnGeneratedText:
@@ -151,10 +146,9 @@ class Model:
         return return_generated_text
 
     def build_context(self, data: PostGenerateText):
-        query = data.query
         return_generated_text = ReturnGeneratedText()
-        return_generated_text.query = query
-        self.chat_room.build_context(query, return_generated_text)
+        return_generated_text.query = data.query
+        self.chat_room.build_context(data, return_generated_text)
         print(f"Builded context: {return_generated_text}")
         return return_generated_text
 

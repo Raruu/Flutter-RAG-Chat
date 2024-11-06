@@ -17,7 +17,7 @@ abstract class BaseModel {
   BaseModel(this.notifyListenerLLM, this.prefs, this.chatDataList);
 
   Future<Map<String, dynamic>?> generateText({
-    required String prompt,
+    required String query,
     required int seed,
     required Map<String, dynamic> parameters,
     Map<String, dynamic>? retrievalContext,
@@ -29,7 +29,7 @@ abstract class BaseModel {
   Future? addKnowledge(dynamic value, {String? webFileName}) => null;
 
   Future<Map<String, dynamic>?> retrievalContext({
-    required String prompt,
+    required String query,
     required int seed,
     required Map<String, dynamic> parameters,
   }) {

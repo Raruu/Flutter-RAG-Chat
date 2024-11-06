@@ -233,7 +233,7 @@ class _ChatConfigState extends State<ChatConfig> {
     bool rsSettings = await widget.llmModel.chatSettingsChanged() ?? true;
     String msgTitle = "[$from]: ${rsSettings ? 'Success' : 'Failed!!!'}";
     String msgSubtitle = rsSettings ? 'Task Complete Onii-chan~' : ':I';
-    if (mounted) {
+    if (mounted && !rsSettings) {
       Utils.showSnackBar(
         context,
         title: msgTitle,

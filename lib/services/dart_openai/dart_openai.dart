@@ -68,7 +68,7 @@ class DartOpenai extends BaseModel {
 
   @override
   Future<Map<String, dynamic>?> generateText({
-    required String prompt,
+    required String query,
     required int seed,
     required Map<String, dynamic> parameters,
     dynamic retrievalContext,
@@ -104,8 +104,8 @@ class DartOpenai extends BaseModel {
           OpenAIChatCompletionChoiceMessageContentItemModel.text(
               currentData.knowledges.isNotEmpty
                   // TODO Knowledge
-                  ? 'Context1:\n\nUser Query: $prompt'
-                  : 'User Query: $prompt'),
+                  ? 'Context1:\n\nUser Query: $query'
+                  : 'User Query: $query'),
         ],
         role: OpenAIChatMessageRole.user,
       ),
@@ -134,7 +134,7 @@ class DartOpenai extends BaseModel {
     return {
       'context1': null,
       'context2': null,
-      'query': prompt,
+      'query': query,
       'seed': seed.toString(),
       'generated_text': chatCompletion.choices.first.message,
     };

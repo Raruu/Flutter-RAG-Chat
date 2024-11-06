@@ -3,7 +3,9 @@ from pydantic import BaseModel
 
 class PostGenerateText(BaseModel):
     query: str = "Nyanpasu!"
-    prompt: str = None
+    preprompt: str = None
+    context1: list = None
+    context2: list[str] = None
     seed: int = 0
     max_new_tokens: int = 256
     temperature: float = 1.0
