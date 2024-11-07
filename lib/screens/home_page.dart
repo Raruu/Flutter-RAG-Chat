@@ -1,7 +1,7 @@
 import "package:flutter/material.dart";
 
 import '../services/llm_model.dart';
-import '../models/chat_data_list.dart';
+import '../controllers/chat_data_list.dart';
 import './home_page_desktop.dart';
 import './home_page_mobile.dart';
 import '../utils/util.dart';

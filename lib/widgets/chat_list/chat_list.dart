@@ -9,7 +9,7 @@ import '../nice_button.dart';
 import '../pink_textfield.dart';
 import '../../utils/svg_icons.dart';
 import '../../utils/my_colors.dart';
-import '../../models/chat_data_list.dart';
+import '../../controllers/chat_data_list.dart';
 
 class ChatList extends StatefulWidget {
   final TextEditingController searchEditingController;

@@ -13,7 +13,7 @@ import '../models/message.dart';
 import '../services/llm_model.dart';
 import './chat_bubble.dart';
 import '../utils/my_colors.dart';
-import '../models/chat_data_list.dart';
+import '../controllers/chat_data_list.dart';
 import 'chat_bubble_typing.dart';
 import '../models/chat_data.dart';
 import './chat_config/chat_config_card.dart';

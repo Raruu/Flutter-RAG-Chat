@@ -8,7 +8,7 @@ import '../utils/svg_icons.dart';
 import '../utils/util.dart';
 import '../widgets/chat_list/chat_list.dart';
 import '../services/llm_model.dart';
-import '../models/chat_data_list.dart';
+import '../controllers/chat_data_list.dart';
 import '../widgets/general_settings.dart';
 
 class HomePageMobile extends StatefulWidget {

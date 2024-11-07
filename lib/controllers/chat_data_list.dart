@@ -7,10 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:universal_html/html.dart' as http;
 
-import 'message.dart';
-import 'chat_data.dart';
+import '../models/message.dart';
+import '../models/chat_data.dart';
 import '../utils/util.dart';
-import './chat_database.dart';
+import 'chat_database.dart';
 import '../services/llm_model.dart';
 
 class ChatDataList extends ChangeNotifier {

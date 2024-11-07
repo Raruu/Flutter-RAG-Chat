@@ -11,7 +11,7 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:path/path.dart' as path_dart;
 
-import '../models/chat_data_list.dart';
+import '../controllers/chat_data_list.dart';
 import '../services/llm_model.dart';
 import '../widgets/pink_textfield.dart';
 import 'kafuu_chino.dart';

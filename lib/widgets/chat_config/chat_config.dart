@@ -7,7 +7,7 @@ import '../../services/llm_model.dart';
 import '../../utils/svg_icons.dart';
 import 'parameter_slider.dart';
 import 'parameter_bool.dart';
-import '../../models/chat_data_list.dart';
+import '../../controllers/chat_data_list.dart';
 import '../nice_button.dart';
 import '../pink_textfield.dart';
 import '../knowledge_widget.dart';

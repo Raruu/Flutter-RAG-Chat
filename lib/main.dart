@@ -12,7 +12,7 @@ import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
 import 'screens/home_page.dart';
 import 'services/llm_model.dart';
-import './models/chat_data_list.dart';
+import 'controllers/chat_data_list.dart';
 import 'widgets/chat_config/chat_config.dart';
 import './utils/my_colors.dart';
 import './widgets/chat_view.dart';

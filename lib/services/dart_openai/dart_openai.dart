@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../models/chat_data_list.dart';
+import '../../controllers/chat_data_list.dart';
 import '../../models/message.dart';
 import '../base_model.dart';
 import 'data.dart';

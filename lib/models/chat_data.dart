@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'chat_database.dart';
+import '../controllers/chat_database.dart';
 import 'message.dart';
 
 class ChatData {

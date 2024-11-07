@@ -4,7 +4,7 @@ import 'package:flutter_gemini/flutter_gemini.dart';
 
 import 'settings_widget.dart';
 import 'data.dart';
-import '../../models/chat_data_list.dart';
+import '../../controllers/chat_data_list.dart';
 import '../../models/message.dart';
 import '../base_model.dart';
 

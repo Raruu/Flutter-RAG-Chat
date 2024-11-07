@@ -8,7 +8,7 @@ import '../widgets/desktop_menu_button.dart';
 import '../widgets/chat_list/chat_list.dart';
 import '../widgets/chat_view.dart';
 import '../services/llm_model.dart';
-import '../models/chat_data_list.dart';
+import '../controllers/chat_data_list.dart';
 import '../widgets/chat_config/chat_config.dart';
 import '../widgets/general_settings.dart';
 
