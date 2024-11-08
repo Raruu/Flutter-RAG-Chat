@@ -57,8 +57,15 @@ class LLMModel extends ChangeNotifier {
           ],
         );
 
-  Map<String, dynamic>? _parameters;
-  Map<String, dynamic>? get parameters => _parameters;
+  Map<String, dynamic>? get parameters => _chatDataList.currentData.parameters;
+
+  void setParameters(String key, dynamic value) {
+    if (key.isEmpty) {
+      _chatDataList.currentData.parameters = value;
+    } else {
+      _chatDataList.currentData.parameters![key] = value;
+    }
+  }
 
   final List<String> llmProvidersList = const [
     'OpenAI',
@@ -87,7 +94,6 @@ class LLMModel extends ChangeNotifier {
       default:
         _llmModel = null;
     }
-    _parameters = Utils.loadParametersWithDefaultParameters(defaultParameters);
     prefs.setString('llm_provider', value!);
     _llmProvider = value;
   }
@@ -152,13 +158,20 @@ class LLMModel extends ChangeNotifier {
           .take(_chatDataList.currentData.maxKnowledgeCount[0])
           .toList();
       retrieval['context1'] = List.empty(growable: true);
-
       for (var context1Data in context1!) {
         if (context1Data['score'] >=
             _chatDataList.currentData.minKnowledgeScore[0]) {
           retrieval['context1'].add(context1Data);
         }
       }
+    }
+
+    if (kDebugMode) {
+      print("[Generate Text]: ");
+      print("Query: $query");
+      print("Seed: $seed");
+      print("Parameters: $parameters");
+      print("Retrieval: $retrieval");
     }
 
     Map<String, dynamic>? generateOutput = await _llmModel!

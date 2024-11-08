@@ -171,9 +171,6 @@ class _ChatViewState extends State<ChatView> {
 
     if (isEmpty) {
       chatDataList.currentData.title = query;
-      widget.llmModel.parameters!.forEach(
-          (key, value) => chatDataList.currentData.parameters[key] = value);
-
       chatDataList.add(chatDataList.currentData, context: context);
     }
   }

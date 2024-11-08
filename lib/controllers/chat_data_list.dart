@@ -52,6 +52,8 @@ class ChatDataList extends ChangeNotifier {
     BuildContext? context,
   }) async {
     currentData = ChatData(messageList: List<Message>.empty(growable: true));
+    currentData.parameters = Utils.loadParametersWithDefaultParameters(
+        llmModel?.defaultParameters ?? {});
     currentSelected = -1;
     if (context != null) {
       Utils.navigateWithNewQueryParams(context, {'chat': '0'});
@@ -137,16 +139,16 @@ class ChatDataList extends ChangeNotifier {
     );
   }
 
-  void applyParameter(Map<String, dynamic> toApply) {
-    for (var i in toApply.keys) {
-      var element = currentData.parameters[i];
-      if (element == null) {
-        continue;
-      }
-      toApply[i] = element;
-    }
-    notifyListeners();
-  }
+  // void applyParameter(Map<String, dynamic> toApply) {
+  //   for (var i in toApply.keys) {
+  //     var element = currentData.parameters[i];
+  //     if (element == null) {
+  //       continue;
+  //     }
+  //     toApply[i] = element;
+  //   }
+  //   notifyListeners();
+  // }
 
   void renameChat(String title) {
     ChatDatabase().update(

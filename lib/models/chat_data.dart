@@ -7,7 +7,7 @@ class ChatData {
   late final String id;
   late String title;
   late int totalToken;
-  late Map<String, dynamic> parameters;
+  Map<String, dynamic>? parameters;
   List<bool> usePreprompt = [false];
   String? prePrompt;
   List<bool> useChatConversationContext = [true];

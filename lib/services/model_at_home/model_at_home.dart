@@ -306,10 +306,6 @@ class ModelAtHome extends BaseModel {
       String url = '${_data.baseURL}/retrieval_context';
       Uri uri = Uri.parse(url);
 
-      if (kDebugMode) {
-        print('JsonEncode: ${jsonEncode({"query": query, ...parameters})}');
-      }
-
       List<String> chatHistory = List.empty(growable: true);
       for (var i = 0;
           i < chatDataList.currentData.messageList.length - 2;

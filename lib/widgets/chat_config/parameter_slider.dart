@@ -7,12 +7,14 @@ class ParameterSlider extends StatefulWidget {
   final String textKey;
   final List<num> values;
   final Function(num value) onChanged;
+  final Function(num value)? onChangeEnd;
   late final bool isInt;
   ParameterSlider({
     super.key,
     required this.textKey,
     required this.values,
     required this.onChanged,
+    this.onChangeEnd,
   }) {
     isInt = values.runtimeType == List<int>;
   }
@@ -82,6 +84,7 @@ class _ParameterSliderState extends State<ParameterSlider> {
                 value: parameterValue,
                 max: widget.values[2].toDouble(),
                 onChanged: (value) => parameterValue = value,
+                onChangeEnd: widget.onChangeEnd,
               ),
             ),
             SizedBox(

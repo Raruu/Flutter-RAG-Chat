@@ -34,23 +34,22 @@ class _ChatConfigState extends State<ChatConfig> {
     var savedParameters = widget.llmModel.parameters;
     widget.llmModel.defaultParameters?.forEach(
       (key, value) {
-        parametersOnChanged(paramChangedValue) {
-          widget.llmModel.parameters?[key] = paramChangedValue;
-          widget.chatDataList.currentData.parameters[key] = paramChangedValue;
-        }
+        parametersOnChanged(paramChangedValue) =>
+            widget.llmModel.parameters?[key] = paramChangedValue;
 
         Type runTimeType = value.runtimeType;
         if ((runTimeType == List<double>) || (runTimeType == List<int>)) {
-          if (savedParameters != null) {
+          if (savedParameters![key] != null) {
             value[1] = savedParameters[key];
           }
           parameters.add(ParameterSlider(
             textKey: key,
             values: value,
             onChanged: parametersOnChanged,
+            onChangeEnd: (value) => onChatSettingsChanged("Parameters"),
           ));
         } else if (runTimeType == List<bool>) {
-          if (savedParameters != null) {
+          if (savedParameters![key] != null) {
             value.first = savedParameters[key];
           }
           parameters.add(ParameterBool(
@@ -62,35 +61,37 @@ class _ChatConfigState extends State<ChatConfig> {
       },
     );
 
-    parameters.add(NiceButton(
-      onTap: () {
-        widget.llmModel.defaultParameters?.forEach((key, value) {
-          parametersOnChanged(paramChangedValue) {
-            widget.llmModel.parameters?[key] = paramChangedValue;
-            widget.chatDataList.currentData.parameters[key] = paramChangedValue;
-          }
+    parameters.add(Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: NiceButton(
+        onTap: () {
+          widget.llmModel.defaultParameters?.forEach((key, value) {
+            parametersOnChanged(paramChangedValue) {
+              widget.llmModel.parameters?[key] = paramChangedValue;
+            }
 
-          Type runTimeType = value.runtimeType;
-          if ((runTimeType == List<double>) || (runTimeType == List<int>)) {
-            parametersOnChanged(value[1]);
-          } else if (runTimeType == List<bool>) {
-            parametersOnChanged(value.first);
-          }
-        });
+            Type runTimeType = value.runtimeType;
+            if ((runTimeType == List<double>) || (runTimeType == List<int>)) {
+              parametersOnChanged(value[1]);
+            } else if (runTimeType == List<bool>) {
+              parametersOnChanged(value.first);
+            }
+          });
 
-        setState(() => parametersInit());
-      },
-      text: 'RESET',
-      borderRadiusCircular: 30,
-      hoverColor: Colors.red,
-      splashColor: MyColors.bgTintBlue,
-      backgroundColor: Colors.transparent,
-      hoverDuration: const Duration(milliseconds: 200),
-      border: Border.all(
-        color: Colors.red,
+          setState(() => parametersInit());
+        },
+        text: 'RESET',
+        borderRadiusCircular: 30,
+        hoverColor: Colors.red,
+        splashColor: MyColors.bgTintBlue,
+        backgroundColor: Colors.transparent,
+        hoverDuration: const Duration(milliseconds: 200),
+        border: Border.all(
+          color: Colors.red,
+        ),
+        textColor: Colors.red,
+        textHoverColor: Colors.white,
       ),
-      textColor: Colors.red,
-      textHoverColor: Colors.white,
     ));
   }
 
@@ -162,6 +163,7 @@ class _ChatConfigState extends State<ChatConfig> {
           ],
           onChanged: (value) => widget
               .chatDataList.currentData.minKnowledgeScore[0] = value.toDouble(),
+          onChangeEnd: (value) => onChatSettingsChanged("Min Score"),
         ),
         ParameterSlider(
           textKey: "Max Knowledge Count",
@@ -172,6 +174,7 @@ class _ChatConfigState extends State<ChatConfig> {
           ],
           onChanged: (value) => widget
               .chatDataList.currentData.maxKnowledgeCount[0] = value.toInt(),
+          onChangeEnd: (value) => onChatSettingsChanged("Max Knowledge Count"),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6.0),
@@ -229,19 +232,8 @@ class _ChatConfigState extends State<ChatConfig> {
     );
   }
 
-  void onChatSettingsChanged(String from) async {
-    bool rsSettings = await widget.llmModel.chatSettingsChanged() ?? true;
-    String msgTitle = "[$from]: ${rsSettings ? 'Success' : 'Failed!!!'}";
-    String msgSubtitle = rsSettings ? 'Task Complete Onii-chan~' : ':I';
-    if (mounted && !rsSettings) {
-      Utils.showSnackBar(
-        context,
-        title: msgTitle,
-        duration: const Duration(milliseconds: 100),
-        subTitle: msgSubtitle,
-      );
-    }
-  }
+  void onChatSettingsChanged(String from) async =>
+      await widget.llmModel.chatSettingsChanged();
 
   ChatConfigCard prePrompt(BuildContext context) {
     return ChatConfigCard(
