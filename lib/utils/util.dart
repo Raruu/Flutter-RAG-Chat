@@ -20,6 +20,8 @@ import '../widgets/knowledge_widget.dart';
 import 'svg_icons.dart';
 
 class Utils<T> {
+  static int calcToken(int textLength) => textLength ~/ 4;
+
   static Map<String, dynamic> loadParametersWithDefaultParameters(
       Map<String, dynamic>? defaultParameters) {
     Map<String, dynamic> parameters = {};

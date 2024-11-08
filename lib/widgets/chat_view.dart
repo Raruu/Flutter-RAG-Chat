@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:ragchat/models/message_context.dart';
 
 import '../utils/svg_icons.dart';
 import '../utils/util.dart';
@@ -109,6 +110,11 @@ class _ChatViewState extends State<ChatView> {
   void generateText(BuildContext context, String query, ChatData currentData,
       List<Message> currentMessageList,
       {bool randomSeed = false}) {
+    setState(() {
+      currentMessageList
+          .add(Message(message: '', token: 0, role: MessageRole.modelTyping));
+    });
+
     widget.llmModel
         .generateText(
             query: query,
@@ -121,15 +127,14 @@ class _ChatViewState extends State<ChatView> {
           removeMessage(currentData);
           return;
         }
-        receiveMessage(value, currentMessageList);
+        addMessage(value, currentMessageList);
+        chatDataList.currentData.totalToken += value.token!;
       },
     );
-    currentMessageList
-        .add(Message(message: '', token: 0, role: MessageRole.modelTyping));
   }
 
   void regenerateText(int index, {String? query}) async {
-    query ??= messageList[index].textData['query'];
+    query ??= messageList[index].messageContext!.query;
 
     if (index <= messageList.length - 1 &&
         messageList[index].role == MessageRole.model) {
@@ -141,7 +146,7 @@ class _ChatViewState extends State<ChatView> {
     generateText(
         // ignore: use_build_context_synchronously
         context,
-        query!,
+        query,
         currentData,
         currentMessageList,
         randomSeed: true);
@@ -152,7 +157,7 @@ class _ChatViewState extends State<ChatView> {
       return;
     }
     bool isEmpty = messageList.isEmpty;
-    int token = _messageTextEditingController.text.length ~/ 4;
+    int token = Utils.calcToken(_messageTextEditingController.text.length);
     chatDataList.currentData.totalToken += token;
     String query = _messageTextEditingController.text;
     _messageTextEditingController.clear();
@@ -171,14 +176,6 @@ class _ChatViewState extends State<ChatView> {
 
       chatDataList.add(chatDataList.currentData, context: context);
     }
-  }
-
-  void receiveMessage(
-      Map<String, dynamic> textData, List<Message> messageList) {
-    int token = textData.length ~/ 4;
-    addMessage(
-        Message(textData: textData, token: token, role: MessageRole.model),
-        messageList);
   }
 
   @override
@@ -325,11 +322,9 @@ class _ChatViewState extends State<ChatView> {
                           messageList[index].role == MessageRole.user
                               ? MyColors.bgTintPink
                               : MyColors.bgTintBlue,
-                      showContext:
-                          (messageList[index].textData['query']?.isEmpty ??
-                                  true)
-                              ? null
-                              : () => showContextDialog(index),
+                      showContext: messageList[index].messageContext == null
+                          ? null
+                          : () => showContextDialog(index),
                       regenerate: messageList.length - 1 <= index
                           ? () => regenerateText(index)
                           : null,
@@ -678,7 +673,7 @@ class _ChatViewState extends State<ChatView> {
                               'Query: ',
                               style: TextStyle(fontWeight: FontWeight.w700),
                             ),
-                            Text(messageList[index].textData['query']),
+                            Text(messageList[index].messageContext!.query),
                           ],
                         ),
                         Wrap(
@@ -688,81 +683,81 @@ class _ChatViewState extends State<ChatView> {
                               'Seed: ',
                               style: TextStyle(fontWeight: FontWeight.w700),
                             ),
-                            Text(messageList[index].textData['seed'] ?? '-'),
+                            Text(messageList[index]
+                                .messageContext!
+                                .seed
+                                .toString()),
                           ],
                         ),
                       ],
                     ),
                   ),
                 ),
-                if (messageList[index].textData['context1'] != null)
-                  ...List.generate(
-                    messageList[index].textData['context1'].length,
-                    (indexj) {
-                      Map<String, dynamic> data =
-                          messageList[index].textData['context1'][indexj];
-                      String filename = data['filename'];
-                      int pageNumber = data['page_number'];
-                      double score = data['score'];
+                ...List.generate(
+                  messageList[index].messageContext!.contextList.length,
+                  (indexj) {
+                    MessageContextData data =
+                        messageList[index].messageContext!.contextList[indexj];
+                    String filename = data.filename;
+                    int pageNumber = data.pageNumber;
+                    double score = data.score;
 
-                      String contextData = data['context'];
-                      return ChatConfigCard(
-                        title: '[$pageNumber] $filename',
-                        strIcon: SvgIcons.knowledge,
-                        expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      'File Name: $filename',
-                                      style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700),
-                                    ),
-                                    const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 1.0)),
-                                    IconButton(
-                                      onPressed: () {
-                                        var knowledge = chatDataList
-                                            .currentData.knowledges
-                                            .where((element) =>
-                                                element['title'] == filename)
-                                            .toList()
-                                            .first;
-                                        var value = kIsWeb
-                                            ? knowledge['web_data']
-                                            : knowledge['path'];
-                                        Utils.viewKnowledge(value,
-                                            context: context,
-                                            title: filename,
-                                            pageAt: pageNumber);
-                                      },
-                                      icon: const Icon(Icons.open_in_new),
-                                    )
-                                  ],
-                                ),
-                                Text(
-                                  'Page: $pageNumber\nScore: $score\nContext:',
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700),
-                                ),
-                                Text(contextData)
-                              ],
-                            ),
-                          )
-                        ],
-                      );
-                    },
-                  )
+                    String contextData = data.contextText;
+                    return ChatConfigCard(
+                      title: '[$pageNumber] $filename',
+                      strIcon: SvgIcons.knowledge,
+                      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'File Name: $filename',
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700),
+                                  ),
+                                  const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 1.0)),
+                                  IconButton(
+                                    onPressed: () {
+                                      var knowledge = chatDataList
+                                          .currentData.knowledges
+                                          .where((element) =>
+                                              element['title'] == filename)
+                                          .toList()
+                                          .first;
+                                      var value = kIsWeb
+                                          ? knowledge['web_data']
+                                          : knowledge['path'];
+                                      Utils.viewKnowledge(value,
+                                          context: context,
+                                          title: filename,
+                                          pageAt: pageNumber);
+                                    },
+                                    icon: const Icon(Icons.open_in_new),
+                                  )
+                                ],
+                              ),
+                              Text(
+                                'Page: $pageNumber\nScore: $score\nContext:',
+                                style: const TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w700),
+                              ),
+                              Text(contextData)
+                            ],
+                          ),
+                        )
+                      ],
+                    );
+                  },
+                )
               ],
             ),
           ),

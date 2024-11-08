@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:ragchat/models/message_context.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/chat_data.dart';
 import '../controllers/chat_data_list.dart';
 import '../models/message.dart';
 import 'dart_openai/dart_openai.dart';
@@ -94,12 +94,17 @@ class LLMModel extends ChangeNotifier {
 
   BaseModel? _embeddingModel;
   final List<String> embeddingProvidersList = const [
+    'None',
     'Model at home',
   ];
   String? _embeddingProvider;
   String? get embeddingProvider => _embeddingProvider;
   set embeddingProvider(String? value) {
     switch (value?.toLowerCase()) {
+      case 'none':
+        _embeddingModel = null;
+        prefs.setString('embedding_provider', value!);
+        break;
       case 'model at home':
         _embeddingModel = ModelAtHome(
           notifyListeners,
@@ -123,43 +128,11 @@ class LLMModel extends ChangeNotifier {
         prefs.getString('embedding_provider') ?? 'Model at home';
   }
 
-  // TODO Save for later ?
-  String buildPrompt(ChatData chatData, String query) {
-    String prompt = chatData.usePreprompt[0] ? chatData.prePrompt ?? '' : '';
-    String chatContext = '';
-    if (chatData.useChatConversationContext[0]) {
-      for (var i = 0; i < chatData.messageList.length - 1; i++) {
-        Message message = chatData.messageList[i];
-        prompt += '${message.message} ';
-        switch (message.role) {
-          case MessageRole.user:
-            chatContext += 'User: ${message.message}\n';
-            break;
-          case MessageRole.model:
-            chatContext += 'Model: ${message.message}\n';
-            break;
-          default:
-        }
-      }
-    }
-
-    if (prompt.contains('{chatcontext}')) {
-      prompt = prompt.replaceAll('{chatcontext}', chatContext);
-    } else {
-      prompt += chatContext;
-    }
-
-    if (prompt.contains('{query}')) {
-      prompt = prompt.replaceAll('{query}', query);
-    } else {
-      prompt += query;
-    }
-    return prompt;
-  }
-
   Future<Map<String, dynamic>?> retrievalContext(
-      {required String prompt, required int seed}) {
-    if (_llmModel != _embeddingModel) {}
+      {required String prompt, required int seed}) async {
+    if (_embeddingModel == null) {
+      return null;
+    }
     return _embeddingModel!
         .retrievalContext(query: prompt, seed: seed, parameters: parameters!)
         .catchError((e) {
@@ -168,10 +141,12 @@ class LLMModel extends ChangeNotifier {
     });
   }
 
-  Future<Map<String, dynamic>?> generateText(
+  Future<Message?> generateText(
       {required String query, required int seed}) async {
-    Map<String, dynamic>? retrieval =
-        await retrievalContext(prompt: query, seed: seed);
+    Map<String, dynamic>? retrieval = await retrievalContext(
+      prompt: query,
+      seed: seed,
+    );
     if (retrieval != null && retrieval['context1'] != "") {
       List<dynamic>? context1 = retrieval['context1']
           .take(_chatDataList.currentData.maxKnowledgeCount[0])
@@ -186,17 +161,41 @@ class LLMModel extends ChangeNotifier {
       }
     }
 
-    return _llmModel!
+    Map<String, dynamic>? generateOutput = await _llmModel!
         .generateText(
             query: query,
             seed: seed,
             parameters: parameters!,
             retrievalContext: retrieval)
-        .catchError((e) {
-      printcatchError(e: e, from: 'GenerateText');
+        .catchError((e) => printcatchError(e: e, from: 'GenerateText'));
+
+    if (generateOutput == null) {
       return null;
-    });
-    // ;
+    }
+
+    List<dynamic>? context1 =
+        generateOutput['context1'] == "" ? null : generateOutput['context1'];
+
+    return Message(
+      role: MessageRole.model,
+      message: generateOutput['generated_text'],
+      token: Utils.calcToken(generateOutput['generated_text'].length),
+      messageContext: MessageContext(
+        query: generateOutput['query'],
+        seed: int.tryParse(generateOutput['seed']) ?? 0,
+        contextList: context1 == null
+            ? List.empty()
+            : List.generate(
+                context1.length,
+                (index) => MessageContextData(
+                  contextText: context1[index]['context'],
+                  filename: context1[index]['filename'],
+                  pageNumber: context1[index]['page_number'],
+                  score: context1[index]['score'],
+                ),
+              ),
+      ),
+    );
   }
 
   dynamic printcatchError({required dynamic e, required String from}) {

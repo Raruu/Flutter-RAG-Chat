@@ -72,18 +72,8 @@ class ChatData {
     totalToken = 0;
     messageList = [];
     for (var item in mapMessages) {
-      int token = item[ChatDatabase.messageToken] as int;
-      totalToken += token;
-      messageList.add(
-        Message(
-          token: token,
-          role: item[ChatDatabase.role] as int == 0
-              ? MessageRole.user
-              : MessageRole.model,
-          message: item[ChatDatabase.message] as String,
-          textData: jsonDecode(item[ChatDatabase.messageTextData] as String),
-        ),
-      );
+      totalToken += item[ChatDatabase.messageToken] as int;
+      messageList.add(Message.fromMap(item));
     }
   }
 
@@ -106,11 +96,7 @@ class ChatData {
           messageList.length,
           (index) => {
             ChatDatabase.chatId: id,
-            ChatDatabase.role: messageList[index].role.index,
-            ChatDatabase.message: messageList[index].message,
-            ChatDatabase.messageTextData:
-                jsonEncode(messageList[index].textData),
-            ChatDatabase.messageToken: messageList[index].token
+            ...messageList[index].toMap(),
           },
         ),
       };

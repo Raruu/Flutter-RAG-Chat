@@ -1,24 +1,36 @@
+import 'dart:convert';
+
+import '../controllers/chat_database.dart';
+import 'message_context.dart';
+
 enum MessageRole { user, model, modelTyping }
 
 class Message {
-  late final Map<String, dynamic> textData;
+  String message;
+  int? token;
   final MessageRole role;
-  String get message => textData['generated_text'] ?? '';
-  set message(String value) {
-    textData['generated_text'] = value;
-  }
-
-  final int token;
+  MessageContext? messageContext;
 
   Message({
-    Map<String, dynamic>? textData,
-    String? message,
-    required this.token,
+    this.message = '',
+    this.token = 0,
     required this.role,
-  }) {
-    this.textData = textData ?? {};
-    if (message != null) {
-      this.textData['generated_text'] = message;
-    }
-  }
+    this.messageContext,
+  });
+
+  Message.fromMap(Map<String, dynamic> map)
+      : message = map[ChatDatabase.message] as String,
+        token = map[ChatDatabase.messageToken] as int?,
+        role = MessageRole.values[map[ChatDatabase.role] as int],
+        messageContext = map[ChatDatabase.messageContext] != 'null'
+            ? MessageContext.fromMap(
+                jsonDecode(map[ChatDatabase.messageContext]))
+            : null;
+
+  Map<String, Object> toMap() => {
+        ChatDatabase.message: message,
+        ChatDatabase.role: role.index,
+        ChatDatabase.messageContext: jsonEncode(messageContext?.toMap()),
+        ChatDatabase.messageToken: token!,
+      };
 }

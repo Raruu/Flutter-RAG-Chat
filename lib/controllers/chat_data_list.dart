@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:universal_html/html.dart' as http;
 
 import '../models/message.dart';
@@ -14,7 +13,6 @@ import 'chat_database.dart';
 import '../services/llm_model.dart';
 
 class ChatDataList extends ChangeNotifier {
-  late final Database db;
   late final List<ChatData> dataList;
   late Function() notifyChatDataListner;
 
@@ -35,21 +33,14 @@ class ChatDataList extends ChangeNotifier {
   }
 
   void _loadDatabase() async {
-    db = await ChatDatabase().database;
-    // ChatDatabase.updateHeader(db);
-    List<Map<String, Object?>> chatListData = await db.query(
-      ChatDatabase.tableChatList,
-      orderBy: '${ChatDatabase.chatId} DESC',
-    );
+    List<Map<String, Object?>> chatListData =
+        await ChatDatabase().getChatList();
     for (var listData in chatListData) {
       dataList.add(
         ChatData.fromMap(
           listData,
-          await db.query(
-            ChatDatabase.tableChatMessages,
-            where: '${ChatDatabase.chatId} = ?',
-            whereArgs: [listData[ChatDatabase.chatId] as String],
-          ),
+          await ChatDatabase()
+              .getChatMessages(listData[ChatDatabase.chatId] as String),
         ),
       );
     }
@@ -82,25 +73,15 @@ class ChatDataList extends ChangeNotifier {
     if (context != null) {
       Utils.navigateWithNewQueryParams(context, {'chat': value.id});
     }
-    await db.insert(
-      ChatDatabase.tableChatList,
-      value.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    ChatDatabase().addChat(value.toMap());
 
     notifyListeners();
   }
 
-  void remove(ChatData value) async {
-    db.delete(ChatDatabase.tableChatList,
-        where: '${ChatDatabase.chatId} = ?', whereArgs: [value.id]);
-    db.delete(ChatDatabase.tableChatMessages,
-        where: '${ChatDatabase.chatId} = ?', whereArgs: [value.id]);
-    bool result = dataList.remove(value);
+  void remove(ChatData value) {
+    ChatDatabase().deleteChat(value.id);
+    dataList.remove(value);
     newChat();
-    if (kDebugMode) {
-      print('Remove: $value is $result');
-    }
   }
 
   void loadData(int index, {LLMModel? llmModel, BuildContext? context}) async {
@@ -117,39 +98,28 @@ class ChatDataList extends ChangeNotifier {
     await llmModel?.setKnowledge(currentData.knowledges);
   }
 
-  void addToMessageList(Message messageWidget, ChatData chatData,
+  void addToMessageList(Message message, ChatData chatData,
       {bool onlyAddToDatabase = false}) async {
     if (chatData.messageList.isNotEmpty &&
         chatData.messageList.last.role == MessageRole.modelTyping) {
       chatData.messageList.removeLast();
     }
     if (!onlyAddToDatabase) {
-      chatData.messageList.add(messageWidget);
+      chatData.messageList.add(message);
     }
-    await db.insert(ChatDatabase.tableChatMessages, {
-      ChatDatabase.chatId: chatData.id,
-      ChatDatabase.role: messageWidget.role.index,
-      ChatDatabase.message: messageWidget.message,
-      ChatDatabase.messageTextData: jsonEncode(messageWidget.textData),
-      ChatDatabase.messageToken: messageWidget.token
-    });
+    ChatDatabase().addMessage(chatId: chatData.id, messageMap: message.toMap());
   }
 
   Future<Message> removeToMessageList(int index, {ChatData? chatData}) async {
     chatData ??= currentData;
     Message message = chatData.messageList[index];
 
-    await db.delete(
-      ChatDatabase.tableChatMessages,
-      where:
-          '${ChatDatabase.chatId} = ? AND ${ChatDatabase.message} = ? AND ${ChatDatabase.messageTextData} = ?',
-      whereArgs: [
-        chatData.id,
-        message.message,
-        jsonEncode(
-          message.textData,
-        )
-      ],
+    ChatDatabase().deleteMessage(
+      chatData.id,
+      message.message,
+      message.messageContext == null
+          ? null
+          : jsonEncode(message.messageContext!.toMap()),
     );
 
     chatData.messageList.remove(message);
@@ -159,7 +129,7 @@ class ChatDataList extends ChangeNotifier {
   void updateConfigToDatabase() {
     var values = currentData.toMap();
     values.remove(ChatDatabase.chatId);
-    ChatDatabase().updateValue(
+    ChatDatabase().update(
       table: ChatDatabase.tableChatList,
       where: ChatDatabase.chatId,
       whereArgs: currentData.id,
@@ -179,7 +149,7 @@ class ChatDataList extends ChangeNotifier {
   }
 
   void renameChat(String title) {
-    ChatDatabase().updateValue(
+    ChatDatabase().update(
         table: ChatDatabase.tableChatList,
         where: ChatDatabase.chatId,
         whereArgs: currentData.id,
